@@ -1,0 +1,370 @@
+   /* -----> Main container for the text block <----- */
+   .greeting-container {
+       margin-bottom: 1.5rem;
+       /* Equivalent to mb-6 in Tailwind */
+   }
+
+   /* Styling for the main greeting heading */
+   .greeting-heading {
+       font-size: 1.5rem;
+       /* Equivalent to text-2xl */
+       font-weight: 600;
+       /* Equivalent to font-semibold */
+       color: #1f2937;
+       /* Equivalent to text-gray-900 */
+   }
+
+   /* Styling for the sub-text paragraph */
+   .org-info {
+       font-size: 1rem;
+       /* Default size, can be adjusted */
+       color: #4b5563;
+       /* Equivalent to text-gray-600 */
+       margin-top: 0.25rem;
+       /* Equivalent to mt-1 */
+   }
+
+   /* ------> Container for the entire banner <------ */
+   .banner-container {
+       margin-bottom: 1rem;
+       padding: 0.75rem;
+       border-radius: 0.5rem;
+       border: 1px solid #cceeff;
+       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+       background-image: linear-gradient(to right, #f8fafc, #e0e7ff);
+   }
+
+   /* Flexbox for the main layout (content and dismiss button) */
+   .banner-content-wrapper {
+       display: flex;
+       align-items: flex-start;
+       justify-content: space-between;
+   }
+
+   /* Flexbox for the icon and text content */
+   .banner-content {
+       display: flex;
+       align-items: flex-start;
+       gap: 0.75rem;
+       /* space-x-3 equivalent */
+   }
+
+   /* Icon styling */
+   .banner-icon-wrapper {
+       flex-shrink: 0;
+   }
+
+   .banner-icon {
+       width: 1.5rem;
+       height: 1.5rem;
+       background-color: #3b82f6;
+       border-radius: 0.5rem;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+   }
+
+   .banner-icon svg {
+       width: 1rem;
+       height: 1rem;
+       color: white;
+   }
+
+   /* Text content styling */
+   .banner-text-content {
+       flex: 1;
+       min-width: 0;
+   }
+
+   .banner-title {
+       font-size: 0.875rem;
+       /* text-sm */
+       font-weight: 600;
+       /* font-semibold */
+       color: #1a237e;
+       /* A close approximation to blue-900 */
+       margin-bottom: 0.25rem;
+   }
+
+   .banner-description {
+       font-size: 0.75rem;
+       /* text-xs */
+       color: #1f3a74;
+       /* A close approximation to blue-700 */
+       margin-bottom: 0.5rem;
+       line-height: 1.5;
+       /* leading-relaxed */
+   }
+
+   /* Tag/Pill styling */
+   .banner-tags {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 0.25rem;
+       /* gap-1 */
+       margin-bottom: 0.5rem;
+   }
+
+   .tag {
+       display: inline-flex;
+       align-items: center;
+       padding: 0.125rem 0.375rem;
+       /* px-1.5 py-0.5 */
+       border-radius: 9999px;
+       /* rounded-full */
+       font-size: 0.75rem;
+       /* text-xs */
+       font-weight: 500;
+       /* font-medium */
+       background-color: #dbeafe;
+       /* blue-100 */
+       color: #1e40af;
+       /* blue-800 */
+   }
+
+   /* Button styling */
+   .banner-button {
+       display: inline-flex;
+       align-items: center;
+       padding: 0.25rem 0.75rem;
+       /* px-3 py-1 */
+       background-color: #2563eb;
+       /* blue-600 */
+       color: white;
+       font-size: 0.75rem;
+       /* text-xs */
+       font-weight: 500;
+       /* font-medium */
+       border-radius: 0.375rem;
+       /* rounded-md */
+       transition-property: background-color, transform;
+       transition-duration: 200ms;
+       border: none;
+       cursor: pointer;
+   }
+
+   .banner-button:hover {
+       background-color: #1d4ed8;
+       /* blue-700 */
+   }
+
+   .banner-button svg {
+       width: 0.75rem;
+       height: 0.75rem;
+       margin-left: 0.25rem;
+       transition-property: transform;
+       transition-duration: 200ms;
+   }
+
+   .banner-button:hover svg {
+       transform: translateX(0.25rem);
+       /* translate-x-1 */
+   }
+
+   /* Dismiss button styling */
+   .dismiss-button {
+       flex-shrink: 0;
+       padding: 0.25rem;
+       color: #60a5fa;
+       /* blue-400 */
+       transition-property: color;
+       transition-duration: 200ms;
+       background: none;
+       border: none;
+       cursor: pointer;
+   }
+
+   .dismiss-button:hover {
+       color: #2563eb;
+       /* blue-600 */
+   }
+
+   .dismiss-button svg {
+       width: 1rem;
+       height: 1rem;
+   }
+
+
+   /* ----> Main container for the entire section <---- */
+   .quick-actions-section {
+       margin-bottom: 2rem;
+   }
+
+   /* Title styling */
+   .section-title {
+       font-size: 1.125rem;
+       /* text-lg */
+       font-weight: 500;
+       /* font-medium */
+       color: #1f2937;
+       /* gray-900 */
+       margin-bottom: 1.5rem;
+   }
+
+   /* Grid for the buttons */
+   .actions-grid {
+       display: grid;
+       grid-template-columns: 1fr;
+       gap: 1.5rem;
+   }
+
+   @media (min-width: 768px) {
+       .actions-grid {
+           grid-template-columns: repeat(2, 1fr);
+       }
+   }
+
+   /* Base button styling */
+   .action-button {
+       padding: 1.5rem;
+       text-align: left;
+       border-radius: 0.75rem;
+       transition-property: all;
+       transition-duration: 200ms;
+       cursor: pointer;
+       border: none;
+       /* position: relative;
+       z-index: 1; */
+       /* For stacking context with shadow */
+   }
+
+   /* Hover effects for all buttons */
+   .action-button:hover {
+       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+       transform: translateY(-0.25rem);
+   }
+
+   /* Flex container for content inside the button */
+   .button-content {
+       display: flex;
+       align-items: flex-start;
+       justify-content: space-between;
+       margin-bottom: 1rem;
+   }
+
+   .button-text-group {
+       display: flex;
+       align-items: center;
+   }
+
+   .button-icon {
+       width: 2rem;
+       height: 2rem;
+       margin-right: 1rem;
+       flex-shrink: 0;
+       color: currentColor;
+   }
+
+   .button-icon-arrow {
+       width: 1.25rem;
+       height: 1.25rem;
+       flex-shrink: 0;
+       transition-property: transform;
+       transition-duration: 200ms;
+   }
+
+   .action-button:hover .button-icon-arrow {
+       transform: translateX(0.25rem);
+   }
+
+   .button-title {
+       font-size: 1.25rem;
+       font-weight: 600;
+   }
+
+   .button-description {
+       font-size: 0.875rem;
+       line-height: 1.5;
+   }
+
+   /* Color variants for each button */
+   .action-button.indigo {
+       background-color: #4f46e5;
+       /* indigo-600 */
+       color: white;
+   }
+
+   .action-button.indigo:hover {
+       background-color: #4338ca;
+       /* indigo-700 */
+   }
+
+   .action-button.gray {
+       background-color: #4b5563;
+       /* gray-600 */
+       color: white;
+   }
+
+   .action-button.gray:hover {
+       background-color: #374151;
+       /* gray-700 */
+   }
+
+   .action-button.amber {
+       background-color: #d97706;
+       /* amber-600 */
+       color: white;
+   }
+
+   .action-button.amber:hover {
+       background-color: #b45309;
+       /* amber-700 */
+   }
+
+   .action-button.green {
+       background-color: #16a34a;
+       /* green-600 */
+       color: white;
+   }
+
+   .action-button.green:hover {
+       background-color: #15803d;
+       /* green-700 */
+   }
+
+   /* Description text with transparency */
+   .action-button.indigo .button-description,
+   .action-button.gray .button-description,
+   .action-button.amber .button-description,
+   .action-button.green .button-description {
+       color: rgba(255, 255, 255, 0.9);
+       /* text-white/90 */
+   }
+
+
+
+   /* --------> Responsive <-------- */
+
+   /* Mobile (extra small) */
+   @media (max-width: 480px) {
+       .greeting-heading {
+           font-size: 1.2rem;
+       }
+
+   }
+
+   /* Mobile (medium) */
+   @media (max-width: 600px) {}
+
+   /* Tablet (portrait) */
+   @media (max-width: 768px) {}
+
+   /* Table (landscape) */
+   @media (max-width: 1024px) {
+       /* .Hero-wrapper {
+           margin-left: 0;
+
+       } */
+
+   }
+
+   /* Desktop (small) */
+   @media (max-width: 1280px) {
+       /* .Hero-container {
+           width: 90%;
+       } */
+
+   }
+
+   /* Desktop (Large) */
+   @media (min-width: 1280px) {}

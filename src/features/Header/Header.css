@@ -1,0 +1,501 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+* {
+    font-family: "Inter", sans-serif;
+    box-sizing: border-box;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/* -------------  ** Header **  -------------- */
+
+
+.header-container {
+    width: 100vw;
+    height: 74px;
+    padding: 12px 20px;
+    background-color: white;
+    border-bottom: 1px solid oklch(92.8% 0.006 264.531);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ----> Header Left part */
+/* TimetableMaster Logo */
+
+.header-logo-container {
+    display: flex;
+    gap: 5px;
+}
+
+.header-logosvg {
+    width: 30px;
+}
+
+.header-part-1,
+.header-part-2 {
+    font-size: 1.7rem;
+
+}
+
+.header-part-1 {
+    color: #4f46e5;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.055em;
+}
+
+.header-part-2 {
+    color: #4f46e5;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: -0.055em;
+    margin-left: -4px;
+}
+
+/* ----> Header Right part */
+.header-right-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Header support button */
+.header-support-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #eef2ff;
+    font-size: 1rem;
+    font-weight: 500;
+    color: oklch(51.1% 0.262 276.966);
+    border-radius: 8px;
+}
+
+.header-support-btn img {
+    margin-right: 5px;
+    width: 15px;
+}
+
+/* Container for the button. The "relative" class is not strictly needed for this layout but is often used in Tailwind for positioning dropdown menus. */
+.profile-button-container {
+    position: relative;
+}
+
+/* The main button element */
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Equivalent to gap-2 */
+    padding: 0.5rem 1rem;
+    /* Equivalent to px-4 py-2 */
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    /* Equivalent to border-gray-200 */
+    border-radius: 0.5rem;
+    /* Equivalent to rounded-lg */
+    transition-property: background-color;
+    transition-duration: 200ms;
+    cursor: pointer;
+}
+
+/* Hover state for the button */
+.profile-button:hover {
+    background-color: #f9fafb;
+    /* Equivalent to hover:bg-gray-50 */
+}
+
+/* Styling for the left SVG icon */
+.profile-button .icon {
+    width: 1.25rem;
+    /* Equivalent to w-5 */
+    height: 1.25rem;
+    /* Equivalent to h-5 */
+    color: #4b5563;
+    /* Equivalent to text-gray-600 */
+}
+
+/* Styling for the text */
+.profile-button .text {
+    font-weight: 500;
+    /* Equivalent to font-medium */
+    color: #374151;
+    /* Equivalent to text-gray-700 */
+}
+
+/* Styling for the right SVG icon (dropdown arrow) */
+.profile-button .arrow-icon {
+    width: 1rem;
+    /* Equivalent to w-4 */
+    height: 1rem;
+    /* Equivalent to h-4 */
+    color: #6b7280;
+    /* Equivalent to text-gray-500 */
+}
+
+
+/* Hamburger hidden for Desktop */
+.header-hamburger-container {
+    display: none;
+}
+
+.header-hamburger-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 25px;
+    width: 25px;
+}
+
+.header-hamburger-icon:hover {
+    background-color: #eeeeeebb;
+    border-radius: 5px;
+}
+
+
+/* -------------  ** Header side-Navigation  **  -------------- */
+
+.header-side {
+    width: 280px;
+    height: 100%;
+    background-color: white;
+    border-right: 1px solid oklch(92.8% 0.006 264.531);
+    position: fixed;
+    top: calc(var(--HeaderHight));
+    z-index: 10;
+    margin-top: 74px;
+}
+
+/* ----> User info Card <---- */
+.header-info-card-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem;
+    border-bottom: 1px solid #e5e7eb;
+    height: 74px;
+}
+
+/* user info wrapper */
+.header-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    flex: 1;
+    opacity: 1;
+}
+
+/* avatar container */
+.header-info-avatar-container {
+    width: 2rem;
+    height: 2rem;
+    background-color: #4f46e5;
+    border-radius: 0.40rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.header-info-avatar-text {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* user details wrapper */
+.header-info-user-details-wrapper {
+    min-width: 0;
+    flex: 1;
+}
+
+.header-info-user-name {
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1rem;
+}
+
+.header-info-user-email {
+    font-size: 0.8rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* side-navigation close Button */
+.header-info-close-button {
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition-property: background-color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-info-close-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #6b7280;
+}
+
+.header-info-close-button:hover {
+    background-color: #f3f4f6;
+}
+
+/* ----> Side navigation bar <----  */
+.side-wrapper {
+    padding: 1rem;
+}
+
+.side-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+}
+
+/* side buttons title  */
+.side-title {
+    font-size: 0.75rem;
+    padding: 0rem 0.75rem;
+    color: #707784;
+    margin: 0.25rem 0rem;
+    font-weight: 600;
+}
+
+/* side bar buttons */
+.aside-btn {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #4b5563;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.aside-btn-text {
+    margin-left: 2px;
+}
+
+.aside-btn svg {
+    width: 1.5rem;
+}
+
+.aside-btn:hover {
+    background-color: #eeeeeebb;
+    color: black;
+    margin-left: 2px;
+}
+
+/*  for active btn */
+.aside-btn.active {
+    background-color: #e0e7ff;
+    border-right: 2px solid #4338ca;
+    color: #4338ca;
+}
+
+
+/* -------------  ** Responsive **  -------------- */
+
+
+@media (max-width: 1024px) {
+    /* ---> Hamburger menu side-bar process __START__ */
+
+    /* Support btn --hidden-- */
+    .header-support-btn {
+        display: none;
+    }
+
+    .profile-button-container {
+        display: none;
+    }
+
+    /* Hamburger --visible-- */
+    .header-hamburger-container {
+        display: block;
+    }
+
+    /* ---> hamburger design */
+    .header-hamburger-icon {
+        margin: 0.5rem;
+        width: 40px;
+        height: 40px;
+    }
+
+    .header-hamburger-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+
+    /* ---> Header  */
+    .header-container {
+        padding: 16px 16px;
+        border-bottom: none;
+    }
+
+    .header-nav {
+        height: 45px;
+    }
+
+    /* ---> Side-bar  */
+    .header-side {
+        /* height: 100%; */
+        width: 300px;
+        margin-top: 0px;
+    }
+
+    .side-wrapper {
+        padding: 0rem 0.8rem;
+    }
+
+    .side-title {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* side-bar (hidden by default for Mobile) */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        transition: left 0.6s ease;
+    }
+
+    /* sidebar --visible-- */
+    .sidebar.open {
+        left: 0;
+    }
+
+    /* ---> Overlay */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+
+        /* Initial state: invisible and transparent */
+        opacity: 0;
+        visibility: hidden;
+        /* The transition property for the fade effect */
+        /* We'll transition both opacity and visibility for a perfect result */
+        transition: opacity 0.4s ease-in-out, visibility 0.5s ease-in-out;
+    }
+
+    /* overlay --visible-- */
+    .overlay.open {
+        background: rgb(0 0 0 / 55%);
+        visibility: visible;
+        backdrop-filter: blur(2px);
+        opacity: unset;
+    }
+
+    /* ---> Hamburger menu side-bar process __END__ */
+}
+
+/* ----> Responsive for Mobile  */
+@media (max-width: 480px) {
+    .header-container {
+        height: 64px;
+    }
+
+    /* ---> TimetableMaster Logo */
+    .header-logosvg {
+        width: 32px;
+    }
+
+    .header-part-1 {
+        margin-left: 5px;
+    }
+
+    .header-part-1,
+    .header-part-2 {
+        font-size: 1.6rem;
+    }
+
+    /* ---> User info card */
+    .header-info-wrapper {
+        gap: 0.8rem;
+    }
+
+    .header-info-card-container {
+        padding: 0.7rem 1rem
+    }
+
+    .header-info-avatar-container {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .header-info-avatar-text {
+        font-size: 0.875rem;
+    }
+
+    .header-info-user-name {
+        font-size: 1rem;
+    }
+
+    .header-info-user-email {
+        font-size: 0.74rem;
+    }
+
+    .header-info-close-button svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* .header-info-close-button {
+        padding: 0.400rem;
+    } */
+
+
+    /*  ---> Side bar buttons */
+    .header-side {
+        width: 280px;
+    }
+
+    .aside-container {
+        padding: 1rem;
+    }
+
+    .side-wrapper {
+        margin-top: 8px;
+    }
+
+    .aside-btn {
+        font-size: 0.9rem;
+        height: 36px;
+        border-radius: 8px;
+    }
+
+    .aside-title {
+        font-size: 0.8rem;
+    }
+
+    .aside-btn svg {
+        width: 20px;
+    }
+}

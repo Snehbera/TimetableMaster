@@ -1,0 +1,371 @@
+/* --- Layout Containers --- */
+.main-container {
+    max-width: 1280px;
+    /* Equivalent to max-w-7xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem;
+    /* Add some padding around the content */
+}
+
+/* --- Header Section --- */
+.mytimetable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    /* Allow items to wrap */
+    gap: 1.5rem;
+    /* Space between items when they wrap */
+}
+
+.mytimetable-header-text h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.header-text p {
+    color: #4B5563;
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* --- Stats Grid Section --- */
+.myt-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Default to 1 column */
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.myt-stat-card {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.myt-stat-label {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin: 0;
+}
+
+.myt-stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+/* --- Timetables Section --- */
+.timetables-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.section-heading {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-heading .myt-icon {
+    margin-right: 0.5rem;
+}
+
+/* --- Empty State Card --- */
+.myt-empty-state {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid;
+    margin-bottom: 2rem;
+    border-color: #bbf7d0;
+}
+
+.myt-empty-state-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.myt-empty-state-subtitle {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* --- Timetable Card --- */
+.myt-timetable-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    /* Allow wrapping for responsiveness */
+    gap: 1.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.myt-timetable-card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border-color: #a5b4fc;
+    /* Indigo-300 on hover */
+    cursor: pointer;
+}
+
+.myt-card-main-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    /* Allow content to take available space */
+    min-width: 250px;
+    /* Prevent content from getting too squished */
+}
+
+.myt-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 2px solid white;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    flex-shrink: 0;
+    background-color: rgb(99, 102, 241);
+}
+
+.myt-card-info {
+    flex: 1;
+    min-width: 0;
+    /* Important for text truncation */
+}
+
+.myt-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.myt-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    transition: color 0.2s;
+}
+
+.myt-timetable-card:hover .card-title {
+    color: #4f46e5;
+    /* Indigo-600 on hover */
+}
+
+.myt-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.myt-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.myt-detail-item {
+    display: flex;
+    align-items: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.myt-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* --- Buttons --- */
+.mytimetable-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.myt-btn-primary {
+    background-color: #4F46E5;
+    color: white;
+}
+
+.myt-btn-primary:hover {
+    background-color: #4338CA;
+}
+
+.myt-btn-sm {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.myt-btn-success {
+    background-color: #16a34a;
+    color: white;
+}
+
+.myt-btn-success:hover {
+    background-color: #15803d;
+}
+
+.myt-btn-secondary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.myt-btn-secondary:hover {
+    background-color: #1d4ed8;
+}
+
+.myt-btn-more {
+    padding: 0.5rem;
+    color: #9ca3af;
+    border: none;
+    background: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.myt-btn-more:hover {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+
+/* --- Utility & Helper Classes --- */
+.myt-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.myt-icon-sm {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+}
+
+.myt-icon-xs {
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 0.25rem;
+}
+
+.myt-icon-lg {
+    width: 2rem;
+    height: 2rem;
+    margin: 0 auto 0.5rem auto;
+}
+
+.myt-icon-wrapper {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin-right: 0.75rem;
+}
+
+/* Colors */
+.myt-bg-blue {
+    background-color: #dbeafe;
+}
+
+.myt-text-blue {
+    color: #2563eb;
+}
+
+.myt-bg-green {
+    background-color: #f0fdf4;
+}
+
+.myt-text-green {
+    color: #16a34a;
+}
+
+.myt-bg-amber {
+    background-color: #fef3c7;
+}
+
+.myt-text-amber {
+    color: #d97706;
+}
+
+.myt-text-gray {
+    color: #6b7280;
+}
+
+
+/* --- Responsive Design --- */
+/* Medium screens and up (md: 768px) */
+@media (min-width: 768px) {
+    .myt-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Small screens (max-width: 640px) */
+@media (max-width: 640px) {
+
+    .mytimetable-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mytimetable-header-action {
+        width: 100%;
+    }
+
+    .myt-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .myt-timetable-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .myt-card-actions {
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+        justify-content: flex-end;
+    }
+}

@@ -1,0 +1,35 @@
+.Hero-wrapper {
+    margin-left: 280px;
+    padding-top: 8vh;
+    background-color: #f9fafb;
+}
+
+.Hero-container {
+    margin: 20px auto;
+    display: flex;
+    min-height: 90vh;
+    width: 80%;
+}
+
+.Hero-content {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1280px) {
+    .Hero-container {
+        width: 90%;
+    }
+}
+
+@media (max-width: 1024px) {
+    .Hero-wrapper {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .Hero-container {
+        margin: 30px auto;
+    }
+}
