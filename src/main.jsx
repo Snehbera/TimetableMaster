@@ -11,7 +11,7 @@ import Landing from "./features/Landing/Landing.jsx";
 import Login from "./features/Login/Login.jsx";
 
 import NTTLayout from "./features/Timetables/NewTimetable/NTTLayout.jsx";
-import GeneralSettings from "./features/Timetables/NewTimetable/GeneralSettings.jsx";
+import GeneralSettings from "./features/Timetables/NewTimetable/Steps/GeneralSettings.jsx";
 
 const router = createBrowserRouter([
   // Route for the landing page
