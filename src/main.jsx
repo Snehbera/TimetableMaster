@@ -12,6 +12,8 @@ import Login from "./features/Login/Login.jsx";
 
 import NTTLayout from "./features/Timetables/NewTimetable/NTTLayout.jsx";
 import GeneralSettings from "./features/Timetables/NewTimetable/Steps/GeneralSettings.jsx";
+import Subjects from "./features/Timetables/NewTimetable/Steps/Subjects.jsx";
+import Faculty from "./features/Timetables/NewTimetable/Steps/Faculty.jsx";
 
 const router = createBrowserRouter([
   // Route for the landing page
@@ -30,7 +32,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-        path: "",
+        path: "", // This will be the default view for the path above
         element: <Dashboard />,
       },
       {
@@ -56,9 +58,14 @@ const router = createBrowserRouter([
         path: "", // This will be the default view for the path above
         element: <GeneralSettings />,
       },
-      // You can add more steps here in the future
-      // { path: "subjects", element: <SubjectsStep /> },
-      // { path: "teachers", element: <TeachersStep /> },
+      {
+        path: "subjects",
+        element: <Subjects />,
+      },
+       {
+        path: "faculty",
+        element: <Faculty />,
+      },
     ],
   },
 ]);

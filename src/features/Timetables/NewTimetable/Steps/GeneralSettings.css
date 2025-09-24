@@ -1,23 +1,33 @@
 /* Main Layout */
 .s1-main-wrapper {
     display: flex;
-    height: 100vh;
+    flex: 1;
+    overflow: hidden;
+    padding: 1.5rem;
 }
 
 .s1-content-area {
     flex: 1;
-    padding: 1.5rem;
 }
 
+/* Base Styles (Desktop-First: for screens 1024px and wider) */
 .s1-content-inner {
     max-width: 100%;
 }
+
+.s1-days-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.s1-days-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 
 /* Re-usable Card Styles */
 .s1-card {
     background-color: #ffffff;
     border-radius: 0.75rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
 }
 
@@ -63,16 +73,21 @@
 
 .s1-card-icon-main {
     width: 1.5rem;
+    /* w-6 */
     height: 1.5rem;
+    /* h-6 */
     color: #4f46e5;
     /* text-indigo-600 */
     margin-right: 0.5rem;
+    /* mr-2 */
     flex-shrink: 0;
 }
 
 .s1-card-title {
     font-size: 1.125rem;
+    /* text-lg */
     font-weight: 600;
+    /* font-semibold */
     color: #1f2937;
     /* text-gray-900 */
     margin: 0;
@@ -82,15 +97,21 @@
 /* Input Field Styles */
 .s1-input-field {
     width: 100%;
+    /* w-full */
     padding: 0.75rem;
+    /* p-3 */
     border: 1px solid #d1d5db;
     /* border border-gray-300 */
     border-radius: 0.5rem;
+    /* rounded-lg */
     color: #374151;
     /* text-gray-700 */
     transition: all 200ms ease-in-out;
+    /* transition-all duration-200 */
     font-size: 1rem;
+    /* Default size */
     box-sizing: border-box;
+    /* Ensures padding doesn't add to total width */
 }
 
 .s1-input-field::placeholder {
@@ -101,17 +122,22 @@
 .s1-input-field:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+    /* focus:ring-2 focus:ring-indigo-500 */
     border-color: #6366f1;
+    /* focus:border-indigo-500 */
 }
 
 /* Label Styles */
 .s1-label {
     display: block;
     font-size: 0.875rem;
+    /* text-sm */
     font-weight: 500;
+    /* font-medium */
     color: #374151;
     /* text-gray-700 */
     margin-bottom: 0.5rem;
+    /* mb-2 */
 }
 
 /* Link Button (Show Period & Break Timings) */
@@ -121,11 +147,13 @@
     color: #4f46e5;
     /* text-indigo-600 */
     font-weight: 500;
+    /* font-medium */
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
     transition: color 200ms ease-in-out;
+    /* transition-colors duration-200 */
 }
 
 .s1-link-button:hover {
@@ -135,19 +163,19 @@
 
 .s1-link-button-icon {
     width: 1.25rem;
+    /* w-5 */
     height: 1.25rem;
+    /* h-5 */
     margin-right: 0.5rem;
+    /* mr-2 */
 }
-
-
 
 /* Navigation Section */
 .s1-navigation-container {
+    /* background-color: #f9fafb; */
     /* bg-gray-50 */
     border-radius: 0.5rem;
-    /* rounded-lg */
-    padding: 1rem;
-    /* p-4 */
+    padding: 1.5rem;
 }
 
 .s1-navigation-inner {
@@ -195,7 +223,7 @@
 
 .s1-nav-button-primary:focus {
     outline: none;
-    box-shadow: 0 0 0 1px #ffffff, 0 0 0 2px #6366f1;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #6366f1;
     /* focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 */
 }
 
@@ -223,7 +251,12 @@
     /* text-gray-700 */
 }
 
+
 @media (max-width: 480px) {
+    .s1-main-wrapper {
+        padding: 0;
+    }
+
     .s1-sidebar {
         display: none;
     }
@@ -243,20 +276,27 @@
     .s1-card-title {
         font-size: 1rem;
     }
-
-    .TimetableName-top-margin {
-        margin-top: 1rem;
-    }
-
-    .s1-btn-previous {
-        padding: 0;
-        margin-left: 0.5rem;
-    }
-
 }
 
+
+/* For Mobile (screens up to 639.98px wide) */
 @media (max-width: 640px) {
     .s1-content-area {
         padding: 0;
     }
+
 }
+
+/* For Tablet Portrait (screens up to 767.98px wide) */
+@media (max-width: 768px) {
+    .s1-days-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .s1-days-summary-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+/* For Tablet Landscape (screens up to 1023.98px wide) */
+@media (max-width: 1024px) {}
