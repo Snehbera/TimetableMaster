@@ -1,0 +1,95 @@
+{% load app_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Timetable Generation Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .failure { color: red; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .lab { background-color: #e0f7fa; font-weight: bold; }
+        .lec { background-color: #fff8e1; }
+        .break { background-color: #ccc; font-weight: bold; }
+        .free { background-color: #eee; color: #777; font-style: italic; }
+        .offday { background-color: #fdd; color: #555; font-weight: bold; }
+        h2 { margin-top: 30px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Intelligent Timetable Generation Prototype</h1>
+
+    {% if error %}
+        <p class="failure">❌ **System Error:** {{ error }}</p>
+    {% elif result.solution_found %}
+        <h2 class="success">✅ Timetable Generated Successfully!</h2>
+        <p>Runtime: **{{ result.runtime_seconds|floatformat:2 }}** seconds.</p>
+
+        {% for div_code, div_data in divisions.items %}
+            {% with timetable_data=timetable|get_item:div_code %}
+            {% with partition_list=div_data.partitions %}
+            
+            <h2>Division {{ div_code }} (Off Day: {{ div_data.off_day }})</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        {% for slot_time in settings.periods_per_day %}
+                            <th>{{ slot_time }}</th>
+                            {% if forloop.counter|stringformat:"d" in settings.breaks_after_period %}
+                                <th class="break">{{ settings.breaks_after_period|get_item:forloop.counter|slice:":8" }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in working_days %}
+                    <tr>
+                        <td style="font-weight: bold;">{{ day }}</td>
+                        {% if day == div_data.off_day %}
+                            <td colspan="{{ settings.periods_per_day|length|add:settings.breaks_after_period|length }}" class="offday">OFF DAY</td>
+                        {% else %}
+                            {% for slot_data in timetable_data|get_item:day %}
+                                {% if slot_data %}
+                                    {% if slot_data.type == 'Lec' %}
+                                        <td class="lec">{{ slot_data.subject }}-Lec <br>({{ slot_data.faculty }})</td>
+                                    {% elif slot_data.0.partition and slot_data.0.lab %}
+                                        {% if forloop.counter0 == 0 or timetable_data|get_item:day|get_item:forloop.counter0|get_item:0|get_item:'partition' != timetable_data|get_item:day|get_item:forloop.counter0|get_item:0|get_item:'partition' %}
+                                            <td colspan="2" class="lab">
+                                                {% for lab_part in slot_data %}
+                                                    **{{ lab_part.partition }}:** {{ lab_part.lab }} ({{ lab_part.faculty }})<br>
+                                                {% endfor %}
+                                            </td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    <td class="free">Free</td>
+                                {% endif %}
+
+                                {% if forloop.counter0|add:1|stringformat:"d" in settings.breaks_after_period %}
+                                    <td class="break"></td>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% endwith %}
+            {% endwith %}
+        {% endfor %}
+
+    {% else %}
+        <h2 class="failure">❌ Generation Failed</h2>
+        <p>Could not generate a valid timetable within **{{ result.runtime_seconds|floatformat:2 }}** seconds. Please check the constraints.</p>
+    {% endif %}
+
+    <p style="margin-top: 40px;"><a href="{% url 'generate_timetable' %}">Try Generating Again</a></p>
+
+</body>
+</html>
