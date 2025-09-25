@@ -1,12 +1,15 @@
 import os
 import django
 import json
-from .timetable_app import models
-from django.db import IntegrityError
 
 # Set up the Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prototype.settings")
 django.setup()
+
+from timetable_app.models import *
+from django.db import IntegrityError
+
+
 
 from timetable_app.models import (
     Faculty,
