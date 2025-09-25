@@ -19,6 +19,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect # <-- Import 'redirect'
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+# router.register(r'tasks', TaskViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

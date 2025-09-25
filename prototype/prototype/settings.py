@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-4%0lps9uh7p#y(+0s71q2!mkiiqilts4ry&&b_dgy@2iwh)fo7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '192.168.59.66', # Your IP address
+    '127.0.0.1',
+    '10.9.44.197',
+]
 
 
 # Application definition
@@ -37,8 +41,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'timetable_app', 
 ]
+
+EXTERNAL_APP = [
+    'timetable_app', 
+    'rest_framework',
+    "corsheaders"
+]
+
+INSTALLED_APPS += EXTERNAL_APP
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,6 +61,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+EXTERNAL_MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+MIDDLEWARE = EXTERNAL_MIDDLEWARE + MIDDLEWARE
+
+# Allow all origins (not safe for production)
+CORS_ALLOW_ALL_ORIGINS = True         
+
+# restrict to specific domains
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
+
 
 ROOT_URLCONF = 'prototype.urls'
 
