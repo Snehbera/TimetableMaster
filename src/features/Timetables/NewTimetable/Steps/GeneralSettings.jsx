@@ -2,6 +2,7 @@ import React from "react";
 import "./GeneralSettings.css";
 import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
+import useTimetableStore from '../../../../Stores/TimetableStore';
 
 // --- SVG Icon Components --- //
 // Using components for icons makes the main JSX cleaner
@@ -153,13 +154,13 @@ const SunIcon = ({ className }) => (
 // --- Days Configuration Component --- //
 const DaysConfiguration = () => {
   const [days, setDays] = useState([
-    { name: "Sun", fullName: "Sunday", isSchoolDay: true },
+    { name: "Sun", fullName: "Sunday", isSchoolDay: false },
     { name: "Mon", fullName: "Monday", isSchoolDay: true },
     { name: "Tue", fullName: "Tuesday", isSchoolDay: true },
     { name: "Wed", fullName: "Wednesday", isSchoolDay: true },
     { name: "Thu", fullName: "Thursday", isSchoolDay: true },
     { name: "Fri", fullName: "Friday", isSchoolDay: true },
-    { name: "Sat", fullName: "Saturday", isSchoolDay: false },
+    { name: "Sat", fullName: "Saturday", isSchoolDay: true },
   ]);
 
   const toggleDay = (dayName) => {
@@ -264,10 +265,9 @@ const DaysConfiguration = () => {
   );
 };
 
-// --- Child Components --- //
-
+// --- Timetable Names Components --- //
 const TimetableNames = () => {
-  const [names, setNames] = useState(["Untitled Timetable"]);
+  const [names, setNames] = useState(["Untitled"]);
 
   const handleNameChange = (index, value) => {
     const newNames = [...names];
@@ -344,11 +344,19 @@ const minutesToTime = (totalMinutes) => {
 };
 
 function GeneralSettings() {
-  const [periodsPerDay, setPeriodsPerDay] = useState(6);
+  // const [periodsPerDay, setPeriodsPerDay] = useState(6);
+ const { 
+    periodsPerDay, 
+    setPeriodsPerDay, 
+    timings, 
+    setTimings 
+  } = useTimetableStore();
+
   const [showTimings, setShowTimings] = useState(false);
-  const [timings, setTimings] = useState([]);
+  // const [timings, setTimings] = useState([]);
 
   useEffect(() => {
+    // This logic remains the same, but now it calls the store's action
     const newTimings = [];
     const numPeriods = parseInt(periodsPerDay, 10) || 0;
 
@@ -412,21 +420,23 @@ function GeneralSettings() {
   };
 
   const handleTimeChange = (id, field, value) => {
-    setTimings((currentTimings) => {
-      const changedIndex = currentTimings.findIndex((item) => item.id === id);
-      let newTimings = currentTimings.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      );
-      const firstPeriodId = newTimings.find((i) => i.type === "period")?.id;
+    // Logic is refactored to not use a state updater callback
+    const currentTimings = timings; // Get current timings from the store
+    const changedIndex = currentTimings.findIndex((item) => item.id === id);
+    let newTimings = currentTimings.map((item) =>
+      item.id === id ? { ...item, [field]: value } : item
+    );
+    const firstPeriodId = newTimings.find((i) => i.type === "period")?.id;
 
-      if (
-        field === "endTime" ||
-        (field === "startTime" && id === firstPeriodId)
-      ) {
-        return recalculateFromIndex(newTimings, changedIndex + 1);
-      }
-      return newTimings;
-    });
+    if (
+      field === "endTime" ||
+      (field === "startTime" && id === firstPeriodId)
+    ) {
+      const finalTimings = recalculateFromIndex(newTimings, changedIndex + 1);
+      setTimings(finalTimings); // Update the store with the final array
+    } else {
+      setTimings(newTimings); // Update the store
+    }
   };
 
   const addBreakAfter = (periodId) => {
@@ -440,16 +450,15 @@ function GeneralSettings() {
     };
     let newTimings = [...timings];
     newTimings.splice(periodIndex + 1, 0, newBreak);
-    setTimings(recalculateFromIndex(newTimings, periodIndex + 1));
+    setTimings(recalculateFromIndex(newTimings, periodIndex + 1)); // Update the store
   };
 
   const removeBreak = (id) => {
-    setTimings((currentTimings) => {
-      const breakIndex = currentTimings.findIndex((item) => item.id === id);
-      if (breakIndex === -1) return currentTimings;
-      const newTimings = currentTimings.filter((item) => item.id !== id);
-      return recalculateFromIndex(newTimings, breakIndex);
-    });
+    const currentTimings = timings; // Get current timings from the store
+    const breakIndex = currentTimings.findIndex((item) => item.id === id);
+    if (breakIndex === -1) return;
+    const newTimings = currentTimings.filter((item) => item.id !== id);
+    setTimings(recalculateFromIndex(newTimings, breakIndex)); // Update the store
   };
 
   return (
