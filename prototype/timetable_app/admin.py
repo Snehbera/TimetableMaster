@@ -1,14 +1,7 @@
 # timetable_app/admin.py
 
 from django.contrib import admin
-from .models import (
-    Setting, 
-    Faculty, 
-    Subject, 
-    Division, 
-    FacultyAssignment, 
-    TimetableResult
-)
+from .models import *
 
 # 1. Basic Model Registration
 # This is the minimum required code to make your models appear in the Admin site.
