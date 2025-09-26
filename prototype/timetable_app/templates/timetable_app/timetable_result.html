@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Timetable Generation Result</title>
     <style>
+        /* ... (Your styles remain the same) ... */
         body { font-family: Arial, sans-serif; margin: 20px; }
         .success { color: green; }
         .failure { color: red; }
@@ -30,7 +31,6 @@
 
         {% for div_code, div_data in divisions.items %}
             {% with timetable_data=timetable|get_item:div_code %}
-            {% with partition_list=div_data.partitions %}
             
             <h2>Division {{ div_code }} (Off Day: {{ div_data.off_day }})</h2>
             
@@ -40,6 +40,7 @@
                         <th>Day</th>
                         {% for slot_time in settings.periods_per_day %}
                             <th>{{ slot_time }}</th>
+                            {% comment %} Note: break keys are now strings for JSON compatibility {% endcomment %}
                             {% if forloop.counter|stringformat:"d" in settings.breaks_after_period %}
                                 <th class="break">{{ settings.breaks_after_period|get_item:forloop.counter|slice:":8" }}</th>
                             {% endif %}
@@ -54,22 +55,26 @@
                             <td colspan="{{ settings.periods_per_day|length|add:settings.breaks_after_period|length }}" class="offday">OFF DAY</td>
                         {% else %}
                             {% for slot_data in timetable_data|get_item:day %}
-                                {% if slot_data %}
-                                    {% if slot_data.type == 'Lec' %}
-                                        <td class="lec">{{ slot_data.subject }}-Lec <br>({{ slot_data.faculty }})</td>
-                                    {% elif slot_data.0.partition and slot_data.0.lab %}
-                                        {% if forloop.counter0 == 0 or timetable_data|get_item:day|get_item:forloop.counter0|get_item:0|get_item:'partition' != timetable_data|get_item:day|get_item:forloop.counter0|get_item:0|get_item:'partition' %}
-                                            <td colspan="2" class="lab">
-                                                {% for lab_part in slot_data %}
-                                                    **{{ lab_part.partition }}:** {{ lab_part.lab }} ({{ lab_part.faculty }})<br>
-                                                {% endfor %}
-                                            </td>
-                                        {% endif %}
-                                    {% endif %}
-                                {% else %}
+                                
+                                {% if slot_data is None %}
                                     <td class="free">Free</td>
+                                
+                                {% elif slot_data.type == 'Lec' %}
+                                    <td class="lec">{{ slot_data.subject }}-Lec <br>({{ slot_data.faculty }})</td>
+                                
+                                {% elif slot_data.type == 'LabBlock' %}
+                                    <td colspan="2" class="lab">
+                                        {% for lab_part in slot_data.details %}
+                                            <b>{{ lab_part.partition }}:</b> {{ lab_part.lab }} ({{ lab_part.faculty }})<br>
+                                        {% endfor %}
+                                    </td>
+                                
+                                {% elif slot_data.type == 'LabPlaceholder' %}
+                                    {% comment %} This slot is covered by the previous LabBlock's colspan="2" - render nothing {% endcomment %}
+                                
                                 {% endif %}
 
+                                {% comment %} Break insertion logic {% endcomment %}
                                 {% if forloop.counter0|add:1|stringformat:"d" in settings.breaks_after_period %}
                                     <td class="break"></td>
                                 {% endif %}
@@ -80,7 +85,6 @@
                 </tbody>
             </table>
             
-            {% endwith %}
             {% endwith %}
         {% endfor %}
 

@@ -3,8 +3,8 @@
 from django.shortcuts import render
 from django.utils import timezone
 from .models import Subject, Division, Faculty, FacultyAssignment, Setting, TimetableResult
-from .timetablegenerator_django import TimetableSolver # Assuming you renamed your solver file
-from collections import defaultdict  # <--- ADD THIS LINE
+from .timetablegenerator_django import TimetableSolver
+from collections import defaultdict
 
 def generate_config_from_models():
     """Converts Django model data into the format expected by TimetableSolver."""
@@ -20,7 +20,10 @@ def generate_config_from_models():
     settings_data = {s.key: s.value for s in Setting.objects.all()}
     config['settings']['working_days'] = settings_data.get('working_days', [])
     config['settings']['periods_per_day'] = settings_data.get('periods_per_day', [])
-    config['settings']['breaks_after_period'] = settings_data.get('breaks_after_period', {})
+    # Ensure breaks keys are strings for JSON loading/saving consistency
+    breaks_data = settings_data.get('breaks_after_period', {})
+    if isinstance(breaks_data, dict):
+        config['settings']['breaks_after_period'] = {str(k): v for k, v in breaks_data.items()}
 
     # Divisions
     for div in Division.objects.all():
@@ -50,7 +53,6 @@ def generate_config_from_models():
 def generate_timetable_view(request):
     """View to trigger the timetable generation and display results."""
     
-    # 1. Load Config from DB
     try:
         config_data = generate_config_from_models()
         if not all(key in config_data['settings'] for key in ['working_days', 'periods_per_day']):
@@ -59,42 +61,76 @@ def generate_timetable_view(request):
     except Exception as e:
         return render(request, 'timetable_app/timetable_result.html', {'error': f"Error loading configuration: {e}"})
 
-    # 2. Run Solver
     solver = TimetableSolver(config_data)
     
     start_time = timezone.now()
-    solution_found = solver.solve(timeout=60) # Set a reasonable timeout
+    solution_found = solver.solve(timeout=60)
     end_time = timezone.now()
     runtime = (end_time - start_time).total_seconds()
 
-    # 3. Save Result
     result = TimetableResult(
         solution_found=solution_found,
         runtime_seconds=runtime
     )
 
     if solution_found:
-        # Prepare data for saving and rendering
-        # Note: The print_timetable logic is complex to re-implement for web, 
-        # so we'll save the raw timetable structure and pass necessary context.
+        # --- 1. Create a Clean, Serialized Timetable Structure for JSON ---
+        serializable_timetable = defaultdict(lambda: defaultdict(list))
+        
+        for div, days in solver.timetable.items():
+            for day in solver.working_days:
+                if day == solver.off_days.get(div):
+                    continue
+
+                slots = solver.timetable[div][day]
+                # Iterate slot by slot to build the serializable structure
+                for i, cell in enumerate(slots):
+                    
+                    if cell is None:
+                        serializable_timetable[div][day].append(None)
+                        
+                    elif isinstance(cell, dict) and cell.get('type') == 'Lec':
+                        # Lecture: Embed the faculty code directly
+                        fac_code = solver._get_faculty(div, cell['subject'])
+                        serializable_timetable[div][day].append({
+                            'type': 'Lec',
+                            'subject': cell['subject'],
+                            'faculty': fac_code
+                        })
+                        
+                    elif isinstance(cell, list) and cell[0].get('partition'):
+                        # Lab Block: Only save the full data on the START slot
+                        if i < solver.slots_per_day - 1 and cell is slots[i+1]:
+                             serializable_timetable[div][day].append({
+                                'type': 'LabBlock', # Custom type for template
+                                'details': cell # List of LabInfo
+                            })
+                        else:
+                            # This is the second slot of a lab block
+                            serializable_timetable[div][day].append({'type': 'LabPlaceholder'})
+                    else:
+                        # Should not happen, but treat as None
+                        serializable_timetable[div][day].append(None)
+
+
+        # --- 2. Save the Clean Structure to DB ---
         result.timetable_json = {
-            'timetable': solver.timetable, 
+            'timetable': dict(serializable_timetable),
             'settings': solver.config['settings'],
             'divisions': solver.config['divisions'],
-            'faculty_assignments': solver.faculty_assignments,
             'faculty_names': {f.code: f.name for f in Faculty.objects.all()},
         }
         
     result.save()
 
-    # 4. Render Template
+    # --- 3. Prepare Context for Template ---
     context = {
         'result': result,
         'config': solver.config,
     }
 
     if solution_found:
-        # Prepare display-friendly context from the stored JSON
+        # Pass the clean data structure to the template
         context['timetable'] = result.timetable_json['timetable']
         context['settings'] = result.timetable_json['settings']
         context['divisions'] = result.timetable_json['divisions']

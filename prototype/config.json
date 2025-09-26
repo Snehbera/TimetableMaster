@@ -39,8 +39,7 @@
     "OS": { "name": "Operating Systems", "lectures": 3, "labs": 1 },
     "SE": { "name": "Software Engineering", "lectures": 2, "labs": 1 },
     "C2P": { "name": "Concept To Practice", "lectures": 2, "labs": 0 },
-    "CAP": { "name": "Career Acceleration Program", "lectures": 0, "labs": 1 },
-    "SSS": { "name": "Career Acceleration Program", "lectures": 1, "labs": 0 }
+    "CAP": { "name": "Career Acceleration Program", "lectures": 2, "labs": 0 }
   },
   "faculty": {
     "BUT": { "name": "Birju Tank" },
@@ -51,8 +50,7 @@
     "KVP": { "name": "Mukesh Patel" },
     "NPB": { "name": "Nirali Borad" },
     "DRP": { "name": "Devangi Paneri" },
-    "HHM": { "name": "Hiren Makwana" },
-    "SB": { "name": "Sneh Bera" }
+    "HHM": { "name": "Hiren Makwana" }
   },
   "faculty_assignments": {
     "ADA": { "BX": "BUT", "BY": "BUT", "BZ": "BUT" },
@@ -62,7 +60,6 @@
     "SE":  { "BX": "NPB", "BY": "NPB", "BZ": "NPB" },
     "CAP": { "BX": "HHM", "BY": "HHM", "BZ": "HHM" },
     "OS":  { "BX": "NMV", "BY": "KVP", "BZ": "KVP" },
-    "C2P": { "BX": "DRP", "BY": "NMV", "BZ": "DRP" },
-    "SSS": { "BX": "SB", "BY": "SB", "BZ": "SB" }
+    "C2P": { "BX": "DRP", "BY": "NMV", "BZ": "DRP" }
   }
 }
