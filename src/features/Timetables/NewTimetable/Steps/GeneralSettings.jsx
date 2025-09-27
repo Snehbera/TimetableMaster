@@ -5,7 +5,6 @@ import { Link, NavLink } from "react-router-dom";
 import useTimetableStore from '../../../../Stores/TimetableStore';
 
 // --- SVG Icon Components --- //
-// Using components for icons makes the main JSX cleaner
 const TimetableIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -153,26 +152,9 @@ const SunIcon = ({ className }) => (
 
 // --- Days Configuration Component --- //
 const DaysConfiguration = () => {
-  const [days, setDays] = useState([
-    { name: "Sun", fullName: "Sunday", isSchoolDay: false },
-    { name: "Mon", fullName: "Monday", isSchoolDay: true },
-    { name: "Tue", fullName: "Tuesday", isSchoolDay: true },
-    { name: "Wed", fullName: "Wednesday", isSchoolDay: true },
-    { name: "Thu", fullName: "Thursday", isSchoolDay: true },
-    { name: "Fri", fullName: "Friday", isSchoolDay: true },
-    { name: "Sat", fullName: "Saturday", isSchoolDay: true },
-  ]);
-
-  const toggleDay = (dayName) => {
-    setDays((currentDays) =>
-      currentDays.map((day) =>
-        day.name === dayName ? { ...day, isSchoolDay: !day.isSchoolDay } : day
-      )
-    );
-  };
-
-  const schoolDays = days.filter((d) => d.isSchoolDay);
-  const daysOff = days.filter((d) => !d.isSchoolDay);
+  const { days, toggleDay } = useTimetableStore();
+  const schoolDays = (days || []).filter((d) => d.isSchoolDay);
+  const daysOff = (days || []).filter((d) => !d.isSchoolDay);
 
   return (
     <div className="bg-white rounded-xl p-6">
@@ -192,7 +174,7 @@ const DaysConfiguration = () => {
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 mb-6">
-        {days.map((day) => (
+        {(days || []).map((day) => (
           <button
             key={day.name}
             type="button"
@@ -267,23 +249,15 @@ const DaysConfiguration = () => {
 
 // --- Timetable Names Components --- //
 const TimetableNames = () => {
-  const [names, setNames] = useState(["Untitled"]);
-
-  const handleNameChange = (index, value) => {
-    const newNames = [...names];
-    newNames[index] = value;
-    setNames(newNames);
-  };
-
-  const addName = () => {
-    setNames([...names, ""]);
-  };
-
-  const removeName = (index) => {
-    if (names.length > 1) {
-      setNames(names.filter((_, i) => i !== index));
-    }
-  };
+  const {
+    timetableNames,
+    addTimetableName,
+    updateTimetableName,
+    removeTimetableName,
+    addSubdivision,
+    updateSubdivision,
+    removeSubdivision,
+  } = useTimetableStore();
 
   return (
     <div className="bg-white rounded-xl p-6">
@@ -291,32 +265,70 @@ const TimetableNames = () => {
         <TimetableIcon />
         <h2 className="text-lg font-semibold text-gray-900">Timetable Names</h2>
       </div>
-      <div className="space-y-3">
-        {names.map((name, index) => (
-          <div key={index} className="flex items-center space-x-2">
+
+      {(timetableNames || []).map((timetable, index) => (
+        <div key={timetable.id} className="p-4 border rounded-lg mb-4 bg-gray-50/50">
+          <div className="flex items-center space-x-2">
             <input
-              placeholder="e.g., Grade 5, Section A"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-all duration-200"
+              placeholder="e.g., Grade 5"
+              className="w-full p-3 border border-gray-300 rounded-lg font-medium"
               type="text"
-              value={name}
-              onChange={(e) => handleNameChange(index, e.target.value)}
+              value={timetable.name}
+              onChange={(e) => updateTimetableName(timetable.id, e.target.value)}
             />
             <button
               type="button"
-              onClick={() => removeName(index)}
-              className="p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-              disabled={names.length <= 1}
-              aria-label="Remove name"
+              onClick={() => removeTimetableName(timetable.id)}
+              className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-50"
+              disabled={(timetableNames || []).length <= 1}
+              aria-label="Remove timetable name"
             >
               <MinusCircleIcon className="w-6 h-6" />
             </button>
           </div>
-        ))}
-      </div>
+
+          <div className="pl-8 mt-3 space-y-2">
+            <label className="text-sm font-medium text-gray-600">Subdivisions</label>
+            
+            {/* THIS IS THE FIX 👇 */}
+            {(timetable.subdivisions || []).map((sub, subIndex) => (
+              <div key={subIndex} className="flex items-center space-x-2">
+                <input
+                  placeholder="e.g., Section A"
+                  className="w-full p-2 border border-gray-200 rounded-md"
+                  type="text"
+                  value={sub}
+                  onChange={(e) =>
+                    updateSubdivision(timetable.id, subIndex, e.target.value)
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => removeSubdivision(timetable.id, subIndex)}
+                  className="p-1 text-gray-400 hover:text-red-500 disabled:opacity-50"
+                  disabled={timetable.subdivisions.length <= 1}
+                  aria-label="Remove subdivision"
+                >
+                  <MinusCircleIcon className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => addSubdivision(timetable.id)}
+              className="flex items-center text-xs font-medium text-indigo-600"
+            >
+              <PlusCircleIcon className="w-4 h-4" />
+              Add Subdivision
+            </button>
+          </div>
+        </div>
+      ))}
+
       <button
         type="button"
-        onClick={addName}
-        className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 mt-4"
+        onClick={addTimetableName}
+        className="flex items-center text-sm font-medium text-indigo-600 mt-4"
       >
         <PlusCircleIcon />
         Add another timetable name
@@ -324,7 +336,6 @@ const TimetableNames = () => {
     </div>
   );
 };
-
 // --- Helper Functions for Time Calculation --- //
 const timeToMinutes = (timeStr) => {
   if (!timeStr) return null;
@@ -344,7 +355,6 @@ const minutesToTime = (totalMinutes) => {
 };
 
 function GeneralSettings() {
-  // const [periodsPerDay, setPeriodsPerDay] = useState(6);
  const { 
     periodsPerDay, 
     setPeriodsPerDay, 
@@ -353,13 +363,19 @@ function GeneralSettings() {
   } = useTimetableStore();
 
   const [showTimings, setShowTimings] = useState(false);
-  // const [timings, setTimings] = useState([]);
 
+  // --- CORRECTED useEffect ---
   useEffect(() => {
-    // This logic remains the same, but now it calls the store's action
-    const newTimings = [];
+    const existingPeriodsCount = (timings || []).filter(t => t.type === 'period').length;
     const numPeriods = parseInt(periodsPerDay, 10) || 0;
 
+    // Only regenerate the timings array if the number of periods has changed.
+    // This prevents overwriting the stored timings on every page refresh.
+    if (existingPeriodsCount === numPeriods) {
+      return;
+    }
+
+    const newTimings = [];
     for (let i = 1; i <= numPeriods; i++) {
       newTimings.push({
         id: `period-${i}`,
@@ -370,7 +386,7 @@ function GeneralSettings() {
       });
     }
     setTimings(newTimings);
-  }, [periodsPerDay]);
+  }, [periodsPerDay, timings, setTimings]); // Added 'timings' to the dependency array
 
   const handlePeriodsChange = (e) => {
     const value = Math.max(0, parseInt(e.target.value, 10) || 0);
@@ -420,8 +436,7 @@ function GeneralSettings() {
   };
 
   const handleTimeChange = (id, field, value) => {
-    // Logic is refactored to not use a state updater callback
-    const currentTimings = timings; // Get current timings from the store
+    const currentTimings = timings;
     const changedIndex = currentTimings.findIndex((item) => item.id === id);
     let newTimings = currentTimings.map((item) =>
       item.id === id ? { ...item, [field]: value } : item
@@ -433,9 +448,9 @@ function GeneralSettings() {
       (field === "startTime" && id === firstPeriodId)
     ) {
       const finalTimings = recalculateFromIndex(newTimings, changedIndex + 1);
-      setTimings(finalTimings); // Update the store with the final array
+      setTimings(finalTimings);
     } else {
-      setTimings(newTimings); // Update the store
+      setTimings(newTimings);
     }
   };
 
@@ -450,15 +465,15 @@ function GeneralSettings() {
     };
     let newTimings = [...timings];
     newTimings.splice(periodIndex + 1, 0, newBreak);
-    setTimings(recalculateFromIndex(newTimings, periodIndex + 1)); // Update the store
+    setTimings(recalculateFromIndex(newTimings, periodIndex + 1));
   };
 
   const removeBreak = (id) => {
-    const currentTimings = timings; // Get current timings from the store
+    const currentTimings = timings;
     const breakIndex = currentTimings.findIndex((item) => item.id === id);
     if (breakIndex === -1) return;
     const newTimings = currentTimings.filter((item) => item.id !== id);
-    setTimings(recalculateFromIndex(newTimings, breakIndex)); // Update the store
+    setTimings(recalculateFromIndex(newTimings, breakIndex));
   };
 
   return (
@@ -517,13 +532,13 @@ function GeneralSettings() {
                     try to stay consistent.
                   </p>
                   <div className="space-y-4">
-                    {timings.map((item) => {
+                    {(timings || []).map((item) => {
                       if (item.type === "period") {
-                        const currentPeriodIndex = timings.findIndex(
+                        const currentPeriodIndex = (timings || []).findIndex(
                           (p) => p.id === item.id
                         );
                         const hasBreakAfter =
-                          timings[currentPeriodIndex + 1]?.type === "break";
+                          (timings || [])[currentPeriodIndex + 1]?.type === "break";
                         return (
                           <div key={item.id}>
                             <div className="flex items-center space-x-2 sm:space-x-4">

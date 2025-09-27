@@ -1,36 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react"; // 1. Import useMemo
 import useTimetableStore from "../../../../Stores/TimetableStore";
 
-// --- MOCK DATA ---
-// In a real app, this would come from a previous step or global state.
-const DYNAMIC_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const DYNAMIC_PERIODS = [
-  "Period 1",
-  "Period 2",
-  "Period 3",
-  "Period 4",
-  "Period 5",
-  "Period 6",
-];
-
-// Helper function to generate a random hex color
-const getRandomColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
-// Helper to initialize availability grid
-const initializeAvailability = () =>
-  Array(DYNAMIC_PERIODS.length)
-    .fill(null)
-    .map(() => Array(DYNAMIC_DAYS.length).fill(true));
-
-// --- SVG Icon Components ---
-
+// --- SVG Icon Components (No Changes) ---
 const BookOpenIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +18,6 @@ const BookOpenIcon = () => (
     />
   </svg>
 );
-
 const CalendarIcon = ({ className = "w-3.5 h-3.5 mr-1 text-green-600" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +35,6 @@ const CalendarIcon = ({ className = "w-3.5 h-3.5 mr-1 text-green-600" }) => (
     />
   </svg>
 );
-
 const PencilIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +52,6 @@ const PencilIcon = () => (
     />
   </svg>
 );
-
 const TrashIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +67,6 @@ const TrashIcon = () => (
     />
   </svg>
 );
-
 const SortIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +82,6 @@ const SortIcon = () => (
     />
   </svg>
 );
-
 const ImportIcon = ({ className = "h-4 w-4 mr-2" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -133,7 +99,6 @@ const ImportIcon = ({ className = "h-4 w-4 mr-2" }) => (
     />
   </svg>
 );
-
 const AddIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -149,7 +114,6 @@ const AddIcon = () => (
     />
   </svg>
 );
-
 const PrevIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +131,6 @@ const PrevIcon = () => (
     />
   </svg>
 );
-
 const NextIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +148,6 @@ const NextIcon = () => (
     />
   </svg>
 );
-
 const InfoIcon = ({
   className = "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0",
 }) => (
@@ -203,7 +165,6 @@ const InfoIcon = ({
     />
   </svg>
 );
-
 const CloseIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -219,7 +180,6 @@ const CloseIcon = () => (
     />
   </svg>
 );
-
 const CheckIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -266,26 +226,29 @@ const ToggleIcon = () => (
   </svg>
 );
 
-// --- Availability Modal ---
+
+// --- Availability Modal (CORRECTED) ---
 const AvailabilityModal = ({ subject, onClose, onSave }) => {
-  const { timings } = useTimetableStore();
+  const { timings, days } = useTimetableStore();
   const [grid, setGrid] = useState([]);
 
-  // This should ideally come from a config or your store
-  const DYNAMIC_DAYS = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
+  // --- THIS IS THE FIX ---
+  // 2. Wrap the definitions in useMemo to prevent re-creation on every render
+  const schoolDays = useMemo(() => 
+    (days || []).filter(day => day.isSchoolDay),
+    [days]
+  );
+  
+  const periodsOnly = useMemo(() =>
+    (timings || []).filter(timeSlot => timeSlot.type === 'period'),
+    [timings]
+  );
 
   useEffect(() => {
-    if (!timings || timings.length === 0) return;
+    if (periodsOnly.length === 0 || schoolDays.length === 0) return;
 
-    const numPeriods = timings.length;
-    const numDays = DYNAMIC_DAYS.length;
+    const numPeriods = periodsOnly.length;
+    const numDays = schoolDays.length;
 
     const isGridValid =
       subject.availability &&
@@ -300,30 +263,40 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
         .map(() => Array(numDays).fill(true));
       setGrid(newGrid);
     }
-  }, [timings, subject.availability, DYNAMIC_DAYS.length]);
+  }, [periodsOnly, schoolDays, subject.availability]);
 
   const toggleCell = (periodIndex, dayIndex) => {
-    const newGrid = [...grid];
-    newGrid[periodIndex][dayIndex] = !newGrid[periodIndex][dayIndex];
-    setGrid(newGrid);
+    setGrid(currentGrid =>
+      currentGrid.map((row, pIndex) => {
+        if (pIndex !== periodIndex) {
+          return row;
+        }
+        return row.map((cell, dIndex) => {
+          if (dIndex !== dayIndex) {
+            return cell;
+          }
+          return !cell;
+        });
+      })
+    );
   };
 
   const toggleDay = (dayIndex) => {
-    const newGrid = grid.map((row) => {
-      const newRow = [...row];
-      newRow[dayIndex] = !newRow[dayIndex];
-      return newRow;
-    });
-    setGrid(newGrid);
+    setGrid(currentGrid =>
+      currentGrid.map(row =>
+        row.map((cell, dIndex) => (dIndex === dayIndex ? !cell : cell))
+      )
+    );
   };
 
   const togglePeriod = (periodIndex) => {
-    const newGrid = [...grid];
-    newGrid[periodIndex] = newGrid[periodIndex].map((cell) => !cell);
-    setGrid(newGrid);
+    setGrid(currentGrid =>
+      currentGrid.map((row, pIndex) =>
+        pIndex === periodIndex ? row.map(cell => !cell) : row
+      )
+    );
   };
 
-  // Save when the modal is closed
   const handleClose = () => {
     onSave(subject.id, grid);
     onClose();
@@ -334,104 +307,45 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-lg w-full max-h-[90vh] flex flex-col relative mx-4 max-w-4xl">
-        <div class="p-6 pb-3">
+        <div className="p-6 pb-3">
           <button
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+            onClick={handleClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
             aria-label="Close Availability Modal"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-              data-slot="icon"
-              class="w-6 h-6"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
+            <CloseIcon />
           </button>
-          <h2
-            id="timeOffModalTitle"
-            class="text-xl font-bold mb-3 text-gray-800 flex items-center"
-          >
-            Manage Availability for ADA- Analysis And Design Of Algorithms
+          <h2 className="text-xl font-bold mb-3 text-gray-800 flex items-center">
+            Manage Availability for {subject.name}
           </h2>
-          <div class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm">
-            <div class="flex">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                data-slot="icon"
-                class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
+          <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm">
+            <div className="flex">
+              <InfoIcon className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
               <div>
-                <p class="text-blue-700">
-                  Mark periods when ADA- Analysis And Design Of Algorithms is{" "}
+                <p className="text-blue-700">
+                  Mark periods when <strong>{subject.name}</strong> is{" "}
                   <strong>not available</strong> for scheduling.
                 </p>
-                <ul class="mt-1 text-blue-600 list-disc pl-4">
+                <ul className="mt-1 text-blue-600 list-disc pl-4">
                   <li>Click any cell to toggle its availability status</li>
-                  <li>
-                    Click a day name (column header) to toggle the entire day
-                  </li>
-                  <li>
-                    Click a period (row header) to toggle the entire period
-                    across all days
-                  </li>
+                  <li>Click a day name (column header) to toggle the entire day</li>
+                  <li>Click a period (row header) to toggle the entire period</li>
                 </ul>
               </div>
             </div>
           </div>
-          <div class="flex items-center space-x-4 mb-4">
-            <div class="flex items-center">
-              <span class="inline-block w-5 h-5 bg-green-200 mr-2 text-green-800 text-center font-bold rounded">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                  data-slot="icon"
-                  class="w-4 h-4"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="flex items-center">
+              <span className="inline-flex items-center justify-center w-5 h-5 bg-green-200 mr-2 text-green-800 font-bold rounded">
+                <CheckIcon />
               </span>
-              <span class="text-sm text-gray-700">Available</span>
+              <span className="text-sm text-gray-700">Available</span>
             </div>
-            <div class="flex items-center">
-              <span class="inline-block w-5 h-5 bg-red-200 mr-2 text-red-800 text-center font-bold rounded">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                  data-slot="icon"
-                  class="w-4 h-4"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
+            <div className="flex items-center">
+              <span className="inline-flex items-center justify-center w-5 h-5 bg-red-200 mr-2 text-red-800 font-bold rounded">
+                <CrossIcon />
               </span>
-              <span class="text-sm text-gray-700">Time Off</span>
+              <span className="text-sm text-gray-700">Time Off</span>
             </div>
           </div>
         </div>
@@ -444,45 +358,39 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
                   <th className="border px-2 py-2 text-left bg-gray-100 min-w-[140px] w-[140px] text-sm font-semibold">
                     Period/Day
                   </th>
-                  {DYNAMIC_DAYS.map((day, dayIndex) => (
+                  {schoolDays.map((day, dayIndex) => (
                     <th
-                      key={dayIndex}
+                      key={day.name}
                       onClick={() => toggleDay(dayIndex)}
                       className="border px-2 py-2 text-center cursor-pointer hover:bg-gray-200 transition-colors relative group min-w-[120px] w-[120px]"
                       title="Click to toggle entire column"
                     >
-                      {day}
+                      {day.fullName}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {grid.length > 0 &&
-                  timings.map((item, periodIndex) => (
-                    <tr key={item.id || periodIndex}>
+                  periodsOnly.map((period, periodIndex) => (
+                    <tr key={period.id}>
                       <td
                         onClick={() => togglePeriod(periodIndex)}
-                        className={`border px-2 py-2 font-semibold cursor-pointer hover:bg-gray-100 transition-colors relative group min-w-[140px] w-[140px] ${
-                          item.type === "break"
-                            ? "bg-blue-50 text-blue-800"
-                            : "bg-gray-50"
-                        }`}
+                        className="border px-2 py-2 font-semibold cursor-pointer hover:bg-gray-100 transition-colors relative group min-w-[140px] w-[140px] bg-gray-50"
                         title="Click to toggle entire row"
                       >
                         <div className="flex flex-col text-left">
                           <span className="text-sm font-semibold truncate">
-                            {item.type === "period"
-                              ? `Period ${item.number}`
-                              : "Break"}
+                            Period {period.number}
                           </span>
                           <span className="text-xs text-gray-500 font-normal">
-                            {item.startTime && item.endTime
-                              ? `${item.startTime} - ${item.endTime}`
+                            {period.startTime && period.endTime
+                              ? `${period.startTime} - ${period.endTime}`
                               : "Not set"}
                           </span>
                         </div>
                       </td>
-                      {DYNAMIC_DAYS.map((_, dayIndex) => (
+                      {schoolDays.map((_, dayIndex) => (
                         <td
                           key={dayIndex}
                           onClick={() => toggleCell(periodIndex, dayIndex)}
@@ -499,8 +407,8 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
                         >
                           {
                             grid[periodIndex]?.[dayIndex]
-                              ? "✓"
-                              : "✗" /* Using text as placeholder for icons */
+                              ? <CheckIcon />
+                              : <CrossIcon />
                           }
                         </td>
                       ))}
@@ -510,7 +418,6 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
             </table>
           </div>
         </div>
-        {/* ... Modal Footer JSX ... */}
         <div className="flex justify-end items-center px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-xl">
           <button
             onClick={handleClose}
@@ -524,8 +431,8 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
   );
 };
 
-
-// --- Bulk Import Modal Component ---
+// --- Bulk Import Modal Component (No Changes) ---
+// ... (BulkImportModal component remains the same)
 const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   const [importType, setImportType] = useState("csv"); // 'csv' or 'text'
   const [textInput, setTextInput] = useState("");
@@ -761,11 +668,13 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   );
 };
 
-// --- Main App Component ---
+
+// --- Main Subjects Component ---
 export default function Subjects() {
   const {
     subjects,
     timings,
+    days,
     addSubject,
     removeSubject,
     updateSubjectName,
@@ -777,27 +686,21 @@ export default function Subjects() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
 
-  const handleAddSubject = () => addSubject();
-  const handleRemoveSubject = (id) => removeSubject(id);
-  const handleSubjectNameChange = (id, newName) =>
-    updateSubjectName(id, newName);
-  const handleSortSubjects = () => sortSubjects();
-  const handleBulkImport = (newNames) => bulkImportSubjects(newNames);
-  const handleUpdateAvailability = (id, newGrid) =>
-    updateSubjectAvailability(id, newGrid);
+  const calculateAvailability = (availabilityGrid, periods, days) => {
+    const schoolDays = (days || []).filter(d => d.isSchoolDay);
+    const periodsOnly = (periods || []).filter(p => p.type === 'period');
 
-  const calculateAvailability = (availabilityGrid) => {
-    // This robust check solves the error.
-    // It handles cases where the grid is null, has no rows, or has no columns.
     if (
       !availabilityGrid ||
-      availabilityGrid.length === 0 ||
-      availabilityGrid[0].length === 0
+      periodsOnly.length === 0 ||
+      schoolDays.length === 0 ||
+      availabilityGrid.length !== periodsOnly.length ||
+      availabilityGrid[0].length !== schoolDays.length
     ) {
       return { percentOff: 0, isAllAvailable: true };
     }
 
-    const totalSlots = availabilityGrid.length * availabilityGrid[0].length;
+    const totalSlots = periodsOnly.length * schoolDays.length;
     const offSlots = availabilityGrid
       .flat()
       .filter((isAvailable) => !isAvailable).length;
@@ -815,7 +718,6 @@ export default function Subjects() {
       <div className="font-sans flex items-center justify-center p-6">
         <div className="w-full">
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center">
@@ -829,7 +731,6 @@ export default function Subjects() {
               </div>
             </div>
 
-            {/* Subjects Table */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -848,7 +749,7 @@ export default function Subjects() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {subjects.map((subject) => {
                     const { percentOff, isAllAvailable } =
-                      calculateAvailability(subject.availability);
+                      calculateAvailability(subject.availability, timings, days);
                     return (
                       <tr
                         key={subject.id}
@@ -865,7 +766,7 @@ export default function Subjects() {
                             type="text"
                             value={subject.name}
                             onChange={(e) =>
-                              handleSubjectNameChange(
+                              updateSubjectName(
                                 subject.id,
                                 e.target.value
                               )
@@ -900,7 +801,7 @@ export default function Subjects() {
                             type="button"
                             className="text-red-500 hover:text-red-600 focus:outline-none"
                             aria-label="Remove Subject"
-                            onClick={() => handleRemoveSubject(subject.id)}
+                            onClick={() => removeSubject(subject.id)}
                           >
                             <TrashIcon />
                           </button>
@@ -912,11 +813,10 @@ export default function Subjects() {
               </table>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end items-center space-x-4 mt-6">
               <button
                 type="button"
-                onClick={handleSortSubjects}
+                onClick={sortSubjects}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <SortIcon />
@@ -932,7 +832,7 @@ export default function Subjects() {
               </button>
               <button
                 type="button"
-                onClick={handleAddSubject}
+                onClick={addSubject}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <AddIcon />
@@ -941,7 +841,6 @@ export default function Subjects() {
             </div>
           </div>
 
-          {/* Footer Navigation */}
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
             <div className="flex justify-between items-center">
               <button
@@ -971,13 +870,13 @@ export default function Subjects() {
       <BulkImportModal
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
-        onImport={handleBulkImport}
+        onImport={bulkImportSubjects}
       />
       {editingSubject && (
         <AvailabilityModal
           subject={editingSubject}
           onClose={() => setEditingSubject(null)}
-          onSave={handleUpdateAvailability}
+          onSave={updateSubjectAvailability}
         />
       )}
     </>
