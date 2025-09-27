@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react"; // 1. Import useMemo
+import { Link } from "react-router-dom";
 import useTimetableStore from "../../../../Stores/TimetableStore";
 
 // --- SVG Icon Components (No Changes) ---
@@ -226,7 +227,6 @@ const ToggleIcon = () => (
   </svg>
 );
 
-
 // --- Availability Modal (CORRECTED) ---
 const AvailabilityModal = ({ subject, onClose, onSave }) => {
   const { timings, days } = useTimetableStore();
@@ -234,13 +234,13 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
 
   // --- THIS IS THE FIX ---
   // 2. Wrap the definitions in useMemo to prevent re-creation on every render
-  const schoolDays = useMemo(() => 
-    (days || []).filter(day => day.isSchoolDay),
+  const schoolDays = useMemo(
+    () => (days || []).filter((day) => day.isSchoolDay),
     [days]
   );
-  
-  const periodsOnly = useMemo(() =>
-    (timings || []).filter(timeSlot => timeSlot.type === 'period'),
+
+  const periodsOnly = useMemo(
+    () => (timings || []).filter((timeSlot) => timeSlot.type === "period"),
     [timings]
   );
 
@@ -266,7 +266,7 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
   }, [periodsOnly, schoolDays, subject.availability]);
 
   const toggleCell = (periodIndex, dayIndex) => {
-    setGrid(currentGrid =>
+    setGrid((currentGrid) =>
       currentGrid.map((row, pIndex) => {
         if (pIndex !== periodIndex) {
           return row;
@@ -282,17 +282,17 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
   };
 
   const toggleDay = (dayIndex) => {
-    setGrid(currentGrid =>
-      currentGrid.map(row =>
+    setGrid((currentGrid) =>
+      currentGrid.map((row) =>
         row.map((cell, dIndex) => (dIndex === dayIndex ? !cell : cell))
       )
     );
   };
 
   const togglePeriod = (periodIndex) => {
-    setGrid(currentGrid =>
+    setGrid((currentGrid) =>
       currentGrid.map((row, pIndex) =>
-        pIndex === periodIndex ? row.map(cell => !cell) : row
+        pIndex === periodIndex ? row.map((cell) => !cell) : row
       )
     );
   };
@@ -328,8 +328,12 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
                 </p>
                 <ul className="mt-1 text-blue-600 list-disc pl-4">
                   <li>Click any cell to toggle its availability status</li>
-                  <li>Click a day name (column header) to toggle the entire day</li>
-                  <li>Click a period (row header) to toggle the entire period</li>
+                  <li>
+                    Click a day name (column header) to toggle the entire day
+                  </li>
+                  <li>
+                    Click a period (row header) to toggle the entire period
+                  </li>
                 </ul>
               </div>
             </div>
@@ -405,11 +409,11 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
                               : "Time Off"
                           }
                         >
-                          {
-                            grid[periodIndex]?.[dayIndex]
-                              ? <CheckIcon />
-                              : <CrossIcon />
-                          }
+                          {grid[periodIndex]?.[dayIndex] ? (
+                            <CheckIcon />
+                          ) : (
+                            <CrossIcon />
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -463,11 +467,21 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
 
   const subjectsToImport = textInput
     .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
+    .filter((line) => line.trim() !== "") // Filter out empty lines
+    .map((line) => {
+      const parts = line.split(" - ");
+      if (parts.length > 1) {
+        // Handle "ShortName - FullName" format
+        const shortName = parts[0].trim();
+        const name = parts.slice(1).join(" - ").trim(); // Join the rest in case the name itself has a hyphen
+        return { shortName, name };
+      }
+      // Fallback for lines without the separator
+      return { shortName: "", name: line.trim() };
+    });
 
   const handleImport = () => {
-    onImport(subjectsToImport);
+    onImport(subjectsToImport); // Pass the array of objects
     onClose();
   };
 
@@ -668,7 +682,6 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   );
 };
 
-
 // --- Main Subjects Component ---
 export default function Subjects() {
   const {
@@ -678,6 +691,7 @@ export default function Subjects() {
     addSubject,
     removeSubject,
     updateSubjectName,
+    updateSubjectShortName,
     sortSubjects,
     bulkImportSubjects,
     updateSubjectAvailability,
@@ -687,8 +701,8 @@ export default function Subjects() {
   const [editingSubject, setEditingSubject] = useState(null);
 
   const calculateAvailability = (availabilityGrid, periods, days) => {
-    const schoolDays = (days || []).filter(d => d.isSchoolDay);
-    const periodsOnly = (periods || []).filter(p => p.type === 'period');
+    const schoolDays = (days || []).filter((d) => d.isSchoolDay);
+    const periodsOnly = (periods || []).filter((p) => p.type === "period");
 
     if (
       !availabilityGrid ||
@@ -735,8 +749,9 @@ export default function Subjects() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    {/* 2. Update table header text */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/5">
-                      Name
+                      Short Name / Full Name
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                       Availability
@@ -749,7 +764,11 @@ export default function Subjects() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {subjects.map((subject) => {
                     const { percentOff, isAllAvailable } =
-                      calculateAvailability(subject.availability, timings, days);
+                      calculateAvailability(
+                        subject.availability,
+                        timings,
+                        days
+                      );
                     return (
                       <tr
                         key={subject.id}
@@ -760,18 +779,29 @@ export default function Subjects() {
                         }}
                       >
                         <td className="px-6 py-4">
-                          <input
-                            placeholder="e.g., Physics"
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            type="text"
-                            value={subject.name}
-                            onChange={(e) =>
-                              updateSubjectName(
-                                subject.id,
-                                e.target.value
-                              )
-                            }
-                          />
+                          <div className="flex items-center space-x-2">
+                            <input
+                              placeholder="e.g., APY"
+                              className="w-1/4 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                              type="text"
+                              value={subject.shortName}
+                              onChange={(e) =>
+                                updateSubjectShortName(
+                                  subject.id,
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <input
+                              placeholder="e.g., Advanced Python Programming"
+                              className="w-3/4 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                              type="text"
+                              value={subject.name}
+                              onChange={(e) =>
+                                updateSubjectName(subject.id, e.target.value)
+                              }
+                            />
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-center">
                           {isAllAvailable ? (
@@ -843,26 +873,28 @@ export default function Subjects() {
 
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
             <div className="flex justify-between items-center">
-              <button
+              <Link
                 type="button"
+                to="/dashboard/timetable/new/"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 aria-disabled="false"
               >
                 <PrevIcon />
                 Previous
-              </button>
+              </Link>
               <div className="text-sm text-gray-500">
                 Step <span className="font-semibold text-gray-700">2</span> of{" "}
                 <span className="font-semibold text-gray-700">7</span>
               </div>
-              <button
+              <Link
                 type="button"
+                to="/dashboard/timetable/new/faculty"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 aria-disabled="false"
               >
                 Next
                 <NextIcon />
-              </button>
+              </Link>
             </div>
           </div>
         </div>

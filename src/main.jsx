@@ -14,6 +14,8 @@ import NTTLayout from "./features/Timetables/NewTimetable/NTTLayout.jsx";
 import GeneralSettings from "./features/Timetables/NewTimetable/Steps/GeneralSettings.jsx";
 import Subjects from "./features/Timetables/NewTimetable/Steps/Subjects.jsx";
 import Faculty from "./features/Timetables/NewTimetable/Steps/Faculty.jsx";
+import Classes from "./features/Timetables/NewTimetable/Steps/Classes.jsx"
+import Rooms from "./features/Timetables/NewTimetable/Steps/Rooms.jsx";
 
 const router = createBrowserRouter([
   // Route for the landing page
@@ -65,6 +67,14 @@ const router = createBrowserRouter([
        {
         path: "faculty",
         element: <Faculty />,
+      },
+      {
+        path: "classes",
+        element: <Classes />,
+      },
+       {
+        path: "rooms",
+        element: <Rooms />,
       },
     ],
   },
