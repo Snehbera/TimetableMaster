@@ -681,7 +681,6 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
     </div>
   );
 };
-
 // --- Main Subjects Component ---
 export default function Subjects() {
   const {
@@ -699,6 +698,14 @@ export default function Subjects() {
 
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
+
+  const areAllFieldsValid = useMemo(() => {
+    if (subjects.length === 0) return false;
+    return subjects.every(
+      (subject) =>
+        subject.name.trim() !== '' && subject.shortName.trim() !== ''
+    );
+  }, [subjects]);
 
   const calculateAvailability = (availabilityGrid, periods, days) => {
     const schoolDays = (days || []).filter((d) => d.isSchoolDay);
@@ -727,11 +734,40 @@ export default function Subjects() {
     return { percentOff, isAllAvailable: false };
   };
 
+  const renderAvailabilityBadge = (subject) => {
+    const { percentOff, isAllAvailable } = calculateAvailability(
+      subject.availability,
+      timings,
+      days
+    );
+    return isAllAvailable ? (
+      <div
+        onClick={() => setEditingSubject(subject)}
+        className="inline-flex items-center space-x-1 cursor-pointer px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition group shadow-sm border border-green-200"
+        title="Click to manage Availability configuration"
+      >
+        <CalendarIcon />
+        <span>All Available</span>
+        <PencilIcon />
+      </div>
+    ) : (
+      <div
+        onClick={() => setEditingSubject(subject)}
+        className="inline-flex items-center space-x-1 cursor-pointer px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs hover:bg-red-200 transition group shadow-sm border border-red-200"
+        title="Click to manage Availability configuration"
+      >
+        <CalendarIcon className="w-3.5 h-3.5 mr-1 text-red-600" />
+        <span>{percentOff}% Off</span>
+        <PencilIcon />
+      </div>
+    );
+  };
+
   return (
     <>
-      <div className="font-sans flex items-center justify-center p-6">
+      <div className="font-sans flex items-center justify-center p-4 md:p-6">
         <div className="w-full">
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center">
@@ -739,115 +775,150 @@ export default function Subjects() {
                   Subjects/Courses
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Add all the subjects or courses you want to schedule. You can
-                  also manage time-off for them.
+                  Add all the subjects or courses you want to schedule.
                 </p>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {/* 2. Update table header text */}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/5">
-                      Short Name / Full Name
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
-                      Availability
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {subjects.map((subject) => {
-                    const { percentOff, isAllAvailable } =
-                      calculateAvailability(
-                        subject.availability,
-                        timings,
-                        days
-                      );
-                    return (
-                      <tr
+            <div>
+              {subjects.length === 0 ? (
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                  <InfoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No subjects added yet
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Get started by adding your first subject.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* --- RESPONSIVE CHANGE: DESKTOP TABLE (hidden on mobile) --- */}
+                  <div className="overflow-x-auto hidden md:block">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/5">
+                            Short Name / Full Name
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                            Availability
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {subjects.map((subject) => {
+                          const isShortNameInvalid = subject.shortName.trim() === '';
+                          const isNameInvalid = subject.name.trim() === '';
+                          return (
+                            <tr
+                              key={subject.id}
+                              className="hover:bg-gray-50"
+                              style={{
+                                borderLeft: `4px solid ${subject.color}`,
+                                backgroundColor: `${subject.color}10`,
+                              }}
+                            >
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    placeholder="e.g., APY"
+                                    className={`w-1/4 p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${isShortNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                                    type="text"
+                                    value={subject.shortName}
+                                    onChange={(e) => updateSubjectShortName(subject.id, e.target.value)}
+                                  />
+                                  <input
+                                    placeholder="e.g., Advanced Python Programming"
+                                    className={`w-3/4 p-2 border rounded-lg focus:ring-2 focus:outline-none ${isNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                                    type="text"
+                                    value={subject.name}
+                                    onChange={(e) => updateSubjectName(subject.id, e.target.value)}
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                {renderAvailabilityBadge(subject)}
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                <button
+                                  type="button"
+                                  className="text-red-500 hover:text-red-600 focus:outline-none"
+                                  aria-label="Remove Subject"
+                                  onClick={() => removeSubject(subject.id)}
+                                >
+                                  <TrashIcon />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* --- RESPONSIVE CHANGE: MOBILE CARDS (visible only on mobile) --- */}
+                  <div className="space-y-4 md:hidden">
+                    {subjects.map((subject) => {
+                      const isShortNameInvalid = subject.shortName.trim() === '';
+                      const isNameInvalid = subject.name.trim() === '';
+                      return(
+                      <div
                         key={subject.id}
-                        className="hover:bg-gray-50"
-                        style={{
-                          borderLeft: `4px solid ${subject.color}`,
-                          backgroundColor: `${subject.color}10`,
-                        }}
+                        className="p-4 border rounded-lg"
+                        style={{ borderLeft: `4px solid ${subject.color}`, backgroundColor: `${subject.color}10` }}
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <input
+                        {/* Short/Full Name Section */}
+                        <div className="space-y-2">
+                           <label className="block text-xs font-medium text-gray-500 uppercase">Short Name / Full Name</label>
+                           <input
                               placeholder="e.g., APY"
-                              className="w-1/4 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${isShortNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
                               type="text"
                               value={subject.shortName}
-                              onChange={(e) =>
-                                updateSubjectShortName(
-                                  subject.id,
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => updateSubjectShortName(subject.id, e.target.value)}
                             />
                             <input
                               placeholder="e.g., Advanced Python Programming"
-                              className="w-3/4 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none ${isNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
                               type="text"
                               value={subject.name}
-                              onChange={(e) =>
-                                updateSubjectName(subject.id, e.target.value)
-                              }
+                              onChange={(e) => updateSubjectName(subject.id, e.target.value)}
                             />
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          {isAllAvailable ? (
-                            <div
-                              onClick={() => setEditingSubject(subject)}
-                              className="inline-flex items-center space-x-1 cursor-pointer px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition group shadow-sm border border-green-200"
-                              title="Click to manage Availability configuration"
+                        </div>
+                        {/* Availability Section */}
+                        <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                          <label className="block text-xs font-medium text-gray-500 uppercase">Availability</label>
+                          {renderAvailabilityBadge(subject)}
+                        </div>
+                        {/* Actions Section */}
+                         <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                          <label className="block text-xs font-medium text-gray-500 uppercase">Action</label>
+                           <button
+                              type="button"
+                              className="text-red-500 hover:text-red-600 focus:outline-none"
+                              aria-label="Remove Subject"
+                              onClick={() => removeSubject(subject.id)}
                             >
-                              <CalendarIcon />
-                              <span>All Available</span>
-                              <PencilIcon />
-                            </div>
-                          ) : (
-                            <div
-                              onClick={() => setEditingSubject(subject)}
-                              className="inline-flex items-center space-x-1 cursor-pointer px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs hover:bg-red-200 transition group shadow-sm border border-red-200"
-                              title="Click to manage Availability configuration"
-                            >
-                              <CalendarIcon className="w-3.5 h-3.5 mr-1 text-red-600" />
-                              <span>{percentOff}% Off</span>
-                              <PencilIcon />
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            type="button"
-                            className="text-red-500 hover:text-red-600 focus:outline-none"
-                            aria-label="Remove Subject"
-                            onClick={() => removeSubject(subject.id)}
-                          >
-                            <TrashIcon />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              <TrashIcon />
+                            </button>
+                        </div>
+                      </div>
+                    )})}
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex justify-end items-center space-x-4 mt-6">
+            {/* --- RESPONSIVE CHANGE: ACTION BUTTONS --- */}
+            <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-end sm:space-x-4 mt-6">
               <button
                 type="button"
                 onClick={sortSubjects}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100"
               >
                 <SortIcon />
                 Sort A-Z
@@ -855,7 +926,7 @@ export default function Subjects() {
               <button
                 type="button"
                 onClick={() => setIsBulkModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 <ImportIcon />
                 Bulk Import
@@ -863,7 +934,7 @@ export default function Subjects() {
               <button
                 type="button"
                 onClick={addSubject}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 <AddIcon />
                 Add Subject
@@ -874,23 +945,26 @@ export default function Subjects() {
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
             <div className="flex justify-between items-center">
               <Link
-                type="button"
                 to="/dashboard/timetable/new/"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                aria-disabled="false"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
               >
                 <PrevIcon />
                 Previous
               </Link>
               <div className="text-sm text-gray-500">
-                Step <span className="font-semibold text-gray-700">2</span> of{" "}
+                Step <span className="font-semibold text-gray-700">2</span> of{' '}
                 <span className="font-semibold text-gray-700">7</span>
               </div>
               <Link
-                type="button"
-                to="/dashboard/timetable/new/faculty"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                aria-disabled="false"
+                to={areAllFieldsValid ? "/dashboard/timetable/new/faculty" : '#'}
+                onClick={(e) => !areAllFieldsValid && e.preventDefault()}
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+                  areAllFieldsValid
+                    ? 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-indigo-300 cursor-not-allowed'
+                }`}
+                aria-disabled={!areAllFieldsValid}
+                title={!areAllFieldsValid ? 'Please fill in all subject names and short names to continue.' : ''}
               >
                 Next
                 <NextIcon />
