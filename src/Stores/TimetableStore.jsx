@@ -43,7 +43,7 @@ const useTimetableStore = create(
       timings: [],
       subjects: [],
       faculty: [],
-       rooms: [],
+      rooms: [],
       // --- NEW: Updated state structure for timetable names and subdivisions ---
       timetableNames: [
         { id: Date.now(), name: "Untitled", subdivisions: [""] },
@@ -103,17 +103,19 @@ const useTimetableStore = create(
               : tt
           ),
         })),
-     removeSubdivision: (timetableId, subIndex) =>
-  set((state) => ({
-    timetableNames: state.timetableNames.map((tt) =>
-      tt.id === timetableId
-        ? {
-            ...tt,
-            subdivisions: tt.subdivisions.filter((_, i) => i !== subIndex), // ✅ allows 0 subdivisions
-          }
-        : tt
-    ),
-  })),
+      removeSubdivision: (timetableId, subIndex) =>
+        set((state) => ({
+          timetableNames: state.timetableNames.map((tt) =>
+            tt.id === timetableId
+              ? {
+                  ...tt,
+                  subdivisions: tt.subdivisions.filter(
+                    (_, i) => i !== subIndex
+                  ), // ✅ allows 0 subdivisions
+                }
+              : tt
+          ),
+        })),
 
       addSubject: () => {
         set((state) => {
@@ -316,17 +318,20 @@ const useTimetableStore = create(
           ),
         }));
       },
-       addRoom: (type) => { // Takes 'classroom' or 'lab' as an argument
+      addRoom: (type) => {
+        // Takes 'classroom' or 'lab' as an argument
         set((state) => {
           // Get the current school days and periods to calculate availability grid size
           const schoolDays = (state.days || []).filter((d) => d.isSchoolDay);
-          const periodsOnly = (state.timings || []).filter((t) => t.type === "period");
+          const periodsOnly = (state.timings || []).filter(
+            (t) => t.type === "period"
+          );
 
           const newRoom = {
             id: Date.now(),
             name: "",
             type: type, // Use the provided type ('classroom' or 'lab')
-            homeRoomFor: null, 
+            homeRoomFor: null,
             color: getRandomColor(),
             // Initialize the availability grid based on current settings
             availability: Array(periodsOnly.length)
@@ -358,7 +363,7 @@ const useTimetableStore = create(
           ),
         }));
       },
-      
+
       assignHomeRoom: (roomId, assignment) => {
         set((state) => ({
           rooms: state.rooms.map((r) =>
@@ -375,17 +380,19 @@ const useTimetableStore = create(
         }));
       },
 
-       // --- NEW: This action will be called when the Rooms page loads ---
+      // --- NEW: This action will be called when the Rooms page loads ---
       initializeRooms: () => {
         set((state) => {
           const { timetableNames, subjects, rooms } = state;
           const newRooms = [];
 
           // 1. Process Classrooms for each main division
-          (timetableNames || []).forEach(tt => {
+          (timetableNames || []).forEach((tt) => {
             const assignment = { timetableId: tt.id, subIndex: -1 };
-            const existingRoom = rooms.find(r => 
-                r.type === 'classroom' && JSON.stringify(r.homeRoomFor) === JSON.stringify(assignment)
+            const existingRoom = rooms.find(
+              (r) =>
+                r.type === "classroom" &&
+                JSON.stringify(r.homeRoomFor) === JSON.stringify(assignment)
             );
 
             if (existingRoom) {
@@ -393,7 +400,7 @@ const useTimetableStore = create(
             } else {
               newRooms.push({
                 id: `c_${tt.id}`, // Use a consistent ID
-                name: "", 
+                name: "",
                 type: "classroom",
                 homeRoomFor: assignment,
               });
@@ -401,27 +408,36 @@ const useTimetableStore = create(
           });
 
           // 2. Process Labs for each subject within each subdivision
-          (timetableNames || []).forEach(tt => {
+          (timetableNames || []).forEach((tt) => {
             (tt.subdivisions || []).forEach((sub, index) => {
               if (sub) {
                 // Find subjects that have labs
-                (subjects || []).filter(s => s.labsPerWeek > 0).forEach(subject => {
-                  const assignment = { timetableId: tt.id, subIndex: index, subjectId: subject.id };
-                  const existingLab = rooms.find(r => 
-                      r.type === 'lab' && JSON.stringify(r.homeRoomFor) === JSON.stringify(assignment)
-                  );
+                (subjects || [])
+                  .filter((s) => s.labsPerWeek > 0)
+                  .forEach((subject) => {
+                    const assignment = {
+                      timetableId: tt.id,
+                      subIndex: index,
+                      subjectId: subject.id,
+                    };
+                    const existingLab = rooms.find(
+                      (r) =>
+                        r.type === "lab" &&
+                        JSON.stringify(r.homeRoomFor) ===
+                          JSON.stringify(assignment)
+                    );
 
-                  if (existingLab) {
-                    newRooms.push(existingLab); // Keep existing lab data
-                  } else {
-                     newRooms.push({
-                      id: `l_${tt.id}_${index}_${subject.id}`, // Use a consistent ID
-                      name: "", 
-                      type: "lab",
-                      homeRoomFor: assignment,
-                    });
-                  }
-                });
+                    if (existingLab) {
+                      newRooms.push(existingLab); // Keep existing lab data
+                    } else {
+                      newRooms.push({
+                        id: `l_${tt.id}_${index}_${subject.id}`, // Use a consistent ID
+                        name: "",
+                        type: "lab",
+                        homeRoomFor: assignment,
+                      });
+                    }
+                  });
               }
             });
           });
@@ -437,8 +453,8 @@ const useTimetableStore = create(
           ),
         }));
       },
-
     }),
+
     {
       name: "timetable-storage",
     }
