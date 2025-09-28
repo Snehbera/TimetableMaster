@@ -103,20 +103,17 @@ const useTimetableStore = create(
               : tt
           ),
         })),
-      removeSubdivision: (timetableId, subIndex) =>
-        set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === timetableId
-              ? {
-                  ...tt,
-                  subdivisions:
-                    tt.subdivisions.length > 1
-                      ? tt.subdivisions.filter((_, i) => i !== subIndex)
-                      : tt.subdivisions,
-                }
-              : tt
-          ),
-        })),
+     removeSubdivision: (timetableId, subIndex) =>
+  set((state) => ({
+    timetableNames: state.timetableNames.map((tt) =>
+      tt.id === timetableId
+        ? {
+            ...tt,
+            subdivisions: tt.subdivisions.filter((_, i) => i !== subIndex), // ✅ allows 0 subdivisions
+          }
+        : tt
+    ),
+  })),
 
       addSubject: () => {
         set((state) => {

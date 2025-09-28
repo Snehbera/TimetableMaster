@@ -2,7 +2,7 @@ import React from "react";
 import "./GeneralSettings.css";
 import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import useTimetableStore from '../../../../Stores/TimetableStore';
+import useTimetableStore from "../../../../Stores/TimetableStore";
 
 // --- SVG Icon Components --- //
 const TimetableIcon = () => (
@@ -267,14 +267,19 @@ const TimetableNames = () => {
       </div>
 
       {(timetableNames || []).map((timetable, index) => (
-        <div key={timetable.id} className="p-4 border rounded-lg mb-4 bg-gray-50/50">
+        <div
+          key={timetable.id}
+          className="p-4 border border-gray-300 rounded-lg mb-4 bg-gray-50/50"
+        >
           <div className="flex items-center space-x-2">
             <input
               placeholder="e.g., Grade 5"
-              className="w-full p-3 border border-gray-300 rounded-lg font-medium"
+              className="s1-input-field font-medium"
               type="text"
               value={timetable.name}
-              onChange={(e) => updateTimetableName(timetable.id, e.target.value)}
+              onChange={(e) =>
+                updateTimetableName(timetable.id, e.target.value)
+              }
             />
             <button
               type="button"
@@ -288,14 +293,18 @@ const TimetableNames = () => {
           </div>
 
           <div className="pl-8 mt-3 space-y-2">
-            <label className="text-sm font-medium text-gray-600">Subdivisions</label>
-            
-            {/* THIS IS THE FIX 👇 */}
+            {/* --- CHANGE IS HERE --- */}
+            {/* Show label only if subdivisions exist */}
+            {(timetable.subdivisions || []).length > 0 && (
+              <label className="text-sm font-medium text-gray-600">
+                Subdivisions
+              </label>
+            )}
             {(timetable.subdivisions || []).map((sub, subIndex) => (
               <div key={subIndex} className="flex items-center space-x-2">
                 <input
                   placeholder="e.g., Section A"
-                  className="w-full p-2 border border-gray-200 rounded-md"
+                  className="s1-input-field"
                   type="text"
                   value={sub}
                   onChange={(e) =>
@@ -305,14 +314,14 @@ const TimetableNames = () => {
                 <button
                   type="button"
                   onClick={() => removeSubdivision(timetable.id, subIndex)}
-                  className="p-1 text-gray-400 hover:text-red-500 disabled:opacity-50"
-                  disabled={timetable.subdivisions.length <= 1}
+                  className="p-2 text-gray-400 hover:text-red-500"
                   aria-label="Remove subdivision"
                 >
                   <MinusCircleIcon className="w-5 h-5" />
                 </button>
               </div>
             ))}
+
             <button
               type="button"
               onClick={() => addSubdivision(timetable.id)}
@@ -355,18 +364,16 @@ const minutesToTime = (totalMinutes) => {
 };
 
 function GeneralSettings() {
- const { 
-    periodsPerDay, 
-    setPeriodsPerDay, 
-    timings, 
-    setTimings 
-  } = useTimetableStore();
+  const { periodsPerDay, setPeriodsPerDay, timings, setTimings } =
+    useTimetableStore();
 
   const [showTimings, setShowTimings] = useState(false);
 
   // --- CORRECTED useEffect ---
   useEffect(() => {
-    const existingPeriodsCount = (timings || []).filter(t => t.type === 'period').length;
+    const existingPeriodsCount = (timings || []).filter(
+      (t) => t.type === "period"
+    ).length;
     const numPeriods = parseInt(periodsPerDay, 10) || 0;
 
     // Only regenerate the timings array if the number of periods has changed.
@@ -538,7 +545,8 @@ function GeneralSettings() {
                           (p) => p.id === item.id
                         );
                         const hasBreakAfter =
-                          (timings || [])[currentPeriodIndex + 1]?.type === "break";
+                          (timings || [])[currentPeriodIndex + 1]?.type ===
+                          "break";
                         return (
                           <div key={item.id}>
                             <div className="flex items-center space-x-2 sm:space-x-4">
