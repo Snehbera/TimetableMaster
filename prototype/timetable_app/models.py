@@ -21,9 +21,10 @@ class Subject(models.Model):
     name = models.CharField(max_length=200)
     lectures = models.IntegerField(default=0)
     labs = models.IntegerField(default=0)
+    double_periods = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.code} ({self.lectures}L, {self.labs}Lab)"
+        return f"{self.code} ({self.lectures}L, {self.labs}Lab, {self.double_periods}DL)"
 
 class Division(models.Model):
     code = models.CharField(max_length=10, unique=True, primary_key=True)

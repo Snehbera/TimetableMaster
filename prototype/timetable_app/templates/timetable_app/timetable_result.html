@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Timetable Generation Result</title>
     <style>
-        /* ... (Your styles remain the same) ... */
         body { font-family: Arial, sans-serif; margin: 20px; }
         .success { color: green; }
         .failure { color: red; }
@@ -14,6 +13,7 @@
         th { background-color: #f2f2f2; }
         .lab { background-color: #e0f7fa; font-weight: bold; }
         .lec { background-color: #fff8e1; }
+        .double-lec { background-color: #ffebee; font-weight: bold; } /* NEW STYLE */
         .break { background-color: #ccc; font-weight: bold; }
         .free { background-color: #eee; color: #777; font-style: italic; }
         .offday { background-color: #fdd; color: #555; font-weight: bold; }
@@ -40,7 +40,6 @@
                         <th>Day</th>
                         {% for slot_time in settings.periods_per_day %}
                             <th>{{ slot_time }}</th>
-                            {% comment %} Note: break keys are now strings for JSON compatibility {% endcomment %}
                             {% if forloop.counter|stringformat:"d" in settings.breaks_after_period %}
                                 <th class="break">{{ settings.breaks_after_period|get_item:forloop.counter|slice:":8" }}</th>
                             {% endif %}
@@ -62,6 +61,11 @@
                                 {% elif slot_data.type == 'Lec' %}
                                     <td class="lec">{{ slot_data.subject }}-Lec <br>({{ slot_data.faculty }})</td>
                                 
+                                {% elif slot_data.type == 'DoubleLec' %}
+                                    <td colspan="2" class="double-lec">
+                                        {{ slot_data.subject }}-Lec (DOUBLE) <br>({{ slot_data.faculty }})
+                                    </td>
+
                                 {% elif slot_data.type == 'LabBlock' %}
                                     <td colspan="2" class="lab">
                                         {% for lab_part in slot_data.details %}
@@ -69,8 +73,8 @@
                                         {% endfor %}
                                     </td>
                                 
-                                {% elif slot_data.type == 'LabPlaceholder' %}
-                                    {% comment %} This slot is covered by the previous LabBlock's colspan="2" - render nothing {% endcomment %}
+                                {% elif slot_data.type == 'LabPlaceholder' or slot_data.type == 'DoubleLecPlaceholder' %}
+                                    {% comment %} This slot is covered by the preceding colspan="2" - render nothing {% endcomment %}
                                 
                                 {% endif %}
 

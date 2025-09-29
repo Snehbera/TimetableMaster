@@ -1,3 +1,5 @@
+# timetable_app/timetablegenerator_django.py (Fixed Clash Detection)
+
 import json
 import random
 import time
@@ -10,12 +12,10 @@ LabInfo = TypedDict('LabInfo', {'partition': str, 'lab': str, 'faculty': str})
 ConcurrentLabInfo = List[LabInfo]
 
 class TimetableSolver:
-    """
-    A fully configurable and dynamic CSP solver for generating university timetables.
-    It can handle any number of partitions per division as defined in the config.
-    """
+    # ... (init, _create_required_classes_list, _precompute_possible_slots, _get_faculty, _is_valid_slot are CORRECT) ...
+
     def __init__(self, config: Dict):
-        # Load all settings from the configuration dictionary
+        # ... (init content is correct) ...
         self.config = config
         self.working_days = config['settings']['working_days']
         self.slots = config['settings']['periods_per_day']
@@ -26,7 +26,7 @@ class TimetableSolver:
         self.faculty_assignments = config['faculty_assignments']
 
         self.slots_per_day = len(self.slots)
-        self.lab_subjects = {s for s, d in self.subjects.items() if d.get('labs', 0) > 0}
+        self.lab_subjects = {s for s, d in self.subjects.items() if d.get('labs', 0) > 0} 
 
         self.breaks = {int(p) - 1: d for p, d in config['settings']['breaks_after_period'].items()}
         self.lab_invalid_start_slots = {int(p) - 1 for p in config['settings']['breaks_after_period']}
@@ -39,20 +39,32 @@ class TimetableSolver:
         self.start_time: float = 0.0; self.timeout: int = 0; self.timed_out: bool = False
 
     def _create_required_classes_list(self) -> List[Dict]:
+        # ... (content is correct) ...
         required = []
         for div in self.divisions:
             for sub, details in self.subjects.items():
+                
+                # --- NEW: Generate Double Lectures ---
+                for _ in range(details.get('double_periods', 0)): 
+                    required.append({'type': 'DoubleLec', 'division': div, 'subject': sub})
+                
+                # Generate standard single lectures
                 for _ in range(details.get('lectures', 0)):
                     required.append({'type': 'Lec', 'division': div, 'subject': sub})
+            
+            # Generate Concurrent Lab Blocks
             for _ in range(len(self.lab_subjects)):
                 required.append({'type': 'ConcurrentLabBlock', 'division': div})
 
         blocks = [c for c in required if c['type'] == 'ConcurrentLabBlock']
+        doubles = [c for c in required if c['type'] == 'DoubleLec'] 
         lectures = [c for c in required if c['type'] == 'Lec']
-        random.shuffle(blocks); random.shuffle(lectures)
-        return blocks + lectures
-
+        
+        random.shuffle(blocks); random.shuffle(doubles); random.shuffle(lectures)
+        return blocks + doubles + lectures
+    
     def _precompute_possible_slots(self) -> Tuple[Dict[str, list], Dict[str, list]]:
+        # ... (content is correct) ...
         lecture_slots, lab_slots = {}, {}
         middle_slot_indices = list(range(1, self.slots_per_day - 1))
 
@@ -65,6 +77,7 @@ class TimetableSolver:
                     if slot in middle_slot_indices: lec_middle.append((day, slot))
                     else: lec_edge.append((day, slot))
 
+                # Slots for 2-period blocks (Labs and DoubleLec)
                 for slot in range(self.slots_per_day - 1):
                     if slot in self.lab_invalid_start_slots: continue
                     if slot in middle_slot_indices or (slot + 1) in middle_slot_indices:
@@ -80,12 +93,15 @@ class TimetableSolver:
         return lecture_slots, lab_slots
 
     def _get_faculty(self, division: str, subject_code: str) -> str:
-        return self.faculty_assignments[subject_code][division]
+        return self.faculty_assignments.get(subject_code, {}).get(division)
 
     def _is_valid_slot(self, div: str, class_type: str, day: str, slot_idx: int) -> bool:
         if self.timetable[div][day][slot_idx] is not None: return False
-        if class_type != 'Lec':
+        
+        if class_type == 'DoubleLec' or class_type == 'ConcurrentLabBlock':
+            if slot_idx + 1 >= self.slots_per_day: return False
             if self.timetable[div][day][slot_idx + 1] is not None: return False
+            
         return True
 
     def find_valid_lab_combination(self, div: str, day: str, slot: int) -> Optional[ConcurrentLabInfo]:
@@ -108,9 +124,13 @@ class TimetableSolver:
                     other_class = self.timetable[other_div][day][slot + s_offset]
                     if not other_class: continue
 
-                    if isinstance(other_class, dict) and other_class.get('type') == 'Lec':
-                        other_fac = self._get_faculty(other_div, other_class['subject'])
-                        if other_fac in faculty_combo: clash = True
+                    # FIX for AttributeError: Safely check if it is a dict (Lec/DoubleLec) or list (Lab)
+                    if isinstance(other_class, dict):
+                        other_type = other_class.get('type')
+                        if other_type in ('Lec', 'DoubleLec'):
+                            other_fac = self._get_faculty(other_div, other_class['subject'])
+                            if other_fac in faculty_combo: clash = True
+                        
                     elif isinstance(other_class, list):
                         other_facs = {item['faculty'] for item in other_class}
                         if not set(faculty_combo).isdisjoint(other_facs): clash = True
@@ -132,10 +152,15 @@ class TimetableSolver:
         div = class_info['division']
         class_type = class_info['type']
 
-        possible_slots = self.possible_lab_slots[div] if class_type == 'ConcurrentLabBlock' else self.possible_lecture_slots[div]
+        if class_type == 'ConcurrentLabBlock' or class_type == 'DoubleLec':
+            possible_slots = self.possible_lab_slots[div]
+        else:
+            possible_slots = self.possible_lecture_slots[div]
+
 
         for day, slot_idx in possible_slots:
             if self._is_valid_slot(div, class_type, day, slot_idx):
+                
                 if class_type == 'Lec':
                     subject = class_info['subject']
                     is_valid_lec = True
@@ -150,9 +175,9 @@ class TimetableSolver:
                          if other_div == div or self.off_days.get(other_div) == day: continue
                          other_class = self.timetable[other_div][day][slot_idx]
                          if other_class:
-                             if isinstance(other_class, dict) and other_class.get('type') == 'Lec':
+                             if isinstance(other_class, dict): # Check for Lec or DoubleLec
                                  if self._get_faculty(other_div, other_class['subject']) == fac: is_valid_lec = False
-                             elif isinstance(other_class, list):
+                             elif isinstance(other_class, list): # Check for Lab
                                  if fac in {item['faculty'] for item in other_class}: is_valid_lec = False
                          if not is_valid_lec: break
                     if not is_valid_lec: continue
@@ -160,6 +185,40 @@ class TimetableSolver:
                     self.timetable[div][day][slot_idx] = class_info
                     if self._backtrack(class_index + 1): return True
                     self.timetable[div][day][slot_idx] = None
+                
+                # --- Double Lecture Logic ---
+                elif class_type == 'DoubleLec':
+                    subject = class_info['subject']
+                    is_valid_double = True
+                    fac = self._get_faculty(div, subject)
+
+                    # 1. Check for faculty clash in slot 1 and slot 2 in other divisions
+                    for other_div in self.divisions:
+                        if other_div == div or self.off_days.get(other_div) == day: continue
+                        
+                        for s_offset in [0, 1]:
+                            other_class = self.timetable[other_div][day][slot_idx + s_offset]
+                            if not other_class: continue
+
+                            if isinstance(other_class, dict):
+                                if self._get_faculty(other_div, other_class['subject']) == fac: is_valid_double = False
+                            elif isinstance(other_class, list):
+                                other_facs = {item['faculty'] for item in other_class}
+                                if fac in other_facs: is_valid_double = False
+                        
+                        if not is_valid_double: break
+                    
+                    if not is_valid_double: continue
+
+                    # 2. Assignment and Recursion
+                    self.timetable[div][day][slot_idx] = class_info 
+                    self.timetable[div][day][slot_idx + 1] = class_info
+
+                    if self._backtrack(class_index + 1): return True
+
+                    # 3. Backtrack (Unassign)
+                    self.timetable[div][day][slot_idx] = None
+                    self.timetable[div][day][slot_idx + 1] = None
 
                 elif class_type == 'ConcurrentLabBlock':
                     combination = self.find_valid_lab_combination(div, day, slot_idx)
@@ -185,6 +244,7 @@ class TimetableSolver:
         return self._backtrack(0)
 
     def print_timetable(self):
+        # ... (print_timetable is correct) ...
         for div in self.divisions:
             partition_names = self.partitions.get(div, [])
             div_header = f"DIVISION {div}"
@@ -196,6 +256,7 @@ class TimetableSolver:
             lec_width = 24
             num_partitions = len(partition_names) if partition_names else 1
             lab_width = (lec_width * num_partitions) + ((num_partitions - 1) * 3)
+            double_lec_width = (lec_width * 2) + 3
 
             header = f"{'Day':<10}"
             for i, slot_time in enumerate(self.slots):
@@ -208,36 +269,30 @@ class TimetableSolver:
                 row_str = f"{day:<10}"; slot_idx = 0
                 while slot_idx < self.slots_per_day:
                     cell = self.timetable[div][day][slot_idx]
-                    if cell:
-                        if isinstance(cell, dict) and cell.get('type') == 'Lec':
-                            display = f"{cell['subject']}-Lec ({self._get_faculty(div, cell['subject'])})"
-                            row_str += f" | {display:<{lec_width}}"; slot_idx += 1
-                        elif isinstance(cell, list):
+                    
+                    is_double_lec = isinstance(cell, dict) and cell.get('type') == 'DoubleLec'
+                    is_lab_block = isinstance(cell, list)
+                    
+                    if cell and (is_double_lec or is_lab_block):
+                        
+                        if is_double_lec:
+                            if slot_idx + 1 < self.slots_per_day and self.timetable[div][day][slot_idx + 1] is cell:
+                                display = f"{cell['subject']}-Lec (DOUBLE) ({self._get_faculty(div, cell['subject'])})"
+                                row_str += f" | {display:^{double_lec_width}}"; slot_idx += 2
+                            else:
+                                slot_idx += 1
+                        
+                        elif is_lab_block:
                             display_parts = [f"{item['partition']}: {item['lab']} ({item['faculty']})" for item in cell]
                             display = " / ".join(display_parts)
                             row_str += f" | {display:^{lab_width}}"; slot_idx += 2
+                            
+                    elif isinstance(cell, dict) and cell.get('type') == 'Lec':
+                        display = f"{cell['subject']}-Lec ({self._get_faculty(div, cell['subject'])})"
+                        row_str += f" | {display:<{lec_width}}"; slot_idx += 1
+                    
                     else:
                         row_str += f" | {'--- FREE ---':<{lec_width}}"; slot_idx += 1
+                        
                     if (slot_idx - 1) in self.breaks: row_str += f" | {'-'*15:^15}"
                 print(row_str)
-
-def load_config(filename: str) -> Dict:
-    """Loads the configuration from a JSON file."""
-    try:
-        with open(filename, 'r') as f: return json.load(f)
-    except FileNotFoundError: print(f"Error: Configuration file '{filename}' not found."); return None
-    except json.JSONDecodeError: print(f"Error: Could not decode JSON from '{filename}'."); return None
-
-if __name__ == '__main__':
-    config_data = load_config('config.json')
-    if config_data:
-        solver = TimetableSolver(config_data)
-        print("Generating dynamic timetable with heuristic search...")
-        if solver.solve(timeout=90):
-            elapsed_time = time.time() - solver.start_time
-            print(f"\n✅ Timetable generated successfully in {elapsed_time:.2f} seconds!")
-            solver.print_timetable()
-        else:
-            elapsed_time = time.time() - solver.start_time
-            if solver.timed_out: print(f"\n❌ Solver stopped after {solver.timeout} seconds. No solution found. The problem may be unsolvable with the given constraints.")
-            else: print(f"\n❌ Could not generate a valid timetable in {elapsed_time:.2f} seconds.")

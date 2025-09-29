@@ -1,4 +1,4 @@
-# timetable_app/views.py
+# timetable_app/views.py (Final Fixes for Serialization and Data Retrieval)
 
 from django.shortcuts import render
 from django.utils import timezone
@@ -16,35 +16,31 @@ def generate_config_from_models():
         'faculty_assignments': defaultdict(dict)
     }
 
-    # Settings
     settings_data = {s.key: s.value for s in Setting.objects.all()}
     config['settings']['working_days'] = settings_data.get('working_days', [])
     config['settings']['periods_per_day'] = settings_data.get('periods_per_day', [])
-    # Ensure breaks keys are strings for JSON loading/saving consistency
     breaks_data = settings_data.get('breaks_after_period', {})
     if isinstance(breaks_data, dict):
         config['settings']['breaks_after_period'] = {str(k): v for k, v in breaks_data.items()}
 
-    # Divisions
     for div in Division.objects.all():
         config['divisions'][div.code] = {
             'off_day': div.off_day,
             'partitions': div.get_partitions_list()
         }
 
-    # Subjects
+    # Subjects: Retrieve the new 'double_periods' field
     for sub in Subject.objects.all():
         config['subjects'][sub.code] = {
             'name': sub.name,
             'lectures': sub.lectures,
-            'labs': sub.labs
+            'labs': sub.labs,
+            'double_periods': sub.double_periods # <--- Access the NEW field
         }
 
-    # Faculty
     for fac in Faculty.objects.all():
         config['faculty'][fac.code] = {'name': fac.name}
 
-    # Faculty Assignments
     for assignment in FacultyAssignment.objects.select_related('subject', 'division', 'faculty'):
         config['faculty_assignments'][assignment.subject.code][assignment.division.code] = assignment.faculty.code
 
@@ -59,6 +55,7 @@ def generate_timetable_view(request):
             return render(request, 'timetable_app/timetable_result.html', {'error': "Configuration settings are incomplete."})
 
     except Exception as e:
+        # NOTE: This error now should be caught if 'double_periods' is missing from the Subject model
         return render(request, 'timetable_app/timetable_result.html', {'error': f"Error loading configuration: {e}"})
 
     solver = TimetableSolver(config_data)
@@ -83,33 +80,44 @@ def generate_timetable_view(request):
                     continue
 
                 slots = solver.timetable[div][day]
-                # Iterate slot by slot to build the serializable structure
                 for i, cell in enumerate(slots):
                     
                     if cell is None:
                         serializable_timetable[div][day].append(None)
                         
                     elif isinstance(cell, dict) and cell.get('type') == 'Lec':
-                        # Lecture: Embed the faculty code directly
                         fac_code = solver._get_faculty(div, cell['subject'])
                         serializable_timetable[div][day].append({
                             'type': 'Lec',
                             'subject': cell['subject'],
                             'faculty': fac_code
                         })
-                        
-                    elif isinstance(cell, list) and cell[0].get('partition'):
-                        # Lab Block: Only save the full data on the START slot
+                    
+                    # --- DoubleLec: Save only on the START slot ---
+                    elif isinstance(cell, dict) and cell.get('type') == 'DoubleLec':
                         if i < solver.slots_per_day - 1 and cell is slots[i+1]:
-                             serializable_timetable[div][day].append({
-                                'type': 'LabBlock', # Custom type for template
-                                'details': cell # List of LabInfo
+                            fac_code = solver._get_faculty(div, cell['subject'])
+                            serializable_timetable[div][day].append({
+                                'type': 'DoubleLec',
+                                'subject': cell['subject'],
+                                'faculty': fac_code
                             })
                         else:
-                            # This is the second slot of a lab block
+                            # Second slot
+                            serializable_timetable[div][day].append({'type': 'DoubleLecPlaceholder'})
+                            
+                    # --- Lab Block: Save only on the START slot ---
+                    elif isinstance(cell, list) and cell[0].get('partition'):
+                        if i < solver.slots_per_day - 1 and cell is slots[i+1]:
+                             serializable_timetable[div][day].append({
+                                'type': 'LabBlock', 
+                                'details': cell
+                            })
+                        else:
+                            # Second slot
                             serializable_timetable[div][day].append({'type': 'LabPlaceholder'})
+                            
                     else:
-                        # Should not happen, but treat as None
                         serializable_timetable[div][day].append(None)
 
 
@@ -130,7 +138,6 @@ def generate_timetable_view(request):
     }
 
     if solution_found:
-        # Pass the clean data structure to the template
         context['timetable'] = result.timetable_json['timetable']
         context['settings'] = result.timetable_json['settings']
         context['divisions'] = result.timetable_json['divisions']

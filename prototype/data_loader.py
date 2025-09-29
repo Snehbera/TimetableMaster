@@ -48,7 +48,8 @@ def import_data_from_json(file_path):
             defaults={
                 "name": details["name"],
                 "lectures": details["lectures"],
-                "labs": details["labs"]
+                "labs": details["labs"],
+                "double_periods": details.get("double_periods", 0)
             }
         )
     
