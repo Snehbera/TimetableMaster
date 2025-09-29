@@ -59,6 +59,9 @@ npm install
 
 # Run the development server
 npm run dev
+
+# API request
+npm install axios
 ```
 
 ### 📂 Project Structure

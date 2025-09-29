@@ -383,7 +383,7 @@ export default function Faculty() {
     removeFaculty,
     updateFacultyName,
     updateFacultyShortName,
-    setAssignedSubjects,
+    setFacultyAssignment,
     sortFaculty,
     bulkImportFaculty,
   } = useTimetableStore();
@@ -690,7 +690,7 @@ export default function Faculty() {
         <AssignSubjectsModal
           facultyMember={editingFaculty}
           onClose={() => setEditingFaculty(null)}
-          onSave={setAssignedSubjects}
+          onSave={setFacultyAssignment}
         />
       )}
     </>
