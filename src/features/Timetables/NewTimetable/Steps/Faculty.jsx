@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import useTimetableStore from "../../../../Stores/TimetableStore";
 
@@ -122,15 +122,13 @@ const NextIcon = () => (
     />{" "}
   </svg>
 );
-const InfoIcon = ({
-  className = "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0",
-}) => (
+const InfoIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
     aria-hidden="true"
-    className={className}
+    className= "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
   >
     {" "}
     <path
@@ -174,7 +172,7 @@ const SearchIcon = () => (
   </svg>
 );
 
-// --- Assign Subjects Modal Component ---
+// --- Assign Subjects Modal Component --- //
 const AssignSubjectsModal = ({ facultyMember, onClose, onSave }) => {
   const { subjects } = useTimetableStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -273,7 +271,7 @@ const AssignSubjectsModal = ({ facultyMember, onClose, onSave }) => {
   );
 };
 
-// --- Bulk Import Modal Component ---
+// --- Bulk Import Modal Component --- //
 const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   const [textInput, setTextInput] = useState("");
 
@@ -376,7 +374,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   );
 };
 
-// --- Main Faculty Page Component ---
+// --- Main Faculty App --- //
 export default function Faculty() {
   const {
     faculty,

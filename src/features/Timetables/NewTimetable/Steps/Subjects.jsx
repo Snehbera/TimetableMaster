@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react"; // 1. Import useMemo
+import React, { useState, useRef, useEffect, useMemo } from "react"; 
 import { Link } from "react-router-dom";
 import useTimetableStore from "../../../../Stores/TimetableStore";
 
@@ -149,15 +149,13 @@ const NextIcon = () => (
     />
   </svg>
 );
-const InfoIcon = ({
-  className = "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0",
-}) => (
+const InfoIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
     aria-hidden="true"
-    className={className}
+    className= "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
   >
     <path
       fillRule="evenodd"
@@ -211,29 +209,14 @@ const CrossIcon = () => (
     />
   </svg>
 );
-const ToggleIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-    className="w-3 h-3 opacity-0 group-hover:opacity-100 text-indigo-600 transition-opacity"
-  >
-    <path
-      fillRule="evenodd"
-      d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
 
-// --- Availability Modal (CORRECTED) ---
+
+// --- Availability Modal --- //
 const AvailabilityModal = ({ subject, onClose, onSave }) => {
   const { timings, days } = useTimetableStore();
   const [grid, setGrid] = useState([]);
 
-  // --- THIS IS THE FIX ---
-  // 2. Wrap the definitions in useMemo to prevent re-creation on every render
+  // Wrap the definitions in useMemo to prevent re-creation on every render
   const schoolDays = useMemo(
     () => (days || []).filter((day) => day.isSchoolDay),
     [days]
@@ -435,14 +418,13 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
   );
 };
 
-// --- Bulk Import Modal Component (No Changes) ---
-// ... (BulkImportModal component remains the same)
+// --- Bulk Import Modal for Subjects--- //
 const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   const [importType, setImportType] = useState("csv"); // 'csv' or 'text'
   const [textInput, setTextInput] = useState("");
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef(null);
-
+  
   if (!isOpen) return null;
 
   const handleFileSelect = (e) => {
@@ -681,7 +663,8 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
     </div>
   );
 };
-// --- Main Subjects Component ---
+
+// --- Main Subjects App --- //
 export default function Subjects() {
   const {
     subjects,

@@ -20,40 +20,6 @@ const PresentationChartBarIcon = () => (
     />{" "}
   </svg>
 );
-const BeakerIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-5 h-5 mr-1.5 text-gray-400"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9.75 3.104v5.714a2.25 2.25 0 01-.211 1.004l-1.524 1.524a2.25 2.25 0 00-.211 1.004V18M15 3.104v5.714a2.25 2.25 0 00.211 1.004l1.524 1.524a2.25 2.25 0 01.211 1.004V18m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25V15M15 18a2.25 2.25 0 002.25-2.25V15M9 7.5l3 3m0 0l3-3M12 10.5v5.25"
-    />{" "}
-  </svg>
-);
-const ClockIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-5 h-5 mr-1.5 text-gray-400"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-    />{" "}
-  </svg>
-);
 const PrevIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +57,7 @@ const NextIcon = () => (
   </svg>
 );
 
-// --- Interactive Number Stepper Component ---
+// --- Interactive Number Stepper Component --- //
 const NumberStepper = ({ value, onValueChange }) => (
   <div className="flex items-center">
     <button
@@ -116,7 +82,7 @@ const NumberStepper = ({ value, onValueChange }) => (
   </div>
 );
 
-// --- Stylish Toggle Switch Component ---
+// --- Toggle Switch Component for double slot --- //
 const ToggleSwitch = ({ enabled, onToggle }) => (
   <button
     type="button"
@@ -133,7 +99,7 @@ const ToggleSwitch = ({ enabled, onToggle }) => (
   </button>
 );
 
-// --- Main Classes Page Component ---
+// --- Main Classes App --- //
 export default function Classes() {
   const { subjects, updateSubjectValue, toggleSubjectDoubleSlot } =
     useTimetableStore();

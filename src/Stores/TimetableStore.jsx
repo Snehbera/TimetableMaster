@@ -1,15 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const DYNAMIC_DAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
   let color = "#";
@@ -17,13 +8,6 @@ const getRandomColor = () => {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
-};
-
-const initializeAvailability = (numPeriods, numDays) => {
-  if (numPeriods <= 0 || numDays <= 0) return [];
-  return Array(numPeriods)
-    .fill(null)
-    .map(() => Array(numDays).fill(true));
 };
 
 const initialDays = [
@@ -39,29 +23,17 @@ const initialDays = [
 const useTimetableStore = create(
   persist(
     (set, get) => ({
+      timetableNames: [
+        { id: Date.now(), name: "Untitled", subdivisions: [""] },
+      ],
+      days: initialDays,
       periodsPerDay: 6,
       timings: [],
       subjects: [],
       faculty: [],
       rooms: [],
-      // --- NEW: Updated state structure for timetable names and subdivisions ---
-      timetableNames: [
-        { id: Date.now(), name: "Untitled", subdivisions: [""] },
-      ],
-      days: initialDays,
 
-      setPeriodsPerDay: (newPeriods) => set({ periodsPerDay: newPeriods }),
-      setTimings: (newTimings) => set({ timings: newTimings }),
-      toggleDay: (dayName) =>
-        set((state) => ({
-          days: state.days.map((day) =>
-            day.name === dayName
-              ? { ...day, isSchoolDay: !day.isSchoolDay }
-              : day
-          ),
-        })),
-
-      // --- NEW: Actions for managing timetables and subdivisions ---
+      // --- 1 Step:- Actions for timetables and subdivisions ---
       addTimetableName: () =>
         set((state) => ({
           timetableNames: [
@@ -117,6 +89,20 @@ const useTimetableStore = create(
           ),
         })),
 
+      setPeriodsPerDay: (newPeriods) => set({ periodsPerDay: newPeriods }),
+
+      setTimings: (newTimings) => set({ timings: newTimings }),
+
+      toggleDay: (dayName) =>
+        set((state) => ({
+          days: state.days.map((day) =>
+            day.name === dayName
+              ? { ...day, isSchoolDay: !day.isSchoolDay }
+              : day
+          ),
+        })),
+
+      // --- 2 Step:- Actions for Subjects --- //
       addSubject: () => {
         set((state) => {
           const schoolDays = (state.days || []).filter((d) => d.isSchoolDay);
@@ -141,6 +127,19 @@ const useTimetableStore = create(
           return { subjects: [...state.subjects, newSubject] };
         });
       },
+
+      removeSubject: (id) =>
+        set((state) => ({
+          subjects: state.subjects.filter((subject) => subject.id !== id),
+        })),
+
+      updateSubjectName: (id, newName) =>
+        set((state) => ({
+          subjects: state.subjects.map((subject) =>
+            subject.id === id ? { ...subject, name: newName } : subject
+          ),
+        })),
+
       updateSubjectShortName: (id, newShortName) =>
         set((state) => ({
           subjects: state.subjects.map((subject) =>
@@ -149,22 +148,14 @@ const useTimetableStore = create(
               : subject
           ),
         })),
-      removeSubject: (id) =>
-        set((state) => ({
-          subjects: state.subjects.filter((subject) => subject.id !== id),
-        })),
-      updateSubjectName: (id, newName) =>
-        set((state) => ({
-          subjects: state.subjects.map((subject) =>
-            subject.id === id ? { ...subject, name: newName } : subject
-          ),
-        })),
+
       sortSubjects: () =>
         set((state) => ({
           subjects: [...state.subjects].sort((a, b) =>
             a.name.localeCompare(b.name)
           ),
         })),
+
       bulkImportSubjects: (newSubjectsData) => {
         set((state) => {
           const { timings, days } = state;
@@ -191,6 +182,7 @@ const useTimetableStore = create(
           return { subjects: [...state.subjects, ...newSubjects] };
         });
       },
+
       updateSubjectAvailability: (id, newAvailability) =>
         set((state) => ({
           subjects: state.subjects.map((subject) =>
@@ -200,6 +192,7 @@ const useTimetableStore = create(
           ),
         })),
 
+      // --- 3 Step:- Actions for Faculty --- //
       addFaculty: () => {
         set((state) => ({
           faculty: [
@@ -236,18 +229,19 @@ const useTimetableStore = create(
         }));
       },
 
-      toggleSubjectAssignment: (facultyId, subjectId) => {
+      setAssignedSubjects: (facultyId, subjectIds) => {
         set((state) => ({
-          faculty: state.faculty.map((f) => {
-            if (f.id === facultyId) {
-              const isAssigned = f.assignedSubjects.includes(subjectId);
-              const newAssignedSubjects = isAssigned
-                ? f.assignedSubjects.filter((id) => id !== subjectId)
-                : [...f.assignedSubjects, subjectId];
-              return { ...f, assignedSubjects: newAssignedSubjects };
-            }
-            return f;
-          }),
+          faculty: state.faculty.map((f) =>
+            f.id === facultyId ? { ...f, assignedSubjects: subjectIds } : f
+          ),
+        }));
+      },
+
+      sortFaculty: () => {
+        set((state) => ({
+          faculty: [...state.faculty].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          ),
         }));
       },
 
@@ -285,22 +279,7 @@ const useTimetableStore = create(
         });
       },
 
-      sortFaculty: () => {
-        set((state) => ({
-          faculty: [...state.faculty].sort((a, b) =>
-            a.name.localeCompare(b.name)
-          ),
-        }));
-      },
-
-      setAssignedSubjects: (facultyId, subjectIds) => {
-        set((state) => ({
-          faculty: state.faculty.map((f) =>
-            f.id === facultyId ? { ...f, assignedSubjects: subjectIds } : f
-          ),
-        }));
-      },
-      // --- NEW: Actions for the Classes page ---
+      // --- 4 Step:- Actions for Classes --- //
       updateSubjectValue: (subjectId, field, value) => {
         set((state) => ({
           subjects: state.subjects.map((s) =>
@@ -318,69 +297,8 @@ const useTimetableStore = create(
           ),
         }));
       },
-      addRoom: (type) => {
-        // Takes 'classroom' or 'lab' as an argument
-        set((state) => {
-          // Get the current school days and periods to calculate availability grid size
-          const schoolDays = (state.days || []).filter((d) => d.isSchoolDay);
-          const periodsOnly = (state.timings || []).filter(
-            (t) => t.type === "period"
-          );
 
-          const newRoom = {
-            id: Date.now(),
-            name: "",
-            type: type, // Use the provided type ('classroom' or 'lab')
-            homeRoomFor: null,
-            color: getRandomColor(),
-            // Initialize the availability grid based on current settings
-            availability: Array(periodsOnly.length)
-              .fill(null)
-              .map(() => Array(schoolDays.length).fill(true)),
-          };
-          return { rooms: [...state.rooms, newRoom] };
-        });
-      },
-
-      removeRoom: (roomId) => {
-        set((state) => ({
-          rooms: state.rooms.filter((r) => r.id !== roomId),
-        }));
-      },
-
-      updateRoomName: (roomId, newName) => {
-        set((state) => ({
-          rooms: state.rooms.map((r) =>
-            r.id === roomId ? { ...r, name: newName } : r
-          ),
-        }));
-      },
-
-      updateRoomType: (roomId, newType) => {
-        set((state) => ({
-          rooms: state.rooms.map((r) =>
-            r.id === roomId ? { ...r, type: newType } : r
-          ),
-        }));
-      },
-
-      assignHomeRoom: (roomId, assignment) => {
-        set((state) => ({
-          rooms: state.rooms.map((r) =>
-            r.id === roomId ? { ...r, homeRoomFor: assignment } : r
-          ),
-        }));
-      },
-
-      updateRoomAvailability: (roomId, newAvailability) => {
-        set((state) => ({
-          rooms: state.rooms.map((r) =>
-            r.id === roomId ? { ...r, availability: newAvailability } : r
-          ),
-        }));
-      },
-
-      // --- NEW: This action will be called when the Rooms page loads ---
+      // --- 5 Step:- Actions for Rooms --- //
       initializeRooms: () => {
         set((state) => {
           const { timetableNames, subjects, rooms } = state;
@@ -453,8 +371,8 @@ const useTimetableStore = create(
           ),
         }));
       },
-    }),
 
+    }),
     {
       name: "timetable-storage",
     }

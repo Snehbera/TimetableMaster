@@ -105,7 +105,7 @@ const NextIcon = () => (
   </svg>
 );
 
-// --- New Lab Assignment Modal ---
+// --- Lab Assignment Modal --- //
 const LabAssignmentModal = ({ subdivision, onClose }) => {
   const { subjects, rooms, updateRoomName } = useTimetableStore();
 
@@ -182,7 +182,7 @@ const LabAssignmentModal = ({ subdivision, onClose }) => {
   );
 };
 
-// --- Main Rooms Page Component ---
+// --- Main Rooms App --- //
 export default function Rooms() {
   const { rooms, timetableNames, subjects, initializeRooms, updateRoomName } =
     useTimetableStore();
@@ -235,7 +235,6 @@ export default function Rooms() {
 
   return (
     <>
-      {/* Main container is now full-width */}
       <div className="font-sans p-6 bg-gray-50 min-h-screen">
         <div className="w-full">
           <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
