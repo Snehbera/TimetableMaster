@@ -1,22 +1,20 @@
 const generateJsonForBackend = (state) => {
-  // Create helper maps for quick lookups by ID
-  const divisionIdToName = Object.fromEntries(
-    state.timetableNames.map((tt) => [tt.id, tt.name])
+  // --- Helper maps for quick lookups ---
+  const subjectIdToShortName = Object.fromEntries(
+    state.subjects.map((s) => [s.id, s.shortName])
   );
-  
+
   // --- 1. SETTINGS ---
-  const settings = {
+   const settings = {
     working_days: state.days.filter((d) => d.isSchoolDay).map((d) => d.fullName),
     periods_per_day: state.timings
       .filter((t) => t.type === "period")
-      .map((t) => `${t.startTime}-${t.endTime}`), // Assumes timings have startTime and endTime
+      .map((t) => `${t.startTime}-${t.endTime}`),
     breaks_after_period: state.timings.reduce((acc, timing, index) => {
       if (timing.type === "break") {
-        const precedingPeriods = state.timings
-          .slice(0, index)
-          .filter((t) => t.type === "period").length;
+        const precedingPeriods = state.timings.slice(0, index).filter((t) => t.type === "period").length;
         if (precedingPeriods > 0) {
-          acc[precedingPeriods] = `${timing.name} (${timing.startTime}-${timing.endTime})`;
+          acc[precedingPeriods] = `${timing.startTime}-${timing.endTime}`;
         }
       }
       return acc;
@@ -24,11 +22,10 @@ const generateJsonForBackend = (state) => {
   };
 
   // --- 2. DIVISIONS ---
-  const divisions = Object.fromEntries(
+    const divisions = Object.fromEntries(
     state.timetableNames.map((tt) => [
       tt.name,
       {
-        off_day: tt.offDay || null, // Assumes you add 'offDay' to your timetableNames objects
         partitions: tt.subdivisions,
       },
     ])
@@ -51,35 +48,26 @@ const generateJsonForBackend = (state) => {
     state.faculty.map((f) => [f.shortName, { name: f.name }])
   );
 
-  // --- 5. FACULTY ASSIGNMENTS (Correctly Implemented) ---
+  // --- 5. FACULTY ASSIGNMENTS (✅ CORRECTED LOGIC) ---
+  // This logic now works with your simplified `assignedSubjects` array.
+  // It maps each subject to a list of faculty who can teach it.
   const faculty_assignments = {};
-
-  // For each subject...
-  state.subjects.forEach((subject) => {
-    if (!subject.shortName) return; // Skip if no short name
-    
-    const assignmentsForSubject = {};
-    
-    // Find which faculty teaches it and in which division
-    state.faculty.forEach((fac) => {
-      // Check if this faculty has an assignment for the current subject
-      const assignedDivisionIds = fac.assignments?.[subject.id];
-      
-      if (assignedDivisionIds && fac.shortName) {
-        // If yes, add an entry for each division they teach it in
-        assignedDivisionIds.forEach((divId) => {
-          const divisionName = divisionIdToName[divId];
-          if (divisionName) {
-            assignmentsForSubject[divisionName] = fac.shortName;
+  state.faculty.forEach((fac) => {
+    if (fac.shortName && fac.assignedSubjects) {
+      fac.assignedSubjects.forEach((subjectId) => {
+        const subjectShortName = subjectIdToShortName[subjectId];
+        if (subjectShortName) {
+          // If this subject isn't in our map yet, add it with an empty array
+          if (!faculty_assignments[subjectShortName]) {
+            faculty_assignments[subjectShortName] = [];
           }
-        });
-      }
-    });
-
-    if (Object.keys(assignmentsForSubject).length > 0) {
-      faculty_assignments[subject.shortName] = assignmentsForSubject;
+          // Add the current faculty member's short name to the list for this subject
+          faculty_assignments[subjectShortName].push(fac.shortName);
+        }
+      });
     }
   });
+
 
   return {
     settings,

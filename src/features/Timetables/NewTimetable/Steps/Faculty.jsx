@@ -128,7 +128,7 @@ const InfoIcon = () => (
     viewBox="0 0 24 24"
     fill="currentColor"
     aria-hidden="true"
-    className= "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
+    className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
   >
     {" "}
     <path
@@ -177,7 +177,7 @@ const AssignSubjectsModal = ({ facultyMember, onClose, onSave }) => {
   const { subjects } = useTimetableStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubjectIds, setSelectedSubjectIds] = useState(
-    facultyMember.assignedSubjects
+    facultyMember.assignedSubjects || []
   );
 
   const filteredSubjects = useMemo(() => {
@@ -383,7 +383,7 @@ export default function Faculty() {
     removeFaculty,
     updateFacultyName,
     updateFacultyShortName,
-    setFacultyAssignment,
+    setAssignedSubjects,
     sortFaculty,
     bulkImportFaculty,
   } = useTimetableStore();
@@ -403,7 +403,7 @@ export default function Faculty() {
   // Helper function to render the assign subjects button, avoiding code duplication
   const renderAssignSubjectsButton = (facultyMember) => {
     const assignedSubjects = subjects.filter((s) =>
-      facultyMember.assignedSubjects.includes(s.id)
+      (facultyMember.assignedSubjects || []).includes(s.id)
     );
     return (
       <button
@@ -690,7 +690,7 @@ export default function Faculty() {
         <AssignSubjectsModal
           facultyMember={editingFaculty}
           onClose={() => setEditingFaculty(null)}
-          onSave={setFacultyAssignment}
+          onSave={setAssignedSubjects}
         />
       )}
     </>

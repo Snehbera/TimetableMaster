@@ -60,6 +60,12 @@ npm install
 # Run the development server
 npm run dev
 
+# State-management 
+npm install zustnad
+
+# Routing
+npm install react-router-dom
+
 # API request
 npm install axios
 ```

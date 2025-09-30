@@ -16,6 +16,7 @@ import Subjects from "./features/Timetables/NewTimetable/Steps/Subjects.jsx";
 import Faculty from "./features/Timetables/NewTimetable/Steps/Faculty.jsx";
 import Classes from "./features/Timetables/NewTimetable/Steps/Classes.jsx"
 import Rooms from "./features/Timetables/NewTimetable/Steps/Rooms.jsx";
+import GeneratedJSON from "./features/Timetables/NewTimetable/Steps/GeneratedJSON.jsx"
 
 const router = createBrowserRouter([
   // Route for the landing page
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
        {
         path: "rooms",
         element: <Rooms />,
+      },
+        {
+        path: "JSON",
+        element: <GeneratedJSON />,
       },
     ],
   },

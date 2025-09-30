@@ -201,8 +201,7 @@ const useTimetableStore = create(
               id: Date.now(),
               name: "",
               shortName: "",
-              // Use 'assignments' object instead of 'assignedSubjects' array
-              assignments: {}, // e.g., { subjectId: [divisionId1, divisionId2] }
+              assignedSubjects: [], // Use an array to match the component
             },
           ],
         }));
@@ -230,20 +229,11 @@ const useTimetableStore = create(
         }));
       },
 
-      setFacultyAssignment: (facultyId, subjectId, divisionIds) => {
+      setAssignedSubjects: (facultyId, subjectIds) => {
         set((state) => ({
-          faculty: state.faculty.map((f) => {
-            if (f.id === facultyId) {
-              const newAssignments = { ...f.assignments };
-              if (divisionIds.length > 0) {
-                newAssignments[subjectId] = divisionIds; // Set/update divisions for the subject
-              } else {
-                delete newAssignments[subjectId]; // Remove subject if no divisions are selected
-              }
-              return { ...f, assignments: newAssignments };
-            }
-            return f;
-          }),
+          faculty: state.faculty.map((f) =>
+            f.id === facultyId ? { ...f, assignedSubjects: subjectIds } : f
+          ),
         }));
       },
 
