@@ -30,22 +30,18 @@ class TimetableSolver:
         self.breaks = {int(p) - 1: d for p, d in config['settings'].get('breaks_after_period', {}).items()}
         self.lab_invalid_start_slots = {int(p) - 1 for p in config['settings'].get('breaks_after_period', {})}
         
-        # New constraint from user request
         self.max_labs_per_day = config['settings'].get('max_labs_per_day', 2)
 
-        # The main timetable structure being built
         self.timetable: Dict[str, Dict[str, List[Optional[Dict]]]] = {
             div: {day: [None] * self.slots_per_day for day in self.working_days}
             for div in self.divisions
         }
         
-        # New tracker for daily constraints -> This is key for performance!
         self.daily_schedule_tracker = defaultdict(lambda: defaultdict(lambda: {
             'subjects': set(),
             'labs': 0
         }))
 
-        # Correctly initialize the pool of unassigned labs
         self.unassigned_labs: Dict[str, Set[str]] = defaultdict(set)
         lab_subjects = {sub for sub, details in self.subjects.items() if details.get('labs', 0) > 0}
         for div, div_partitions in self.partitions.items():
@@ -63,12 +59,27 @@ class TimetableSolver:
     def _get_faculty(self, division: str, subject_code: str) -> Optional[str]:
         return self.faculty_assignments.get(subject_code, {}).get(division)
 
+    # --- NEW HELPER FUNCTION FOR COMPACTNESS ---
+    def _is_placement_compact(self, div: str, day: str, slot_idx: int) -> bool:
+        """
+        Checks if placing a class at slot_idx would create an internal gap.
+        A placement is valid if it's the first class of the day or if it's
+        placed immediately after another class.
+        """
+        # A placement at the first slot is always compact.
+        if slot_idx == 0:
+            return True
+        # A placement is compact if the previous slot is NOT empty.
+        if self.timetable[div][day][slot_idx - 1] is not None:
+            return True
+        # If the previous slot is empty, the placement is only valid if ALL previous slots are empty.
+        # This allows the first class of the day to start at a later slot if needed (e.g., due to faculty clashes),
+        # without violating the "no internal gaps" rule.
+        return all(s is None for s in self.timetable[div][day][:slot_idx])
+
+
     def _create_required_classes_list(self) -> List[ClassInfo]:
-        """
-        Builds a list of all classes to be scheduled.
-        Scheduling heavier blocks (labs, double lectures) first is a crucial
-        heuristic for performance (most-constrained-variable first).
-        """
+        """Builds a list of all classes to be scheduled."""
         required = []
         for div in self.divisions:
             num_lab_sessions_for_div = sum(
@@ -93,19 +104,13 @@ class TimetableSolver:
         return blocks + lectures
 
     def _precompute_possible_slots(self) -> Tuple[Dict[str, list], Dict[str, list]]:
-        # This function is well-structured and remains unchanged.
         lecture_slots, lab_slots = {}, {}
         for div in self.divisions:
-            lec_slots_for_div = []
-            lab_slots_for_div = []
+            lec_slots_for_div, lab_slots_for_div = [], []
             for day in self.working_days:
                 if day == self.off_days.get(div):
                     continue
-                
-                # Possible start slots for single lectures
                 lec_slots_for_div.extend([(day, s) for s in range(self.slots_per_day)])
-                
-                # Possible start slots for 2-period labs/double lectures
                 valid_lab_starts = [s for s in range(self.slots_per_day - 1) if s not in self.lab_invalid_start_slots]
                 lab_slots_for_div.extend([(day, s) for s in valid_lab_starts])
             
@@ -116,7 +121,6 @@ class TimetableSolver:
         return lecture_slots, lab_slots
 
     def find_valid_lab_combination(self, div: str, day: str, slot: int) -> Optional[ConcurrentLabInfo]:
-        # This function is well-structured and remains largely unchanged.
         partitions = self.partitions[div]
         lab_pools = [list(self.unassigned_labs.get(p, [])) for p in partitions]
         if not all(lab_pools): return None
@@ -130,13 +134,11 @@ class TimetableSolver:
             faculty_combo = [self._get_faculty(div, subj) for subj in lab_combo]
             if any(f is None for f in faculty_combo) or len(set(faculty_combo)) != len(partitions): continue
 
-            # Check for faculty clashes with all other divisions
             clash = False
             for s_offset in range(2):
                 current_slot = slot + s_offset
                 for other_div in self.divisions:
                     if other_div == div or self.off_days.get(other_div) == day: continue
-                    
                     other_class = self.timetable[other_div][day][current_slot]
                     if not other_class: continue
 
@@ -144,7 +146,7 @@ class TimetableSolver:
                     if isinstance(other_class, dict) and other_class.get('subject'):
                         fac = self._get_faculty(other_div, other_class['subject'])
                         if fac: other_facs.add(fac)
-                    elif isinstance(other_class, list): # It's a lab block
+                    elif isinstance(other_class, list):
                         other_facs.update(item['faculty'] for item in other_class)
                     
                     if not set(faculty_combo).isdisjoint(other_facs):
@@ -158,14 +160,12 @@ class TimetableSolver:
         return None
 
     def _backtrack(self, class_index: int) -> bool:
-        """
-        Core recursive backtracking function with optimized constraint checking.
-        """
+        """Core recursive backtracking function with optimized constraint checking."""
         if time.time() - self.start_time > self.timeout:
             self.timed_out = True
             return False
         if class_index >= len(self.all_required_classes):
-            return True # Success
+            return True
 
         class_info = self.all_required_classes[class_index]
         div = class_info['division']
@@ -177,18 +177,20 @@ class TimetableSolver:
         )
 
         for day, slot_idx in possible_slots_list:
+            # === NEW COMPACTNESS CHECK ADDED HERE ===
+            if not self._is_placement_compact(div, day, slot_idx):
+                continue
+            
             # --- Single Lecture Placement ---
             if class_type == 'Lec':
                 subject = class_info['subject']
                 fac = self._get_faculty(div, subject)
 
-                # === FAST CONSTRAINT CHECKS ===
-                # 1. Is the slot free?
+                # FAST CONSTRAINT CHECKS
                 if self.timetable[div][day][slot_idx] is not None: continue
-                # 2. Has this subject already been taught today?
                 if subject in self.daily_schedule_tracker[div][day]['subjects']: continue
-                # 3. Is the faculty available?
                 if not fac: continue
+                
                 clash = False
                 for other_div in self.divisions:
                     if other_div == div or self.off_days.get(other_div) == day: continue
@@ -196,42 +198,36 @@ class TimetableSolver:
                     if not other_class: continue
                     
                     other_fac = self._get_faculty(other_div, other_class.get('subject')) if isinstance(other_class, dict) else None
-                    if isinstance(other_class, list): # Check against lab blocks
+                    if isinstance(other_class, list):
                         if fac in {item['faculty'] for item in other_class}: clash = True
                     elif other_fac and other_fac == fac: clash = True
-                    
                     if clash: break
                 if clash: continue
 
-                # === PLACE LECTURE & UPDATE STATE ===
+                # PLACE & RECURSE
                 self.timetable[div][day][slot_idx] = class_info
                 self.daily_schedule_tracker[div][day]['subjects'].add(subject)
-                
                 if self._backtrack(class_index + 1): return True
 
-                # === BACKTRACK: Revert State ===
+                # BACKTRACK
                 self.daily_schedule_tracker[div][day]['subjects'].remove(subject)
                 self.timetable[div][day][slot_idx] = None
 
-            # --- Double Period Placement (Labs and Double Lectures) ---
+            # --- Double Period Placement ---
             elif class_type in ['DoubleLec', 'ConcurrentLabBlock']:
                 duration = 2
                 
-                # === FAST CONSTRAINT CHECKS ===
-                # 1. Are the slots free?
                 if slot_idx + duration > self.slots_per_day: continue
                 if any(self.timetable[div][day][slot_idx + i] for i in range(duration)): continue
                 
                 placed_object = None
-                
                 if class_type == 'DoubleLec':
                     subject = class_info['subject']
                     fac = self._get_faculty(div, subject)
                     
-                    # 2a. Has this subject already been taught today?
                     if subject in self.daily_schedule_tracker[div][day]['subjects']: continue
-                    # 3a. Is the faculty available for both slots?
                     if not fac: continue
+                    
                     clash = False
                     for s_offset in range(duration):
                         for other_div in self.divisions:
@@ -243,24 +239,19 @@ class TimetableSolver:
                             if isinstance(other_class, list):
                                 if fac in {item['faculty'] for item in other_class}: clash = True
                             elif other_fac and other_fac == fac: clash = True
-                            
                             if clash: break
                         if clash: break
                     if clash: continue
-                    
                     placed_object = class_info
 
                 elif class_type == 'ConcurrentLabBlock':
-                    # 2b. Is the daily lab limit reached?
                     if self.daily_schedule_tracker[div][day]['labs'] >= self.max_labs_per_day: continue
-                    # 3b. Find a valid, clash-free combination of labs/faculty
                     lab_combo = self.find_valid_lab_combination(div, day, slot_idx)
                     if not lab_combo: continue
                     placed_object = lab_combo
 
-                # If a valid placement was found for either DoubleLec or Lab
                 if placed_object:
-                    # === PLACE BLOCK & UPDATE STATE ===
+                    # PLACE & RECURSE
                     if class_type == 'DoubleLec':
                         self.daily_schedule_tracker[div][day]['subjects'].add(placed_object['subject'])
                     elif class_type == 'ConcurrentLabBlock':
@@ -273,7 +264,7 @@ class TimetableSolver:
                     
                     if self._backtrack(class_index + 1): return True
 
-                    # === BACKTRACK: Revert State ===
+                    # BACKTRACK
                     self.timetable[div][day][slot_idx] = None
                     self.timetable[div][day][slot_idx + 1] = None
                     if class_type == 'DoubleLec':
@@ -284,17 +275,10 @@ class TimetableSolver:
                             self.unassigned_labs[lab['partition']].add(lab['lab'])
         return False
 
-    def solve(self, timeout: int = 10) -> Dict:
+    # --- CORRECTED RETURN SIGNATURE ---
+    def solve(self, timeout: int = 10) -> Tuple[bool, Dict]:
         """
         Attempts to solve the timetable problem.
-
-        Args:
-            timeout (int): The maximum time in seconds to search for a solution.
-
-        Returns:
-            A tuple containing:
-            - bool: True if a solution was found, False otherwise.
-            - dict: The generated timetable if successful, otherwise an empty dict.
         """
         self.start_time = time.time()
         self.timeout = timeout
@@ -305,10 +289,10 @@ class TimetableSolver:
         
         if self.timed_out:
             print(f"Solver timed out after {self.timeout} seconds. No solution found.")
-            return {}
+            return  {}
         if success:
             print(f"Solution found in {time.time() - self.start_time:.2f} seconds.")
-            return self.timetable
+            return  self.timetable
         else:
             print("No solution could be found that satisfies all constraints.")
             return {}

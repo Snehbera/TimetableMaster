@@ -36,16 +36,15 @@
     }
   },
   "subjects": {
-    "ADA": { "name": "Analysis And Design Of Algorithms", "lectures": 3, "labs": 1, "double_periods": 0 },
-    "APY": { "name": "Advanced Python Programming", "lectures": 2, "labs": 1, "double_periods": 0 },
-    "IOT": { "name": "Microcontroller And Interfacing With Signals, Systems And Iot", "lectures": 3, "labs": 1, "double_periods": 0 },
-    "OS": { "name": "Operating Systems", "lectures": 3, "labs": 1, "double_periods": 0 },
-    "SE": { "name": "Software Engineering", "lectures": 2, "labs": 1, "double_periods": 0 },
-    "C2P": { "name": "Concept To Practice", "lectures": 2, "labs": 0, "double_periods": 0 },
-    "CAP": { "name": "Career Acceleration Program", "lectures": 0, "labs": 0, "double_periods": 1 },
-    "AP": { "name": "Android Programming", "lectures": 2, "labs": 1, "double_periods": 0 },
-    "MN": { "name": "Modern Networks", "lectures": 1, "labs": 0, "double_periods": 0 },
-    "SS": { "name": "Signal Sistem", "lectures": 1, "labs": 0, "double_periods": 0 }
+    "ADA": { "name": "Analysis And Design Of Algorithms", "lectures": 3, "labs": 1 },
+    "APY": { "name": "Advanced Python Programming", "lectures": 2, "labs": 1 },
+    "IOT": { "name": "Microcontroller And Interfacing With Signals, Systems And Iot", "lectures": 3, "labs": 1 },
+    "OS": { "name": "Operating Systems", "lectures": 3, "labs": 1 },
+    "SE": { "name": "Software Engineering", "lectures": 2, "labs": 1 },
+    "C2P": { "name": "Concept To Practice", "lectures": 2, "labs": 0 },
+    "CAP": { "name": "Career Acceleration Program", "lectures": 0, "labs": 0, "double_periods":1 },
+    "AP": { "name": "Android Programming", "lectures": 2, "labs": 1 },
+    "MN": { "name": "Modern Networks / Signal Sistem", "lectures": 1, "labs": 0 }
   },
   "faculty": {
     "BUT": { "name": "Birju Tank" },
@@ -68,11 +67,10 @@
     "APY": { "BY": "KSR", "BZ": "KSR" },
     "AP": { "BX": "DRP" },
     "IOT": { "BX": "YBS", "BY": "YNM", "BZ": "YNM" },
-    "MN":  { "BX": "SNJ", "BY": "ARV" },
+    "MN":  { "BX": "SNJ", "BY": "ARV", "BZ": "ARV" },
     "SE":  { "BX": "NPB", "BY": "NPB", "BZ": "NPB" },
     "OS":  { "BX": "KVP", "BY": "NMV", "BZ": "NMV" },
     "C2P": { "BX": "NMV", "BY": "DRP", "BZ": "DRP" },
-    "CAP": { "BX": "NRV", "BY": "HHM", "BZ": "NRV" },
-    "SS": { "BZ": "ARV"}
+    "CAP": { "BX": "NRV", "BY": "HHM", "BZ": "NRV" }
   }
 }
