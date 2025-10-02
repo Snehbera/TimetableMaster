@@ -19,23 +19,6 @@ const BuildingOfficeIcon = () => (
     />{" "}
   </svg>
 );
-const BeakerIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-5 h-5 mr-2 text-indigo-500"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9.75 3.104v5.714a2.25 2.25 0 01-.211 1.004l-1.524 1.524a2.25 2.25 0 00-.211 1.004V18m-5.25 0h5.25m-5.25 0a2.25 2.25 0 01-2.25-2.25V15M15 18a2.25 2.25 0 002.25-2.25V15m-5.25-1.5L15 9.75M9 7.5l3 3m0 0l3-3m-3 3v5.25m3-13.5v5.714a2.25 2.25 0 00.211 1.004l1.524 1.524a2.25 2.25 0 01.211 1.004V18"
-    />{" "}
-  </svg>
-);
 const HomeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -237,7 +220,7 @@ export default function Rooms() {
     <>
       <div className="font-sans p-6 bg-gray-50 min-h-screen">
         <div className="w-full">
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mb-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900 flex items-center">
@@ -299,7 +282,7 @@ export default function Rooms() {
               {/* Labs Section */}
               <div>
                 <div className="flex items-center mb-4">
-                  <BeakerIcon />
+                  <HomeIcon />
                   <h3 className="text-lg font-semibold text-gray-800">Labs</h3>
                 </div>
                 <div className="overflow-x-auto border border-gray-200 rounded-lg">
