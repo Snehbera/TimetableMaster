@@ -1,103 +1,94 @@
 {% load app_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Timetable Generation Result</title>
+    <title>Timetable - Semester {{ semester.number }}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .success { color: green; }
-        .failure { color: red; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        .lab { background-color: #e0f7fa; font-weight: bold; }
-        .lec { background-color: #fff8e1; }
-        .double-lec { background-color: #ffebee; font-weight: bold; } /* NEW STYLE */
-        .break { background-color: #ccc; font-weight: bold; }
-        .free { background-color: #eee; color: #777; font-style: italic; }
-        .offday { background-color: #fdd; color: #555; font-weight: bold; }
-        h2 { margin-top: 30px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 40px; table-layout: fixed; }
+        th, td { border: 1px solid #444; padding: 6px; text-align: center; font-size: 14px; min-height: 50px; }
+        th { background-color: #c0c0c0; font-weight: bold; }
+        .offday { background-color: #eee; font-weight: bold; color: #888; }
+        .doublelec { background-color: #d9eaf7; }
+        .lab { background-color: #e6f4ea; }
+        .block-inner { display: flex; flex-direction: column; font-size: 0.9em; justify-content: center; height: 100%; }
+        .faculty { font-style: italic; color: #333; }
+        .lab-item { margin: 2px 0; }
+        h1, h2 { text-align: center; margin-bottom: 15px; }
+        .error { color: red; text-align: center; font-size: 1.2em; }
     </style>
 </head>
 <body>
-    <h1>Intelligent Timetable Generation Prototype</h1>
 
-    {% if error %}
-        <p class="failure">❌ **System Error:** {{ error }}</p>
-    {% elif result.solution_found %}
-        <h2 class="success">✅ Timetable Generated Successfully!</h2>
-        <p>Runtime: **{{ result.runtime_seconds|floatformat:2 }}** seconds.</p>
+<h1>Semester {{ semester.number }} Timetable</h1>
 
-        {% for div_code, div_data in divisions.items %}
-            {% with timetable_data=timetable|get_item:div_code %}
-            
-            <h2>Division {{ div_code }} (Off Day: {{ div_data.off_day }})</h2>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Day</th>
-                        {% for slot_time in settings.periods_per_day %}
-                            <th>{{ slot_time }}</th>
-                            {% if forloop.counter|stringformat:"d" in settings.breaks_after_period %}
-                                <th class="break">{{ settings.breaks_after_period|get_item:forloop.counter|slice:":8" }}</th>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for day in working_days %}
-                    <tr>
-                        <td style="font-weight: bold;">{{ day }}</td>
-                        {% if day == div_data.off_day %}
-                            <td colspan="{{ settings.periods_per_day|length|add:settings.breaks_after_period|length }}" class="offday">OFF DAY</td>
-                        {% else %}
-                            {% for slot_data in timetable_data|get_item:day %}
-                                
-                                {% if slot_data is None %}
-                                    <td class="free">Free</td>
-                                
-                                {% elif slot_data.type == 'Lec' %}
-                                    <td class="lec">{{ slot_data.subject }}-Lec <br>({{ slot_data.faculty }})</td>
-                                
-                                {% elif slot_data.type == 'DoubleLec' %}
-                                    <td colspan="2" class="double-lec">
-                                        {{ slot_data.subject }}-Lec (DOUBLE) <br>({{ slot_data.faculty }})
-                                    </td>
+{% if error %}
+    <h2 class="error">{{ error }}</h2>
+{% elif timetable %}
+    <h2>Solution Found in {{ result.runtime_seconds|floatformat:2 }} seconds</h2>
+{% endif %}
 
-                                {% elif slot_data.type == 'LabBlock' %}
-                                    <td colspan="2" class="lab">
-                                        {% for lab_part in slot_data.details %}
-                                            <b>{{ lab_part.partition }}:</b> {{ lab_part.lab }} ({{ lab_part.faculty }})<br>
-                                        {% endfor %}
-                                    </td>
-                                
-                                {% elif slot_data.type == 'LabPlaceholder' or slot_data.type == 'DoubleLecPlaceholder' %}
-                                    {% comment %} This slot is covered by the preceding colspan="2" - render nothing {% endcomment %}
-                                
-                                {% endif %}
-
-                                {% comment %} Break insertion logic {% endcomment %}
-                                {% if forloop.counter0|add:1|stringformat:"d" in settings.breaks_after_period %}
-                                    <td class="break"></td>
-                                {% endif %}
-                            {% endfor %}
+{% for div_code, days_list in timetable.items %}
+    <h2>Division: {{ div_code }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>TIME</th>
+                {% for day_obj in days_list %}
+                    <th>{{ day_obj.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot_no, slot_time in slots.items %}
+            <tr>
+                <td>{{ slot_time }}</td>
+                {% for day_obj in days_list %}
+                    {% if day_obj.is_offday %}
+                        {% if forloop.parentloop.counter0 == 0 %}
+                            <td class="offday" rowspan="{{ slots|length }}">OFF</td>
                         {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            {% endwith %}
-        {% endfor %}
+                    {% else %}
 
-    {% else %}
-        <h2 class="failure">❌ Generation Failed</h2>
-        <p>Could not generate a valid timetable within **{{ result.runtime_seconds|floatformat:2 }}** seconds. Please check the constraints.</p>
-    {% endif %}
-
-    <p style="margin-top: 40px;"><a href="{% url 'generate_timetable' %}">Try Generating Again</a></p>
+                        {# The final corrected line using our new filter #}
+                        {% with cell=day_obj.slots|get_item:slot_no %}
+                            {% if cell.type == 'Placeholder' %}
+                                {# This cell is part of a larger block, so we render nothing #}
+                            {% elif cell.type == 'DoubleLec' %}
+                                <td class="doublelec" rowspan="2">
+                                    <div class="block-inner">
+                                        <span>{{ cell.subject }}</span>
+                                        <span class="faculty">{{ cell.faculty }}</span>
+                                    </div>
+                                </td>
+                            {% elif cell.type == 'LabBlock' %}
+                                <td class="lab" rowspan="2">
+                                    <div class="block-inner">
+                                        {% for lab in cell.details %}
+                                            <div class="lab-item">{{ lab.partition }}: {{ lab.lab }} ({{ lab.faculty }})</div>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            {% elif cell.type == 'Lec' %}
+                                <td>
+                                    <div class="block-inner">
+                                        <span>{{ cell.subject }}</span>
+                                        <span class="faculty">{{ cell.faculty }}</span>
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
 
 </body>
 </html>

@@ -7,108 +7,94 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prototype.settings")
 django.setup()
 
 from timetable_app.models import *
-from django.db import IntegrityError
+
+def populate_semester_data(semester_obj, semester_data):
+    """Helper function to populate the database for a single semester."""
+    
+    # This part remains the same, as it correctly clears semester-specific data
+    print(f"  - Clearing existing data for {semester_obj.name}...")
+    FacultyAssignment.objects.filter(subject__semester=semester_obj).delete()
+    Division.objects.filter(semester=semester_obj).delete()
+    Subject.objects.filter(semester=semester_obj).delete()
+
+    print(f"  - Loading Subjects for {semester_obj.name}...")
+    for code, details in semester_data.get("subjects", {}).items():
+        Subject.objects.get_or_create(
+            code=code,
+            defaults={**details, "semester": semester_obj}
+        )
+
+    print(f"  - Loading Divisions for {semester_obj.name}...")
+    for code, details in semester_data.get("divisions", {}).items():
+        partitions_str = ",".join(details.get("partitions", []))
+        Division.objects.get_or_create(
+            code=code,
+            defaults={
+                "name": f"{code} Division",
+                "off_day": details.get("off_day"),
+                "partitions": partitions_str, 
+                "semester": semester_obj
+            }
+        )
+    
+    print(f"  - Loading Assignments for {semester_obj.name}...")
+    for subject_code, assignments in semester_data.get("faculty_assignments", {}).items():
+        try:
+            subject_obj = Subject.objects.get(code=subject_code, semester=semester_obj)
+            for division_code, faculty_code in assignments.items():
+                division_obj = Division.objects.get(code=division_code, semester=semester_obj)
+                faculty_obj = Faculty.objects.get(code=faculty_code)
+                FacultyAssignment.objects.get_or_create(
+                    subject=subject_obj,
+                    division=division_obj,
+                    defaults={"faculty": faculty_obj}
+                )
+        except (Subject.DoesNotExist, Division.DoesNotExist, Faculty.DoesNotExist) as e:
+            print(f"    - Skipping assignment due to a missing object: {e}")
 
 
-
-from timetable_app.models import (
-    Faculty,
-    Subject,
-    Division,
-    FacultyAssignment,
-    TimetableResult
-)
-
-def import_data_from_json(file_path):
+def import_data_from_master_json(file_path):
     """
-    Imports data from a JSON file into the specified Django models.
+    Imports data from a single master JSON file for ALL semesters found within it.
     """
     with open(file_path, 'r') as f:
         data = json.load(f)
 
-    # 1. Clear existing data to prevent duplicates on re-run
-    #    (This is an optional but recommended step for development)
+    # --- NEW: Clear ALL relevant data first ---
+    print("Clearing all existing timetable data...")
     FacultyAssignment.objects.all().delete()
     Division.objects.all().delete()
     Subject.objects.all().delete()
+    Semester.objects.all().delete() # Also clears semesters for a true fresh start
     Faculty.objects.all().delete()
-    TimetableResult.objects.all().delete()
-    print("Cleaned existing data for specified models...")
+    Setting.objects.all().delete()
+    print("All existing data cleared.")
+    # --- END NEW BLOCK ---
 
-    # 2. Load Faculty
-    print("Loading Faculty data...")
-    for code, details in data["faculty"].items():
+    # 1. Load Shared Data (Settings and Faculty)
+    print("\nLoading shared data (Settings and Faculty)...")
+    for key, value in data.get("settings", {}).items():
+        Setting.objects.update_or_create(key=key, defaults={"value": value})
+    
+    for code, details in data.get("faculty", {}).items():
         Faculty.objects.get_or_create(code=code, defaults={"name": details["name"]})
+    print("Shared data loaded.")
 
-    # 3. Load Subjects
-    print("Loading Subject data...")
-    for code, details in data["subjects"].items():
-        Subject.objects.get_or_create(
-            code=code,
-            defaults={
-                "name": details["name"],
-                "lectures": details["lectures"],
-                "labs": details["labs"],
-                "double_periods": details.get("double_periods", 0)
-            }
-        )
-    
-    # 4. Load Divisions
-    print("Loading Division data...")
-    for code, details in data["divisions"].items():
-        # Convert the list of partitions to a comma-separated string
-        partitions_str = ",".join(details["partitions"])
-        Division.objects.get_or_create(
-            code=code,
-            defaults={
-                "off_day": details["off_day"],
-                "partitions": partitions_str
-            }
-        )
+    # 2. Automatically find and process each semester block
+    for key, semester_data in data.items():
+        if key.isdigit():
+            semester_number = int(key)
+            print(f"\nProcessing Semester {semester_number}...")
+            
+            # Since we cleared all semesters, we create a new one here
+            semester_obj, _ = Semester.objects.get_or_create(number=semester_number)
+            
+            # The helper function no longer needs to clear data, but it's safe to leave it
+            populate_semester_data(semester_obj, semester_data)
 
-    # 5. Load Faculty Assignments
-    print("Loading Faculty Assignment data...")
-    settings_config = data["settings"]
-    Setting.objects.update_or_create(
-        key="working_days", defaults={"value": settings_config["working_days"]}
-    )
-    Setting.objects.update_or_create(
-        key="periods_per_day", defaults={"value": settings_config["periods_per_day"]}
-    )
-    
-    # Load breaks_after_period (requires integer keys)
-    # The JSON keys are strings, but the solver logic expects ints (period index).
-    breaks_data = {int(k): v for k, v in settings_config["breaks_after_period"].items()}
-    Setting.objects.update_or_create(
-        key="breaks_after_period", defaults={"value": breaks_data}
-    )
-    print("Loaded Setting data.")
+    print("\nData import complete! 🎉")
 
-    for subject_code, assignments in data["faculty_assignments"].items():
-        try:
-            subject_obj = Subject.objects.get(code=subject_code)
-            for division_code, faculty_code in assignments.items():
-                try:
-                    division_obj = Division.objects.get(code=division_code)
-                    faculty_obj = Faculty.objects.get(code=faculty_code)
-                    FacultyAssignment.objects.get_or_create(
-                        subject=subject_obj,
-                        division=division_obj,
-                        defaults={"faculty": faculty_obj}
-                    )
-                except (Division.DoesNotExist, Faculty.DoesNotExist) as e:
-                    print(f"Skipping assignment for {subject_code} in {division_code}: {e}")
-                except IntegrityError:
-                    print(f"Skipping duplicate assignment for {subject_code} in {division_code}")
-
-        except Subject.DoesNotExist:
-            print(f"Skipping assignments for subject {subject_code}: not found.")
-
-    # 6. TimetableResult (This model is for storing results, so no initial data is loaded from the config file)
-    print("TimetableResult model is for storing generated timetables, no initial data imported.")
-
-    print("Data import complete! 🎉")
 
 if __name__ == "__main__":
-    json_file_path = "config.json"  # Ensure this path is correct
-    import_data_from_json(json_file_path)
+    json_file_path = "config.json"
+    import_data_from_master_json(json_file_path)

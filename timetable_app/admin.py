@@ -1,28 +1,39 @@
-# timetable_app/admin.py
-
 from django.contrib import admin
 from .models import *
- 
-# 1. Basic Model Registration
-# This is the minimum required code to make your models appear in the Admin site.
-admin.site.register(Setting)
-admin.site.register(Faculty)
-admin.site.register(Subject)
-admin.site.register(Division)
-admin.site.register(TimetableResult)
 
 
-# 2. Advanced Registration for Clarity (Recommended)
-# For models with Foreign Keys (like FacultyAssignment), it's useful to customize 
-# the Admin display to show more helpful information, like the actual subject and division codes.
+class FacultyAvailabilityInline(admin.TabularInline):
+    model = FacultyAvailability
+    extra = 1
+
+@admin.register(Faculty)
+class FacultyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+    search_fields = ('name', 'code')
+    inlines = [FacultyAvailabilityInline]
+
+@admin.register(Division)
+class DivisionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'off_day', 'semester') # <<< Added 'semester' here
+    list_filter = ('semester',)
+    list_editable = ('semester',)
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'lectures', 'labs', 'double_periods', 'semester') # <<< Added 'semester' here
+    list_filter = ('semester',)
+    search_fields = ('name', 'code')
 
 @admin.register(FacultyAssignment)
 class FacultyAssignmentAdmin(admin.ModelAdmin):
-    # What fields to display in the list view (the main table)
     list_display = ('subject', 'division', 'faculty')
-    
-    # Enable search on these fields
-    search_fields = ('subject__code', 'division__code', 'faculty__name')
-    
-    # Add filters in the right sidebar
     list_filter = ('division', 'faculty')
+
+@admin.register(Semester)
+class SemesterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number')
+
+# Simple registrations for models that don't need a custom admin class
+admin.site.register(Setting)
+admin.site.register(TimetableResult)
+admin.site.register(FacultyAvailability)

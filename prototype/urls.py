@@ -30,5 +30,5 @@ urlpatterns = [
     path('timetable/', include('timetable_app.urls')),
     
     # NEW LINE: Redirects the root path ('') to the desired app path.
-    path('', lambda request: redirect('timetable/generate/', permanent=False)),
+    path('', lambda request: redirect('timetable/generate-semester/5', permanent=False)),
 ]
