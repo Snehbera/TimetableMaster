@@ -31,11 +31,16 @@ An interactive, multi-step web application designed to help educational institut
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React (with Vite)
-- **State Management:** Zustand (with persist middleware)
-- **Styling:** Tailwind CSS
-- **Routing:** React Router DOM
-- **Backend (optional):** Node.js / Express or Flask (for solver logic)
+ **Frontend:** React (with Vite)
+  - **State Management:** Zustand (with persist middleware)
+  - **Styling:** Tailwind CSS
+  - **Routing:** React Router DOM
+  - **Backend (optional):** Node.js / Express or Flask (for solver logic)
+
+**Backend**
+  - **Framework: Django**
+  - **API: Django REST Framework**
+  - **CORS: django-cors-headers**
 
 ---
 
@@ -44,6 +49,7 @@ An interactive, multi-step web application designed to help educational institut
 Follow these instructions to get the project running locally.
 
 ### Prerequisites
+- Python **v3.8+** & pip
 - Node.js **v16+**
 - npm **v7+**
 
@@ -54,46 +60,58 @@ Follow these instructions to get the project running locally.
 git clone https://github.com/Snehbera/TimetableMaster.git
 cd TimetableMaster
 
-# Install dependencies
+# 1 - Backend Setup
+
+# Navigate to the backend directory
+cd backend
+
+# Create and activate the virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install Python dependencies
+pip install django djangorestframework django-cors-headers
+
+# Run the Django development server
+python manage.py runserver
+
+
+# 2 - Frontend Setup
+
+# Navigate to the frontend directory from the project root
+cd frontend
+
+# Install Node.js dependencies
 npm install
 
-# Run the development server
+# Run the React development server
 npm run dev
-
-# State-management 
-npm install zustnad
-
-# Routing
-npm install react-router-dom
-
-# API request
-npm install axios
 ```
 
 ### 📂 Project Structure
 The project follows a feature-based folder structure to keep the code organized and easy to navigate. 
 
 ```
-/src
-├── assets/      # Static assets like images and fonts
-├── components/  # Global, reusable components (e.g., NTTHeader)
-├── features/    # Main application features/pages
-│ ├── Dashboard/
-│ ├── Header/
-│ ├── Login/
-│ └── Timetables/
-│ └── NewTimetable/
-│ ├── Steps/               # Contains each step of the wizard
-│ │ ├── GeneralSettings.jsx
-│ │ ├── Subjects.jsx
-│ │ ├── Faculty.jsx
-│ │ ├── Classes.jsx
-│ │ └── Rooms.jsx
-│ └── NTTLayout.jsx        # Routing Timetable Steps
-├── Stores/
-│ └── TimetableStore.jsx   # Zustand global store
-├── main.jsx               # React entry point
-├── Layout.jsx             # Main Routing
-├── Index.jsx              # Main Webpage 
-└── index.css              # Global styles
+/TimetableMaster
+├── backend/
+│   ├── api/              # Django app for API logic (views.py, urls.py)
+│   ├── config/           # Main Django project configuration (settings.py)
+│   ├── venv/             # Python virtual environment (ignored by Git)
+│   └── manage.py         # Django's command-line utility
+│
+├── frontend/
+│   ├── public/           # Static assets
+│   ├── src/
+│   │   ├── components/   # Global, reusable components
+│   │   ├── features/     # Main application features/pages
+│   │   │   └── Timetables/
+│   │   │       └── Steps/  # Each step of the wizard
+│   │   ├── Stores/
+│   │   │   └── TimetableStore.jsx # Zustand global store
+│   │   ├── main.jsx      # React entry point
+│   │   └── ...
+│   ├── package.json
+│   └── vite.config.js
+│
+└── .gitignore            # Root gitignore for both projects
 ```
