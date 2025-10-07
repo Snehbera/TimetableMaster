@@ -50,7 +50,6 @@ const generateJsonForBackend = (state) => {
 
   // --- 5. FACULTY ASSIGNMENTS (✅ CORRECTED LOGIC) ---
   // This logic now works with your simplified `assignedSubjects` array.
-  // It maps each subject to a list of faculty who can teach it.
   const faculty_assignments = {};
   state.faculty.forEach((fac) => {
     if (fac.shortName && fac.assignedSubjects) {
