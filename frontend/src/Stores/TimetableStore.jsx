@@ -279,6 +279,13 @@ const useTimetableStore = create(
         });
       },
 
+      setFacultyAvailability: (facultyId, availabilityGrid) => {
+        set((state) => ({
+          faculty: state.faculty.map((f) =>
+            f.id === facultyId ? { ...f, availability: availabilityGrid } : f
+          ),
+        }));
+      },
       // --- 4 Step:- Actions for Classes --- //
       updateSubjectValue: (subjectId, field, value) => {
         set((state) => ({

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react"; 
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import useTimetableStore from "../../../../Stores/TimetableStore";
 
@@ -155,7 +155,7 @@ const InfoIcon = () => (
     viewBox="0 0 24 24"
     fill="currentColor"
     aria-hidden="true"
-    className= "h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
+    className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
   >
     <path
       fillRule="evenodd"
@@ -209,7 +209,6 @@ const CrossIcon = () => (
     />
   </svg>
 );
-
 
 // --- Availability Modal --- //
 const AvailabilityModal = ({ subject, onClose, onSave }) => {
@@ -424,7 +423,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   const [textInput, setTextInput] = useState("");
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef(null);
-  
+
   if (!isOpen) return null;
 
   const handleFileSelect = (e) => {
@@ -685,8 +684,7 @@ export default function Subjects() {
   const areAllFieldsValid = useMemo(() => {
     if (subjects.length === 0) return false;
     return subjects.every(
-      (subject) =>
-        subject.name.trim() !== '' && subject.shortName.trim() !== ''
+      (subject) => subject.name.trim() !== "" && subject.shortName.trim() !== ""
     );
   }, [subjects]);
 
@@ -794,8 +792,9 @@ export default function Subjects() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {subjects.map((subject) => {
-                          const isShortNameInvalid = subject.shortName.trim() === '';
-                          const isNameInvalid = subject.name.trim() === '';
+                          const isShortNameInvalid =
+                            subject.shortName.trim() === "";
+                          const isNameInvalid = subject.name.trim() === "";
                           return (
                             <tr
                               key={subject.id}
@@ -809,17 +808,35 @@ export default function Subjects() {
                                 <div className="flex items-center space-x-2">
                                   <input
                                     placeholder="e.g., APY"
-                                    className={`w-1/4 p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${isShortNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                                    className={`w-1/4 p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${
+                                      isShortNameInvalid
+                                        ? "border-red-400 ring-red-300"
+                                        : "border-gray-300 focus:ring-indigo-500"
+                                    }`}
                                     type="text"
                                     value={subject.shortName}
-                                    onChange={(e) => updateSubjectShortName(subject.id, e.target.value)}
+                                    onChange={(e) =>
+                                      updateSubjectShortName(
+                                        subject.id,
+                                        e.target.value
+                                      )
+                                    }
                                   />
                                   <input
                                     placeholder="e.g., Advanced Python Programming"
-                                    className={`w-3/4 p-2 border rounded-lg focus:ring-2 focus:outline-none ${isNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                                    className={`w-3/4 p-2 border rounded-lg focus:ring-2 focus:outline-none ${
+                                      isNameInvalid
+                                        ? "border-red-400 ring-red-300"
+                                        : "border-gray-300 focus:ring-indigo-500"
+                                    }`}
                                     type="text"
                                     value={subject.name}
-                                    onChange={(e) => updateSubjectName(subject.id, e.target.value)}
+                                    onChange={(e) =>
+                                      updateSubjectName(
+                                        subject.id,
+                                        e.target.value
+                                      )
+                                    }
                                   />
                                 </div>
                               </td>
@@ -846,41 +863,66 @@ export default function Subjects() {
                   {/* --- RESPONSIVE CHANGE: MOBILE CARDS (visible only on mobile) --- */}
                   <div className="space-y-4 md:hidden">
                     {subjects.map((subject) => {
-                      const isShortNameInvalid = subject.shortName.trim() === '';
-                      const isNameInvalid = subject.name.trim() === '';
-                      return(
-                      <div
-                        key={subject.id}
-                        className="p-4 border rounded-lg"
-                        style={{ borderLeft: `4px solid ${subject.color}`, backgroundColor: `${subject.color}10` }}
-                      >
-                        {/* Short/Full Name Section */}
-                        <div className="space-y-2">
-                           <label className="block text-xs font-medium text-gray-500 uppercase">Short Name / Full Name</label>
-                           <input
+                      const isShortNameInvalid =
+                        subject.shortName.trim() === "";
+                      const isNameInvalid = subject.name.trim() === "";
+                      return (
+                        <div
+                          key={subject.id}
+                          className="p-4 border rounded-lg"
+                          style={{
+                            borderLeft: `4px solid ${subject.color}`,
+                            backgroundColor: `${subject.color}10`,
+                          }}
+                        >
+                          {/* Short/Full Name Section */}
+                          <div className="space-y-2">
+                            <label className="block text-xs font-medium text-gray-500 uppercase">
+                              Short Name / Full Name
+                            </label>
+                            <input
                               placeholder="e.g., APY"
-                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${isShortNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none font-medium ${
+                                isShortNameInvalid
+                                  ? "border-red-400 ring-red-300"
+                                  : "border-gray-300 focus:ring-indigo-500"
+                              }`}
                               type="text"
                               value={subject.shortName}
-                              onChange={(e) => updateSubjectShortName(subject.id, e.target.value)}
+                              onChange={(e) =>
+                                updateSubjectShortName(
+                                  subject.id,
+                                  e.target.value
+                                )
+                              }
                             />
                             <input
                               placeholder="e.g., Advanced Python Programming"
-                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none ${isNameInvalid ? 'border-red-400 ring-red-300' : 'border-gray-300 focus:ring-indigo-500'}`}
+                              className={`w-full p-2 border rounded-lg focus:ring-2 focus:outline-none ${
+                                isNameInvalid
+                                  ? "border-red-400 ring-red-300"
+                                  : "border-gray-300 focus:ring-indigo-500"
+                              }`}
                               type="text"
                               value={subject.name}
-                              onChange={(e) => updateSubjectName(subject.id, e.target.value)}
+                              onChange={(e) =>
+                                updateSubjectName(subject.id, e.target.value)
+                              }
                             />
-                        </div>
-                        {/* Availability Section */}
-                        <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                          <label className="block text-xs font-medium text-gray-500 uppercase">Availability</label>
-                          {renderAvailabilityBadge(subject)}
-                        </div>
-                        {/* Actions Section */}
-                         <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                          <label className="block text-xs font-medium text-gray-500 uppercase">Action</label>
-                           <button
+                          </div>
+                          {/* Availability Section */}
+                          <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                            <label className="block text-xs font-medium text-gray-500 uppercase">
+                              Availability
+                            </label>
+                            {renderAvailabilityBadge(subject)}
+                          </div>
+                          {/* Actions Section */}
+                          <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                            <label className="block text-xs font-medium text-gray-500 uppercase">
+                              Action
+                            </label>
+                            <button
                               type="button"
                               className="text-red-500 hover:text-red-600 focus:outline-none"
                               aria-label="Remove Subject"
@@ -888,9 +930,10 @@ export default function Subjects() {
                             >
                               <TrashIcon />
                             </button>
+                          </div>
                         </div>
-                      </div>
-                    )})}
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -935,19 +978,25 @@ export default function Subjects() {
                 Previous
               </Link>
               <div className="text-sm text-gray-500">
-                Step <span className="font-semibold text-gray-700">2</span> of{' '}
+                Step <span className="font-semibold text-gray-700">2</span> of{" "}
                 <span className="font-semibold text-gray-700">7</span>
               </div>
               <Link
-                to={areAllFieldsValid ? "/dashboard/timetable/new/faculty" : '#'}
+                to={
+                  areAllFieldsValid ? "/dashboard/timetable/new/faculty" : "#"
+                }
                 onClick={(e) => !areAllFieldsValid && e.preventDefault()}
                 className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
                   areAllFieldsValid
-                    ? 'bg-indigo-600 hover:bg-indigo-700'
-                    : 'bg-indigo-300 cursor-not-allowed'
+                    ? "bg-indigo-600 hover:bg-indigo-700"
+                    : "bg-indigo-300 cursor-not-allowed"
                 }`}
                 aria-disabled={!areAllFieldsValid}
-                title={!areAllFieldsValid ? 'Please fill in all subject names and short names to continue.' : ''}
+                title={
+                  !areAllFieldsValid
+                    ? "Please fill in all subject names and short names to continue."
+                    : ""
+                }
               >
                 Next
                 <NextIcon />
