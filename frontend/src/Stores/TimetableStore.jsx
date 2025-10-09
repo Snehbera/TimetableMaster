@@ -32,6 +32,7 @@ const useTimetableStore = create(
           workingDays: { ...initialWorkingDays },
         },
       ],
+      semester: "",
       periodsPerDay: 6,
       timings: [],
       subjects: [],
@@ -55,6 +56,12 @@ const useTimetableStore = create(
         set((state) => ({
           timetableNames: state.timetableNames.map((tt) =>
             tt.id === id ? { ...tt, name: value } : tt
+          ),
+        })),
+      updateTimetableSemester: (id, value) =>
+        set((state) => ({
+          timetableNames: state.timetableNames.map((tt) =>
+            tt.id === id ? { ...tt, semester: value } : tt
           ),
         })),
       removeTimetableName: (id) =>
@@ -98,6 +105,8 @@ const useTimetableStore = create(
               : tt
           ),
         })),
+
+      setSemester: (value) => set({ semester: value }),
 
       setPeriodsPerDay: (newPeriods) => set({ periodsPerDay: newPeriods }),
 

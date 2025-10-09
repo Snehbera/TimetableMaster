@@ -101,6 +101,23 @@ const CalendarIcon = () => (
     />
   </svg>
 );
+// --- NEW ICON ---
+const InfoIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-6 h-6 text-indigo-600 mr-2"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+    />
+  </svg>
+);
 const CheckCircleIcon = ({ className }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -245,7 +262,7 @@ const DaysConfiguration = () => {
   );
 };
 
-// --- Timetable Names Components --- //
+// --- Timetable Names Components (MODIFIED) --- //
 const TimetableNames = () => {
   const {
     timetableNames,
@@ -261,7 +278,9 @@ const TimetableNames = () => {
     <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
       <div className="flex items-center mb-4">
         <TimetableIcon />
-        <h2 className="text-lg font-semibold text-gray-900">Timetable Names</h2>
+        <h2 className="text-lg font-semibold text-gray-900">
+          Divisions / classNamees
+        </h2>
       </div>
 
       {(timetableNames || []).map((timetable, index) => (
@@ -271,7 +290,7 @@ const TimetableNames = () => {
         >
           <div className="flex items-center space-x-2">
             <input
-              placeholder="e.g., Grade 5"
+              placeholder="e.g., Computer Engineering"
               className="s1-input-field font-medium"
               type="text"
               value={timetable.name}
@@ -291,8 +310,6 @@ const TimetableNames = () => {
           </div>
 
           <div className="pl-8 mt-3 space-y-2">
-            {/* --- CHANGE IS HERE --- */}
-            {/* Show label only if subdivisions exist */}
             {(timetable.subdivisions || []).length > 0 && (
               <label className="text-sm font-medium text-gray-600">
                 Subdivisions
@@ -338,7 +355,7 @@ const TimetableNames = () => {
         className="flex items-center text-sm font-medium text-indigo-600 mt-4"
       >
         <PlusCircleIcon />
-        Add another timetable name
+        Add another division
       </button>
     </div>
   );
@@ -362,10 +379,16 @@ const minutesToTime = (totalMinutes) => {
   )}`;
 };
 
-// --- Main GeneralSettings App --- //
+// --- Main GeneralSettings App (MODIFIED) --- //
 function GeneralSettings() {
-  const { periodsPerDay, setPeriodsPerDay, timings, setTimings } =
-    useTimetableStore();
+  const {
+    periodsPerDay,
+    setPeriodsPerDay,
+    timings,
+    setTimings,
+    semester, // --- ADDED ---
+    setSemester, // --- ADDED ---
+  } = useTimetableStore();
   const [showTimings, setShowTimings] = useState(false);
 
   // --- CORRECTED useEffect ---
@@ -487,6 +510,29 @@ function GeneralSettings() {
       <div className="s1-main-wrapper">
         <div className="s1-content-area">
           <div className="s1-content-inner">
+            {/* --- NEW SEMESTER CARD --- */}
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
+              <div className="flex items-center mb-4">
+                <InfoIcon />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  General Information
+                </h2>
+              </div>
+              <div>
+                <label htmlFor="semester" className="s1-label">
+                  Semester / Term Name
+                </label>
+                <input
+                  id="semester"
+                  placeholder="e.g., Semester 3"
+                  className="s1-input-field"
+                  type="text"
+                  value={semester}
+                  onChange={(e) => setSemester(e.target.value)}
+                />
+              </div>
+            </div>
+
             <TimetableNames />
 
             <div className="s1-card shadow-sm mb-5">
@@ -653,55 +699,55 @@ function GeneralSettings() {
 
             <DaysConfiguration />
 
-            <div class="bg-gray-50 rounded-lg p-4 mt-6">
-              <div class="flex justify-between items-center">
+            <div className="bg-gray-50 rounded-lg p-4 mt-6">
+              <div className="flex justify-between items-center">
                 <Link
                   to=""
-                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-not-allowed"
+                  className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-not-allowed"
                   data-discover="true"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    class="h-5 w-5 sm:mr-2"
+                    className="h-5 w-5 sm:mr-2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                     ></path>
                   </svg>
-                  <span class="hidden sm:inline">Previous</span>
+                  <span className="hidden sm:inline">Previous</span>
                 </Link>
 
-                <div class="text-sm text-gray-500 text-center px-2">
-                  Step <span class="font-semibold text-gray-700">2</span> of{" "}
-                  <span class="font-semibold text-gray-700">7</span>
+                <div className="text-sm text-gray-500 text-center px-2">
+                  Step <span className="font-semibold text-gray-700">2</span> of{" "}
+                  <span className="font-semibold text-gray-700">7</span>
                 </div>
 
                 <Link
                   to="/dashboard/timetable/new/subjects"
-                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                  className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                   aria-disabled="false"
                   data-discover="true"
                 >
-                  <span class="hidden sm:inline">Next</span>
+                  <span className="hidden sm:inline">Next</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    class="h-5 w-5 sm:ml-2"
+                    className="h-5 w-5 sm:ml-2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                     ></path>
                   </svg>

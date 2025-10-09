@@ -19,43 +19,32 @@ const PresentationChartBarIcon = () => (
     ></path>
   </svg>
 );
-const PrevIcon = () => (
+const InfoIcon = ({ className = "" }) => (
   <svg
+    version="1.1"
+    id="Capa_1"
     xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 mr-2"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 0 416.979 416.979"
+    xml:space="preserve"
+    className={`${className}`}
+    fill="currentColor"
   >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-    />{" "}
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {" "}
+      <g>
+        {" "}
+        <path d="M356.004,61.156c-81.37-81.47-213.377-81.551-294.848-0.182c-81.47,81.371-81.552,213.379-0.181,294.85 c81.369,81.47,213.378,81.551,294.849,0.181C437.293,274.636,437.375,142.626,356.004,61.156z M237.6,340.786 c0,3.217-2.607,5.822-5.822,5.822h-46.576c-3.215,0-5.822-2.605-5.822-5.822V167.885c0-3.217,2.607-5.822,5.822-5.822h46.576 c3.215,0,5.822,2.604,5.822,5.822V340.786z M208.49,137.901c-18.618,0-33.766-15.146-33.766-33.765 c0-18.617,15.147-33.766,33.766-33.766c18.619,0,33.766,15.148,33.766,33.766C242.256,122.755,227.107,137.901,208.49,137.901z"></path>{" "}
+      </g>{" "}
+    </g>
   </svg>
 );
-const NextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 ml-2"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
-    />{" "}
-  </svg>
-);
-
 // --- Interactive Number Stepper Component --- //
 const NumberStepper = ({ value, onValueChange }) => (
   <div className="flex items-center">
@@ -121,115 +110,127 @@ export default function Classes() {
           </div>
 
           <div className="space-y-4">
-            {subjects.map((subject) => (
-              <div
-                key={subject.id}
-                className="bg-gray-50/70 border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-              >
-                <div className="w-full md:w-1/3">
-                  <p className="font-semibold text-gray-800">{subject.name}</p>
-
-                  <p className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full inline-block mt-1">
-                    {subject.shortName}
-                  </p>
-                </div>
-
-                <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-between sm:justify-start space-x-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Lectures / week
-                    </label>
-
-                    <NumberStepper
-                      value={subject.lecturesPerWeek}
-                      onValueChange={(newValue) =>
-                        updateSubjectValue(
-                          subject.id,
-                          "lecturesPerWeek",
-                          newValue
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-start space-x-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Labs / week
-                    </label>
-
-                    <NumberStepper
-                      value={subject.labsPerWeek}
-                      onValueChange={(newValue) =>
-                        updateSubjectValue(subject.id, "labsPerWeek", newValue)
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-start space-x-3">
-                    <label className="text-sm font-medium text-gray-700">
-                      Double Slot Lecture
-                    </label>
-
-                    <ToggleSwitch
-                      enabled={subject.isDoubleSlot}
-                      onToggle={() => toggleSubjectDoubleSlot(subject.id)}
-                    />
-                  </div>
-                </div>
+            {/* --- CONDITIONAL RENDERING ADDED --- */}
+            {subjects.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-3">
+                <InfoIcon className="h-10 w-10 mx-auto text-blue-400" />
+                <h3 className="text-sm font-medium text-gray-900">
+                  No Subjects Found
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Please add subjects in the 'Subjects' step to continue.
+                </p>
               </div>
-            ))}
+            ) : (
+              subjects.map((subject) => (
+                <div
+                  key={subject.id}
+                  className="bg-gray-50/70 border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                >
+                  <div className="w-full md:w-1/3">
+                    <p className="font-semibold text-gray-800">
+                      {subject.name}
+                    </p>
+                    <p className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full inline-block mt-1">
+                      {subject.shortName}
+                    </p>
+                  </div>
+
+                  <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="flex items-center justify-between sm:justify-start space-x-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Lectures / week
+                      </label>
+                      <NumberStepper
+                        value={subject.lecturesPerWeek}
+                        onValueChange={(newValue) =>
+                          updateSubjectValue(
+                            subject.id,
+                            "lecturesPerWeek",
+                            newValue
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-start space-x-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Labs / week
+                      </label>
+                      <NumberStepper
+                        value={subject.labsPerWeek}
+                        onValueChange={(newValue) =>
+                          updateSubjectValue(
+                            subject.id,
+                            "labsPerWeek",
+                            newValue
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-start space-x-3">
+                      <label className="text-sm font-medium text-gray-700">
+                        Double Slot Lecture
+                      </label>
+                      <ToggleSwitch
+                        enabled={subject.isDoubleSlot}
+                        onToggle={() => toggleSubjectDoubleSlot(subject.id)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        <div class="bg-gray-50 rounded-lg p-4 mt-6">
-          <div class="flex justify-between items-center">
+        <div className="bg-gray-50 rounded-lg p-4 mt-6">
+          <div className="flex justify-between items-center">
             <Link
               to="/dashboard/timetable/new/faculty"
-              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
-              data-discover="true"
+              className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
-                class="h-5 w-5 sm:mr-2"
+                className="h-5 w-5 sm:mr-2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                 ></path>
               </svg>
-              <span class="hidden sm:inline">Previous</span>
+              <span className="hidden sm:inline">Previous</span>
             </Link>
 
-            <div class="text-sm text-gray-500 text-center px-2">
-              Step <span class="font-semibold text-gray-700">2</span> of{" "}
-              <span class="font-semibold text-gray-700">7</span>
+            <div className="text-sm text-gray-500 text-center px-2">
+              Step <span className="font-semibold text-gray-700">4</span> of{" "}
+              <span className="font-semibold text-gray-700">7</span>
             </div>
 
             <Link
               to="/dashboard/timetable/new/rooms"
-              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-              aria-disabled="false"
-              data-discover="true"
+              className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              <span class="hidden sm:inline">Next</span>
+              <span className="hidden sm:inline">Next</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
-                class="h-5 w-5 sm:ml-2"
+                className="h-5 w-5 sm:ml-2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                 ></path>
               </svg>

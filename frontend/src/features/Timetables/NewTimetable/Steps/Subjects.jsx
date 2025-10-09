@@ -149,19 +149,30 @@ const NextIcon = () => (
     />
   </svg>
 );
-const InfoIcon = () => (
+const InfoIcon = ({ className = "" }) => (
   <svg
+    version="1.1"
+    id="Capa_1"
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 0 416.979 416.979"
+    xml:space="preserve"
+    className={`text-blue-500 ${className}`}
     fill="currentColor"
-    aria-hidden="true"
-    className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"
   >
-    <path
-      fillRule="evenodd"
-      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
-      clipRule="evenodd"
-    />
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {" "}
+      <g>
+        {" "}
+        <path d="M356.004,61.156c-81.37-81.47-213.377-81.551-294.848-0.182c-81.47,81.371-81.552,213.379-0.181,294.85 c81.369,81.47,213.378,81.551,294.849,0.181C437.293,274.636,437.375,142.626,356.004,61.156z M237.6,340.786 c0,3.217-2.607,5.822-5.822,5.822h-46.576c-3.215,0-5.822-2.605-5.822-5.822V167.885c0-3.217,2.607-5.822,5.822-5.822h46.576 c3.215,0,5.822,2.604,5.822,5.822V340.786z M208.49,137.901c-18.618,0-33.766-15.146-33.766-33.765 c0-18.617,15.147-33.766,33.766-33.766c18.619,0,33.766,15.148,33.766,33.766C242.256,122.755,227.107,137.901,208.49,137.901z"></path>{" "}
+      </g>{" "}
+    </g>
   </svg>
 );
 const CloseIcon = () => (
@@ -209,6 +220,16 @@ const CrossIcon = () => (
     />
   </svg>
 );
+
+// --- NEW: Time Formatting Helper Function ---
+const formatTime12h = (timeString) => {
+  if (!timeString) return "";
+  const [hourString, minute] = timeString.split(":");
+  const hour = parseInt(hourString, 10);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const convertedHour = hour % 12 || 12; // Converts "0" to "12"
+  return `${convertedHour.toString().padStart(2, "0")}:${minute} ${suffix}`;
+};
 
 // --- Availability Modal --- //
 const AvailabilityModal = ({ subject, onClose, onSave }) => {
@@ -371,7 +392,9 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
                           </span>
                           <span className="text-xs text-gray-500 font-normal">
                             {period.startTime && period.endTime
-                              ? `${period.startTime} - ${period.endTime}`
+                              ? `${formatTime12h(
+                                  period.startTime
+                                )} - ${formatTime12h(period.endTime)}`
                               : "Not set"}
                           </span>
                         </div>
@@ -763,12 +786,12 @@ export default function Subjects() {
 
             <div>
               {subjects.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <InfoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-3">
+                  <InfoIcon className="h-10 w-10 mx-auto text-blue-50" />
+                  <h3 className="text-sm font-medium text-gray-900">
                     No subjects added yet
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="text-sm text-gray-500">
                     Get started by adding your first subject.
                   </p>
                 </div>

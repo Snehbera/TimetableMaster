@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import useTimetableStore from "../../../../Stores/TimetableStore";
-import { Link } from "react-router";
+import { Link } from "react-router-dom"; // Corrected import for react-router-dom
 
 // --- SVG Icon Components ---
 const BuildingOfficeIcon = () => (
@@ -12,12 +12,11 @@ const BuildingOfficeIcon = () => (
     stroke="currentColor"
     className="w-6 h-6 mr-2 text-indigo-600"
   >
-    {" "}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6"
-    />{" "}
+    />
   </svg>
 );
 const HomeIcon = () => (
@@ -29,12 +28,11 @@ const HomeIcon = () => (
     stroke="currentColor"
     className="w-5 h-5 mr-2 text-indigo-500"
   >
-    {" "}
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-    />{" "}
+    />
   </svg>
 );
 const CloseIcon = () => (
@@ -44,48 +42,11 @@ const CloseIcon = () => (
     fill="currentColor"
     className="w-6 h-6"
   >
-    {" "}
     <path
       fillRule="evenodd"
       d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
       clipRule="evenodd"
-    />{" "}
-  </svg>
-);
-const PrevIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 mr-2"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-    />{" "}
-  </svg>
-);
-const NextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 ml-2"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
-    />{" "}
+    />
   </svg>
 );
 
@@ -93,13 +54,11 @@ const NextIcon = () => (
 const LabAssignmentModal = ({ subdivision, onClose }) => {
   const { subjects, rooms, updateRoomName } = useTimetableStore();
 
-  // Find all subjects that require a lab
   const subjectsWithLabs = useMemo(
     () => (subjects || []).filter((s) => s.labsPerWeek > 0),
     [subjects]
   );
 
-  // This function finds the specific lab room object for a given subject and subdivision
   const getLabForSubject = (subjectId) => {
     return (rooms || []).find(
       (r) =>
@@ -132,7 +91,7 @@ const LabAssignmentModal = ({ subdivision, onClose }) => {
         <div className="p-6 overflow-y-auto space-y-4">
           {subjectsWithLabs.map((subject) => {
             const lab = getLabForSubject(subject.id);
-            if (!lab) return null; // Should not happen if initializeRooms is correct
+            if (!lab) return null;
 
             return (
               <div
@@ -256,25 +215,39 @@ export default function Rooms() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {classrooms.map((room) => (
-                        <tr key={room.id} className="hover:bg-indigo-50/30">
-                          <td className="px-6 py-4 font-medium text-gray-800">
-                            {room.divisionName}
-                          </td>
-                          <td className="px-6 py-4">
-                            {/* Input now fills the available space */}
-                            <input
-                              placeholder="e.g., C-101"
-                              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                              type="text"
-                              value={room.name}
-                              onChange={(e) =>
-                                updateRoomName(room.id, e.target.value)
-                              }
-                            />
+                      {/* --- MODIFIED SECTION FOR CLASSROOMS --- */}
+                      {classrooms.length > 0 ? (
+                        classrooms.map((room) => (
+                          <tr key={room.id} className="hover:bg-indigo-50/30">
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              {room.divisionName || "Unnamed Division"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <input
+                                placeholder="e.g., C-101"
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                type="text"
+                                value={room.name || ""}
+                                onChange={(e) =>
+                                  updateRoomName(room.id, e.target.value)
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="2"
+                            className="px-6 py-10 text-center text-sm text-gray-500"
+                          >
+                            No classrooms to display.
+                            <br />
+                            Please add divisions in the General Settings step.
                           </td>
                         </tr>
-                      ))}
+                      )}
+                      {/* --- END MODIFIED SECTION --- */}
                     </tbody>
                   </table>
                 </div>
@@ -299,24 +272,40 @@ export default function Rooms() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {subdivisionsWithLabs.map((sub) => (
-                        <tr
-                          key={`${sub.timetableId}-${sub.subIndex}`}
-                          className="hover:bg-indigo-50/30"
-                        >
-                          <td className="px-6 py-4 font-medium text-gray-800">
-                            {sub.name}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <button
-                              onClick={() => setEditingSubdivision(sub)}
-                              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-                            >
-                              Assign Labs
-                            </button>
+                      {/* --- MODIFIED SECTION FOR LABS --- */}
+                      {subdivisionsWithLabs.length > 0 ? (
+                        subdivisionsWithLabs.map((sub) => (
+                          <tr
+                            key={`${sub.timetableId}-${sub.subIndex}`}
+                            className="hover:bg-indigo-50/30"
+                          >
+                            <td className="px-6 py-4 font-medium text-gray-800">
+                              {sub.name}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <button
+                                onClick={() => setEditingSubdivision(sub)}
+                                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                              >
+                                Assign Labs
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="2"
+                            className="px-6 py-10 text-center text-sm text-gray-500"
+                          >
+                            No labs to assign.
+                            <br />
+                            This requires subjects with labs and named
+                            subdivisions.
                           </td>
                         </tr>
-                      ))}
+                      )}
+                      {/* --- END MODIFIED SECTION --- */}
                     </tbody>
                   </table>
                 </div>
@@ -324,55 +313,52 @@ export default function Rooms() {
             </div>
           </div>
 
-          <div class="bg-gray-50 rounded-lg p-4 mt-6">
-            <div class="flex justify-between items-center">
+          <div className="bg-gray-50 rounded-lg p-4 mt-6">
+            <div className="flex justify-between items-center">
               <Link
                 to="/dashboard/timetable/new/classes"
-                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
-                data-discover="true"
+                className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   aria-hidden="true"
-                  class="h-5 w-5 sm:mr-2"
+                  className="h-5 w-5 sm:mr-2"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                   ></path>
                 </svg>
-                <span class="hidden sm:inline">Previous</span>
+                <span className="hidden sm:inline">Previous</span>
               </Link>
 
-              <div class="text-sm text-gray-500 text-center px-2">
-                Step <span class="font-semibold text-gray-700">2</span> of{" "}
-                <span class="font-semibold text-gray-700">7</span>
+              <div className="text-sm text-gray-500 text-center px-2">
+                Step <span className="font-semibold text-gray-700">5</span> of{" "}
+                <span className="font-semibold text-gray-700">7</span>
               </div>
 
               <Link
                 to="/dashboard/timetable/new/review"
-                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-                aria-disabled="false"
-                data-discover="true"
+                className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
               >
-                <span class="hidden sm:inline">Next</span>
+                <span className="hidden sm:inline">Next</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   aria-hidden="true"
-                  class="h-5 w-5 sm:ml-2"
+                  className="h-5 w-5 sm:ml-2"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                   ></path>
                 </svg>
