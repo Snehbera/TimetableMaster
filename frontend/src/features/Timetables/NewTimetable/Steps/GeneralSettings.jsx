@@ -134,96 +134,110 @@ const SunIcon = ({ className }) => (
   </svg>
 );
 
-// --- Days Configuration Component --- //
+// --- Redesigned Days Configuration Component --- //
 const DaysConfiguration = () => {
-  const { days, toggleDay } = useTimetableStore();
-  const workingDays = (days || []).filter((d) => d.isWorkingDay);
-  const daysOff = (days || []).filter((d) => !d.isWorkingDay);
+  const { timetableNames, toggleWorkingDayForTimetable } = useTimetableStore();
+
+  // Set the first timetable as active by default, if it exists
+  const [activeTab, setActiveTab] = useState(timetableNames[0]?.id);
+
+  // Define the order of days for consistent display
+  const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const activeTimetable = timetableNames.find((tt) => tt.id === activeTab);
+
+  // Handle case where timetables might be empty
+  if (!activeTimetable) {
+    return (
+      <div className="bg-white rounded-xl p-6">
+        <div className="flex items-center mb-4">
+          <CalendarIcon />
+          <h2 className="text-lg font-semibold text-gray-900">
+            Working Day Configuration
+          </h2>
+        </div>
+        <p className="text-sm text-gray-500">
+          Please add a timetable name first to configure its working days.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl p-6">
-      <div className="flex flex-col xs:flex-row items-start xs:items-center mb-4">
-        <div className="s1-card-header s1-mb-3">
-          <CalendarIcon />
-          <h2 className="s1-card-title">Day Configuration</h2>
-        </div>
-        <span className="xs:ml-3 text-sm text-gray-500">
-          ({workingDays.length} working days selected)
-        </span>
+      <div className="flex items-center mb-4">
+        <CalendarIcon />
+        <h2 className="text-lg font-semibold text-gray-900">
+          Working Day Configuration
+        </h2>
       </div>
-
-      <p className="text-sm text-gray-700 mb-3">
-        Select which days are working days. The remaining days will be considered
-        days off.
+      <p className="text-sm text-gray-700 mb-4">
+        Select the working days for each main division. You can set a different
+        schedule for each.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 mb-6">
-        {(days || []).map((day) => (
-          <button
-            key={day.name}
-            type="button"
-            onClick={() => toggleDay(day.name)}
-            className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center justify-center border text-center ${
-              day.isWorkingDay
-                ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
-                : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-500"
-            }`}
-          >
-            <span className="font-medium">{day.name}</span>
-            <span className="text-xs mt-1">
-              {day.isWorkingDay ? (
-                <CheckCircleIcon className="w-4 h-4 text-green-600" />
-              ) : (
-                <SunIcon className="w-4 h-4 text-orange-500" />
-              )}
-            </span>
-          </button>
-        ))}
+      {/* Tabs for each Main Division */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+          {timetableNames.map((tt) => (
+            <button
+              key={tt.id}
+              onClick={() => setActiveTab(tt.id)}
+              className={`${
+                activeTab === tt.id
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              } whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm focus:outline-none`}
+            >
+              {tt.name || "Untitled"}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 mt-6">
-        <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-          <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-            <CheckCircleIcon className="w-5 h-5 text-green-600 mr-2" />
-            Working Days
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {workingDays.length > 0 ? (
-              workingDays.map((day) => (
-                <div
-                  key={day.fullName}
-                  className="flex items-center px-3 py-1.5 bg-white rounded-md border border-green-200"
+      {/* Day Toggles for the active tab */}
+      <div className="mt-6">
+        <div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+            {dayOrder.map((dayKey) => {
+              // ✅ Corrected Line
+              const isWorking = activeTimetable?.workingDays?.[dayKey];
+              return (
+                <button
+                  key={dayKey}
+                  type="button"
+                  onClick={() =>
+                    toggleWorkingDayForTimetable(activeTab, dayKey)
+                  }
+                  className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center justify-center border text-center ${
+                    isWorking
+                      ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
+                      : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-500"
+                  }`}
                 >
-                  <span className="font-medium text-gray-700 text-sm">
-                    {day.fullName}
+                  <span className="font-medium">{dayKey}</span>
+                  <span className="text-xs mt-1">
+                    {isWorking ? (
+                      <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <SunIcon className="w-4 h-4 text-orange-500" />
+                    )}
                   </span>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No working days selected.</p>
-            )}
+                </button>
+              );
+            })}
           </div>
-        </div>
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-            <SunIcon className="w-5 h-5 text-orange-500 mr-2" />
-            Days Off
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {daysOff.length > 0 ? (
-              daysOff.map((day) => (
-                <div
-                  key={day.fullName}
-                  className="flex items-center px-3 py-1.5 bg-white rounded-md border border-gray-200"
-                >
-                  <span className="font-medium text-gray-700 text-sm">
-                    {day.fullName}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No days off selected.</p>
-            )}
+          <div className="mt-4 text-sm text-gray-600">
+            Total working days for{" "}
+            <strong>{activeTimetable.name || "this division"}</strong>:{" "}
+            <strong>
+              {
+                // ✅ Corrected Line
+                Object.values(activeTimetable?.workingDays || {}).filter(
+                  Boolean
+                ).length
+              }
+            </strong>
           </div>
         </div>
       </div>

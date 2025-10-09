@@ -10,23 +10,28 @@ const getRandomColor = () => {
   return color;
 };
 
-const initialDays = [
-  { name: "Sun", fullName: "Sunday", isWorkingDay: false },
-  { name: "Mon", fullName: "Monday", isWorkingDay: true },
-  { name: "Tue", fullName: "Tuesday", isWorkingDay: true },
-  { name: "Wed", fullName: "Wednesday", isWorkingDay: true },
-  { name: "Thu", fullName: "Thursday", isWorkingDay: true },
-  { name: "Fri", fullName: "Friday", isWorkingDay: true },
-  { name: "Sat", fullName: "Saturday", isWorkingDay: false },
-];
+// This initial configuration will be used for new timetables
+const initialWorkingDays = {
+  Sun: false,
+  Mon: true,
+  Tue: true,
+  Wed: true,
+  Thu: true,
+  Fri: true,
+  Sat: false,
+};
 
 const useTimetableStore = create(
   persist(
     (set, get) => ({
       timetableNames: [
-        { id: Date.now(), name: "Untitled", subdivisions: [""] },
+        {
+          id: Date.now(),
+          name: "Untitled",
+          subdivisions: [""],
+          workingDays: { ...initialWorkingDays },
+        },
       ],
-      days: initialDays,
       periodsPerDay: 6,
       timings: [],
       subjects: [],
@@ -38,7 +43,12 @@ const useTimetableStore = create(
         set((state) => ({
           timetableNames: [
             ...state.timetableNames,
-            { id: Date.now(), name: "", subdivisions: [""] },
+            {
+              id: Date.now(),
+              name: "",
+              subdivisions: [""],
+              workingDays: { ...initialWorkingDays },
+            },
           ],
         })),
       updateTimetableName: (id, value) =>
@@ -93,13 +103,23 @@ const useTimetableStore = create(
 
       setTimings: (newTimings) => set({ timings: newTimings }),
 
-      toggleDay: (dayName) =>
+      // --- Action to toggle working days per timetable ---
+      toggleWorkingDayForTimetable: (timetableId, dayName) =>
         set((state) => ({
-          days: state.days.map((day) =>
-            day.name === dayName
-              ? { ...day, isWorkingDay: !day.isWorkingDay }
-              : day
-          ),
+          timetableNames: state.timetableNames.map((tt) => {
+            if (tt.id === timetableId) {
+              // If tt.workingDays is missing, use the default initialWorkingDays as a base.
+              const currentWorkingDays = tt.workingDays || initialWorkingDays;
+              return {
+                ...tt,
+                workingDays: {
+                  ...currentWorkingDays,
+                  [dayName]: !currentWorkingDays[dayName],
+                },
+              };
+            }
+            return tt;
+          }),
         })),
 
       // --- 2 Step:- Actions for Subjects --- //
