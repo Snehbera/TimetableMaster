@@ -36,8 +36,44 @@ const useTimetableStore = create(
       periodsPerDay: 6,
       timings: [],
       subjects: [],
+      weeklyTotals: {
+        totalLectureHours: 0,
+        totalLabHours: 0,
+        grandTotalHours: 0,
+      },
       faculty: [],
       rooms: [],
+
+     // --- ACTION TO CALCULATE TOTALS (MODIFIED) ---
+      calculateWeeklyTotals: () =>
+        set((state) => {
+          const totals = state.subjects.reduce(
+            (acc, subject) => {
+              // Calculate lecture hours based on isDoubleSlot
+              const lectureHours = subject.isDoubleSlot
+                ? subject.lecturesPerWeek * 2
+                : subject.lecturesPerWeek;
+              // Calculate lab hours
+              const labHours = subject.labsPerWeek * 2;
+
+              acc.totalLectureHours += lectureHours;
+              acc.totalLabHours += labHours;
+              return acc;
+            },
+            { totalLectureHours: 0, totalLabHours: 0 }
+          );
+
+          const grandTotalHours =
+            totals.totalLectureHours + totals.totalLabHours;
+
+          return {
+            weeklyTotals: {
+              totalLectureHours: totals.totalLectureHours,
+              totalLabHours: totals.totalLabHours,
+              grandTotalHours,
+            },
+          };
+        }),
 
       // --- 1 Step:- Actions for timetables and subdivisions ---
       addTimetableName: () =>
@@ -131,14 +167,9 @@ const useTimetableStore = create(
           }),
         })),
 
-      // --- 2 Step:- Actions for Subjects --- //
+      // --- 2 Step:- Actions for Subjects (MODIFIED) --- //
       addSubject: () => {
         set((state) => {
-          const workingDays = (state.days || []).filter((d) => d.isWorkingDay);
-          const periodsOnly = (state.timings || []).filter(
-            (t) => t.type === "period"
-          );
-
           const newSubject = {
             id: Date.now(),
             name: "",
@@ -147,18 +178,18 @@ const useTimetableStore = create(
             lecturesPerWeek: 1,
             labsPerWeek: 0,
             isDoubleSlot: false,
-            availability: Array(periodsOnly.length)
-              .fill(null)
-              .map(() => Array(workingDays.length).fill(true)),
           };
           return { subjects: [...state.subjects, newSubject] };
         });
+        get().calculateWeeklyTotals(); // Trigger calculation
       },
 
-      removeSubject: (id) =>
+      removeSubject: (id) => {
         set((state) => ({
           subjects: state.subjects.filter((subject) => subject.id !== id),
-        })),
+        }));
+        get().calculateWeeklyTotals(); // Trigger calculation
+      },
 
       updateSubjectName: (id, newName) =>
         set((state) => ({
@@ -185,12 +216,6 @@ const useTimetableStore = create(
 
       bulkImportSubjects: (newSubjectsData) => {
         set((state) => {
-          const { timings, days } = state;
-          const workingDays = (days || []).filter((d) => d.isWorkingDay);
-          const periodsOnly = (timings || []).filter(
-            (t) => t.type === "period"
-          );
-
           const newSubjects = newSubjectsData.map((subData) => ({
             id: Date.now() + Math.random(),
             name: subData.name,
@@ -199,13 +224,10 @@ const useTimetableStore = create(
             lecturesPerWeek: 1,
             labsPerWeek: 0,
             isDoubleSlot: false,
-            availability: Array(periodsOnly.length)
-              .fill(null)
-              .map(() => Array(workingDays.length).fill(true)),
           }));
-
           return { subjects: [...state.subjects, ...newSubjects] };
         });
+        get().calculateWeeklyTotals(); // Trigger calculation
       },
 
       updateSubjectAvailability: (id, newAvailability) =>
@@ -311,15 +333,15 @@ const useTimetableStore = create(
           ),
         }));
       },
-      // --- 4 Step:- Actions for Classes --- //
+
+      // --- 4 Step:- Actions for Classes (MODIFIED) --- //
       updateSubjectValue: (subjectId, field, value) => {
         set((state) => ({
           subjects: state.subjects.map((s) =>
-            s.id === subjectId
-              ? { ...s, [field]: Math.max(0, value) } // Ensure value is not negative
-              : s
+            s.id === subjectId ? { ...s, [field]: Math.max(0, value) } : s
           ),
         }));
+        get().calculateWeeklyTotals(); // Trigger calculation
       },
 
       toggleSubjectDoubleSlot: (subjectId) => {
