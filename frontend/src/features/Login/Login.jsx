@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // SVG Icons from the original HTML (using the provided paths)
 const ClockIcon = (props) => (
@@ -324,13 +324,13 @@ const Login = () => {
                 </a>
               </p>
               <p className="mt-6 text-center text-gray-600">
-                Don't have an account?
-                <a
+                Don't have an account?{" "}
+                <Link
+                  to="/signup"
                   className="text-indigo-600 hover:text-indigo-700 font-medium"
-                  href="/signup"
                 >
                   Sign up for free
-                </a>
+                </Link>
               </p>
             </div>
           </div>

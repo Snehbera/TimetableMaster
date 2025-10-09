@@ -9,6 +9,7 @@ import Settings from "./features/Settings/Settings.jsx";
 
 import Landing from "./features/Landing/Landing.jsx";
 import Login from "./features/Login/Login.jsx";
+import Signup from "./features/Signup/Signup.jsx";
 
 import NTTLayout from "./features/Timetables/NewTimetable/NTTLayout.jsx";
 import GeneralSettings from "./features/Timetables/NewTimetable/Steps/GeneralSettings.jsx";
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+   {
+    path: "/signup",
+    element: <Signup />,
   },
   // Route for the MAIN dashboard area (uses the main Header)
   {
