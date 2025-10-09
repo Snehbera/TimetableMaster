@@ -1,10 +1,9 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Header.css";
 import logo from "./IconsHeader/Logo.svg";
 import support from "./IconsHeader/Support.svg";
-
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -34,6 +33,12 @@ function Header() {
       document.body.style.overflow = "unset";
     };
   }, [isMenuOpen]);
+
+  const handleLogout = () => {
+    // e.g. Firebase logout or localStorage.clear()
+    console.log("User logged out");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -345,26 +350,25 @@ function Header() {
 
               <h3 className="side-title">ACCOUNT</h3>
               <NavLink
+                to="/login"
                 className={({ isActive }) => `aside-btn ${isActive ? "" : ""}`}
-                onClick={handleNavLinkClick}
+                onClick={handleLogout}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                  data-slot="icon"
-                  className="w-5 h-5 flex-shrink-0"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
-                  ></path>
-                </svg>
-                <div>
+                <div className="flex gap-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-5 h-5 flex-shrink-0"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                    />
+                  </svg>
                   <div className="aside-btn-text">Logout</div>
                 </div>
               </NavLink>
