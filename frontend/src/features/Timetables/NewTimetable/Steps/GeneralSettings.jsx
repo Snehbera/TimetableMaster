@@ -137,23 +137,23 @@ const SunIcon = ({ className }) => (
 // --- Days Configuration Component --- //
 const DaysConfiguration = () => {
   const { days, toggleDay } = useTimetableStore();
-  const schoolDays = (days || []).filter((d) => d.isSchoolDay);
-  const daysOff = (days || []).filter((d) => !d.isSchoolDay);
+  const workingDays = (days || []).filter((d) => d.isWorkingDay);
+  const daysOff = (days || []).filter((d) => !d.isWorkingDay);
 
   return (
     <div className="bg-white rounded-xl p-6">
       <div className="flex flex-col xs:flex-row items-start xs:items-center mb-4">
         <div className="s1-card-header s1-mb-3">
           <CalendarIcon />
-          <h2 className="s1-card-title">Days Configuration</h2>
+          <h2 className="s1-card-title">Day Configuration</h2>
         </div>
         <span className="xs:ml-3 text-sm text-gray-500">
-          ({schoolDays.length} school days selected)
+          ({workingDays.length} working days selected)
         </span>
       </div>
 
       <p className="text-sm text-gray-700 mb-3">
-        Select which days are school days. The remaining days will be considered
+        Select which days are working days. The remaining days will be considered
         days off.
       </p>
 
@@ -164,14 +164,14 @@ const DaysConfiguration = () => {
             type="button"
             onClick={() => toggleDay(day.name)}
             className={`p-3 rounded-lg transition-all duration-200 flex flex-col items-center justify-center border text-center ${
-              day.isSchoolDay
+              day.isWorkingDay
                 ? "bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
                 : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-500"
             }`}
           >
             <span className="font-medium">{day.name}</span>
             <span className="text-xs mt-1">
-              {day.isSchoolDay ? (
+              {day.isWorkingDay ? (
                 <CheckCircleIcon className="w-4 h-4 text-green-600" />
               ) : (
                 <SunIcon className="w-4 h-4 text-orange-500" />
@@ -185,11 +185,11 @@ const DaysConfiguration = () => {
         <div className="bg-green-50 p-4 rounded-lg border border-green-100">
           <h3 className="text-md font-medium text-gray-800 mb-3 flex items-center">
             <CheckCircleIcon className="w-5 h-5 text-green-600 mr-2" />
-            School Days
+            Working Days
           </h3>
           <div className="flex flex-wrap gap-2">
-            {schoolDays.length > 0 ? (
-              schoolDays.map((day) => (
+            {workingDays.length > 0 ? (
+              workingDays.map((day) => (
                 <div
                   key={day.fullName}
                   className="flex items-center px-3 py-1.5 bg-white rounded-md border border-green-200"
@@ -200,7 +200,7 @@ const DaysConfiguration = () => {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500">No school days selected.</p>
+              <p className="text-sm text-gray-500">No working days selected.</p>
             )}
           </div>
         </div>

@@ -11,13 +11,13 @@ const getRandomColor = () => {
 };
 
 const initialDays = [
-  { name: "Sun", fullName: "Sunday", isSchoolDay: false },
-  { name: "Mon", fullName: "Monday", isSchoolDay: true },
-  { name: "Tue", fullName: "Tuesday", isSchoolDay: true },
-  { name: "Wed", fullName: "Wednesday", isSchoolDay: true },
-  { name: "Thu", fullName: "Thursday", isSchoolDay: true },
-  { name: "Fri", fullName: "Friday", isSchoolDay: true },
-  { name: "Sat", fullName: "Saturday", isSchoolDay: false },
+  { name: "Sun", fullName: "Sunday", isWorkingDay: false },
+  { name: "Mon", fullName: "Monday", isWorkingDay: true },
+  { name: "Tue", fullName: "Tuesday", isWorkingDay: true },
+  { name: "Wed", fullName: "Wednesday", isWorkingDay: true },
+  { name: "Thu", fullName: "Thursday", isWorkingDay: true },
+  { name: "Fri", fullName: "Friday", isWorkingDay: true },
+  { name: "Sat", fullName: "Saturday", isWorkingDay: false },
 ];
 
 const useTimetableStore = create(
@@ -83,7 +83,7 @@ const useTimetableStore = create(
                   ...tt,
                   subdivisions: tt.subdivisions.filter(
                     (_, i) => i !== subIndex
-                  ), // ✅ allows 0 subdivisions
+                  ),
                 }
               : tt
           ),
@@ -97,7 +97,7 @@ const useTimetableStore = create(
         set((state) => ({
           days: state.days.map((day) =>
             day.name === dayName
-              ? { ...day, isSchoolDay: !day.isSchoolDay }
+              ? { ...day, isWorkingDay: !day.isWorkingDay }
               : day
           ),
         })),
@@ -105,7 +105,7 @@ const useTimetableStore = create(
       // --- 2 Step:- Actions for Subjects --- //
       addSubject: () => {
         set((state) => {
-          const schoolDays = (state.days || []).filter((d) => d.isSchoolDay);
+          const workingDays = (state.days || []).filter((d) => d.isWorkingDay);
           const periodsOnly = (state.timings || []).filter(
             (t) => t.type === "period"
           );
@@ -115,14 +115,12 @@ const useTimetableStore = create(
             name: "",
             shortName: "",
             color: getRandomColor(),
-            // --- NEW DEFAULT VALUES ---
             lecturesPerWeek: 1,
             labsPerWeek: 0,
             isDoubleSlot: false,
-            // --- END OF NEW VALUES ---
             availability: Array(periodsOnly.length)
               .fill(null)
-              .map(() => Array(schoolDays.length).fill(true)),
+              .map(() => Array(workingDays.length).fill(true)),
           };
           return { subjects: [...state.subjects, newSubject] };
         });
@@ -159,7 +157,7 @@ const useTimetableStore = create(
       bulkImportSubjects: (newSubjectsData) => {
         set((state) => {
           const { timings, days } = state;
-          const schoolDays = (days || []).filter((d) => d.isSchoolDay);
+          const workingDays = (days || []).filter((d) => d.isWorkingDay);
           const periodsOnly = (timings || []).filter(
             (t) => t.type === "period"
           );
@@ -169,14 +167,12 @@ const useTimetableStore = create(
             name: subData.name,
             shortName: subData.shortName,
             color: getRandomColor(),
-            // --- NEW DEFAULT VALUES ---
             lecturesPerWeek: 1,
             labsPerWeek: 0,
             isDoubleSlot: false,
-            // --- END OF NEW VALUES ---
             availability: Array(periodsOnly.length)
               .fill(null)
-              .map(() => Array(schoolDays.length).fill(true)),
+              .map(() => Array(workingDays.length).fill(true)),
           }));
 
           return { subjects: [...state.subjects, ...newSubjects] };
