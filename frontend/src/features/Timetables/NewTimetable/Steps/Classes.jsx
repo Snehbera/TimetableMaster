@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import useTimetableStore from "../../../../Stores/TimetableStore";
+import { Link } from "react-router";
 
 // --- SVG Icon Components ---
 const PresentationChartBarIcon = () => (
@@ -184,7 +184,7 @@ export default function Classes() {
         <div class="bg-gray-50 rounded-lg p-4 mt-6">
           <div class="flex justify-between items-center">
             <Link
-              to="dashboard/timetable/new/faculty"
+              to="/dashboard/timetable/new/faculty"
               class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
               data-discover="true"
             >

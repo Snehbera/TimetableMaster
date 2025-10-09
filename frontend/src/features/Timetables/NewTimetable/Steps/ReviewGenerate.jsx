@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useTimetableStore from "../../../../Stores/TimetableStore";
+import { Link } from "react-router";
 
 const ReviewGenerate = () => {
   // Get all data from the store
@@ -227,53 +228,59 @@ const ReviewGenerate = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mt-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        <div class="bg-gray-50 rounded-lg p-4 mt-6">
+          <div class="flex justify-between items-center">
+            <Link
+              to="/dashboard/timetable/new/rooms"
+              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+              data-discover="true"
             >
               <svg
-                className="h-4 w-4 sm:h-5 sm:w-5 mr-2"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                stroke-width="1.5"
                 stroke="currentColor"
+                aria-hidden="true"
+                class="h-5 w-5 sm:mr-2"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                   d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                />
+                ></path>
               </svg>
-              Previous
-            </button>
-            <div className="text-xs sm:text-sm text-gray-500 text-center">
-              Step <span className="font-semibold text-gray-700">7</span> of{" "}
-              <span className="font-semibold text-gray-700">7</span>
+              <span class="hidden sm:inline">Previous</span>
+            </Link>
+
+            <div class="text-sm text-gray-500 text-center px-2">
+              Step <span class="font-semibold text-gray-700">2</span> of{" "}
+              <span class="font-semibold text-gray-700">7</span>
             </div>
-            <button
-              type="button"
-              disabled
-              className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-md shadow-sm bg-gray-400 text-white cursor-not-allowed"
+
+            <Link
+              to="/dashboard/timetable/new/review"
+              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 cursor-not-allowed"
+              aria-disabled="false"
+              data-discover="true"
             >
+              <span class="hidden sm:inline">Next</span>
               <svg
-                className="h-4 w-4 sm:h-5 sm:w-5 mr-2"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                stroke-width="1.5"
                 stroke="currentColor"
+                aria-hidden="true"
+                class="h-5 w-5 sm:ml-2"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
-                />
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                ></path>
               </svg>
-              Next
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -657,7 +657,7 @@ function GeneralSettings() {
               <div class="flex justify-between items-center">
                 <Link
                   to=""
-                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-not-allowed"
                   data-discover="true"
                 >
                   <svg

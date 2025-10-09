@@ -930,7 +930,7 @@ export default function Faculty() {
           <div class="bg-gray-50 rounded-lg p-4 mt-6">
             <div class="flex justify-between items-center">
               <Link
-                to="/dashboard/timetable/new/classes"
+                to="/dashboard/timetable/new/subjects"
                 class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
                 data-discover="true"
               >
@@ -958,7 +958,7 @@ export default function Faculty() {
               </div>
 
               <Link
-                to="/dashboard/timetable/new/subjects"
+                to="/dashboard/timetable/new/classes"
                 class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                 aria-disabled="false"
                 data-discover="true"

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import useTimetableStore from "../../../../Stores/TimetableStore";
+import { Link } from "react-router";
 
 // --- SVG Icon Components ---
 const BuildingOfficeIcon = () => (
@@ -218,7 +219,7 @@ export default function Rooms() {
 
   return (
     <>
-      <div className="font-sans p-6 bg-gray-50 min-h-screen">
+      <div className="font-sans p-6 min-h-screen">
         <div className="w-full">
           <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mb-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
@@ -323,24 +324,59 @@ export default function Rooms() {
             </div>
           </div>
 
-          {/* Footer Navigation */}
-          <div className="bg-gray-100 rounded-lg p-4 mt-6">
-            <div className="flex justify-between items-center">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-200 shadow-sm"
+          <div class="bg-gray-50 rounded-lg p-4 mt-6">
+            <div class="flex justify-between items-center">
+              <Link
+                to="/dashboard/timetable/new/classes"
+                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                data-discover="true"
               >
-                <PrevIcon /> Previous
-              </button>
-              <div className="text-sm text-gray-600">
-                Step <span className="font-semibold text-gray-800">5</span> of 7
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                  class="h-5 w-5 sm:mr-2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                  ></path>
+                </svg>
+                <span class="hidden sm:inline">Previous</span>
+              </Link>
+
+              <div class="text-sm text-gray-500 text-center px-2">
+                Step <span class="font-semibold text-gray-700">2</span> of{" "}
+                <span class="font-semibold text-gray-700">7</span>
               </div>
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-indigo-600 text-white hover:bg-indigo-700"
+
+              <Link
+                to="/dashboard/timetable/new/review"
+                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                aria-disabled="false"
+                data-discover="true"
               >
-                Next <NextIcon />
-              </button>
+                <span class="hidden sm:inline">Next</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                  class="h-5 w-5 sm:ml-2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                  ></path>
+                </svg>
+              </Link>
             </div>
           </div>
         </div>
