@@ -164,7 +164,7 @@ const DaysConfiguration = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6">
+    <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
       <div className="flex items-center mb-4">
         <CalendarIcon />
         <h2 className="text-lg font-semibold text-gray-900">
@@ -258,7 +258,7 @@ const TimetableNames = () => {
   } = useTimetableStore();
 
   return (
-    <div className="bg-white rounded-xl p-6">
+    <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
       <div className="flex items-center mb-4">
         <TimetableIcon />
         <h2 className="text-lg font-semibold text-gray-900">Timetable Names</h2>
@@ -489,7 +489,7 @@ function GeneralSettings() {
           <div className="s1-content-inner">
             <TimetableNames />
 
-            <div className="s1-card">
+            <div className="s1-card shadow-sm mb-5">
               <div className="s1-card-header s1-mb-6">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -653,57 +653,58 @@ function GeneralSettings() {
 
             <DaysConfiguration />
 
-            <div className="s1-navigation-container">
-              <div className="s1-navigation-inner">
-                <button
-                  disabled=""
-                  type="button"
-                  className="s1-nav-button s1-nav-button-disabled"
-                  aria-disabled="true"
+            <div class="bg-gray-50 rounded-lg p-4 mt-6">
+              <div class="flex justify-between items-center">
+                <Link
+                  to=""
+                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  data-discover="true"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth="1.5"
+                    stroke-width="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    data-slot="icon"
-                    className="s1-nav-button-icon"
+                    class="h-5 w-5 sm:mr-2"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
                       d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                     ></path>
                   </svg>
-                  Previous
-                </button>
-                <div className="s1-step-indicator">
-                  Step <span className="s1-step-current">1</span> of{" "}
-                  <span className="s1-step-total">7</span>
+                  <span class="hidden sm:inline">Previous</span>
+                </Link>
+
+                <div class="text-sm text-gray-500 text-center px-2">
+                  Step <span class="font-semibold text-gray-700">2</span> of{" "}
+                  <span class="font-semibold text-gray-700">7</span>
                 </div>
+
                 <Link
                   to="/dashboard/timetable/new/subjects"
-                  className="s1-nav-button s1-nav-button-primary"
+                  class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                  aria-disabled="false"
+                  data-discover="true"
                 >
+                  <span class="hidden sm:inline">Next</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth="1.5"
+                    stroke-width="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    data-slot="icon"
-                    className="s1-nav-button-icon"
+                    class="h-5 w-5 sm:ml-2"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                     ></path>
                   </svg>
-                  Next
                 </Link>
               </div>
             </div>

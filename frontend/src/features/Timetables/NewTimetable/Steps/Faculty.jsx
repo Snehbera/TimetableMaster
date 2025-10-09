@@ -923,39 +923,62 @@ export default function Faculty() {
                 type="button"
                 className="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
-                <AddIcon /> Add Faculty
+                <AddIcon /> Add Facultysubjects
               </button>
             </div>
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 mt-6">
-            <div className="flex justify-between items-center">
+          <div class="bg-gray-50 rounded-lg p-4 mt-6">
+            <div class="flex justify-between items-center">
+              <Link
+                to="/dashboard/timetable/new/classes"
+                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                data-discover="true"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                  class="h-5 w-5 sm:mr-2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                  ></path>
+                </svg>
+                <span class="hidden sm:inline">Previous</span>
+              </Link>
+
+              <div class="text-sm text-gray-500 text-center px-2">
+                Step <span class="font-semibold text-gray-700">2</span> of{" "}
+                <span class="font-semibold text-gray-700">7</span>
+              </div>
+
               <Link
                 to="/dashboard/timetable/new/subjects"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                aria-disabled="false"
+                data-discover="true"
               >
-                <PrevIcon /> Previous
-              </Link>
-              <div className="text-sm text-gray-500">
-                Step <span className="font-semibold text-gray-700">3</span> of 7
-              </div>
-              <Link
-                to={
-                  areAllFieldsValid ? "/dashboard/timetable/new/classes" : "#"
-                }
-                onClick={(e) => !areAllFieldsValid && e.preventDefault()}
-                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
-                  areAllFieldsValid
-                    ? "bg-indigo-600 hover:bg-indigo-700"
-                    : "bg-indigo-300 cursor-not-allowed"
-                }`}
-                aria-disabled={!areAllFieldsValid}
-                title={
-                  !areAllFieldsValid
-                    ? "Please fill in all faculty names to continue."
-                    : ""
-                }
-              >
-                Next <NextIcon />
+                <span class="hidden sm:inline">Next</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                  class="h-5 w-5 sm:ml-2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                  ></path>
+                </svg>
               </Link>
             </div>
           </div>

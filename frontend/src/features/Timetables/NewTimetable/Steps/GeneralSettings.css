@@ -112,6 +112,7 @@
     /* Default size */
     box-sizing: border-box;
     /* Ensures padding doesn't add to total width */
+    background-color: white;
 }
 
 .s1-input-field::placeholder {
