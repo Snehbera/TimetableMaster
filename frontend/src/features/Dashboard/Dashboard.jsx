@@ -182,7 +182,7 @@ function Dashboard() {
                   </p>
                 </button>
 
-                <button className="action-button amber">
+                {/* <button className="action-button amber">
                   <div className="button-content">
                     <div className="button-text-group">
                       <svg
@@ -224,9 +224,9 @@ function Dashboard() {
                     Manage teacher absences and substitute assignments. Quickly
                     reassign classNamees when teachers are unavailable
                   </p>
-                </button>
+                </button> */}
 
-                <button className="action-button green">
+                {/* <button className="action-button green">
                   <div className="button-content">
                     <div className="button-text-group">
                       <svg
@@ -269,7 +269,7 @@ function Dashboard() {
                     changes. See actual teaching assignments for all classNamees
                     and teachers
                   </p>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
