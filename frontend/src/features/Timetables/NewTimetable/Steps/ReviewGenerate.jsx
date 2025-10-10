@@ -1,60 +1,168 @@
 import React, { useState } from "react";
 import useTimetableStore from "../../../../Stores/TimetableStore";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom"; // ✅ Changed useHistory to useNavigate
 
+// --- SVG Icon Components ---
+const IconBook = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 text-indigo-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+    />
+  </svg>
+);
+const IconUsers = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 text-indigo-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth="1.5"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
+    ></path>
+  </svg>
+);
+const IconAcademicCap = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 text-indigo-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 14v7m0 0l-3-1m3 1l3-1"
+    />
+  </svg>
+);
+const IconBuilding = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 text-indigo-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+    />
+  </svg>
+);
+const IconClock = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 text-indigo-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+const InfoCard = ({ label, value, colSpan }) => (
+  <div
+    className={`bg-gray-50 p-3 sm:p-4 rounded-lg ${
+      colSpan ? "sm:col-span-2" : ""
+    }`}
+  >
+    <p className="text-xs sm:text-sm text-gray-600 mb-1">{label}</p>
+    <p className="font-medium text-gray-800 text-sm sm:text-base break-words">
+      {value}
+    </p>
+  </div>
+);
+const OverviewCard = ({ label, value, icon }) => (
+  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
+    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+      {icon}
+    </div>
+    <div>
+      <span className="block text-lg sm:text-xl font-bold text-indigo-600">
+        {value}
+      </span>
+      <span className="block text-xs sm:text-sm text-gray-700">{label}</span>
+    </div>
+  </div>
+);
+
+// ... inside the component
 const ReviewGenerate = () => {
   // Get all data from the store
+  const navigate = useNavigate(); // ✅ Changed to useNavigate
   const store = useTimetableStore();
 
-  // Add state for API communication
+  // State for API communication and new features
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [generatedData, setGeneratedData] = useState(null); // NEW: To store successful response
+  const [showJson, setShowJson] = useState(false); // NEW: State for toggling JSON view
 
-  const { timetableNames, days, periodsPerDay, subjects, faculty, rooms } =
-    useTimetableStore();
+  const {
+    timetableNames,
+    periodsPerDay,
+    subjects,
+    faculty,
+    rooms,
+    timings,
+    weeklyTotals,
+  } = store;
 
   // --- CHANGE 1: Get all timetable names ---
-  // Map through the array to get each name, then join them into a single string.
+  const firstTimetableWorkingDays = timetableNames[0]?.workingDays || {};
+
+  const workingDays = Object.entries(firstTimetableWorkingDays)
+    .filter(([, isWorking]) => isWorking)
+    .map(([day]) => day);
+
   const allTimetableDisplayNames =
-    timetableNames.map((tt) => tt.name).join(", ") || "Untitled";
+    timetableNames.map((tt) => tt.name || "Untitled").join(", ") || "None";
 
-  const workingDays = days.filter((d) => d.isSchoolDay).map((d) => d.fullName);
-
+  // OPTIMIZED: Simplified the overview object
   const overview = {
     subjects: subjects.length,
-    // --- CHANGE 2: Calculate total classes from ALL timetables ---
-    // Use reduce to sum up the subdivisions from every timetable entry.
     classes: timetableNames.reduce(
       (acc, tt) => acc + (tt.subdivisions || []).filter(Boolean).length,
       0
     ),
-    teachers: faculty.length,
+    faculty: faculty.length,
     rooms: rooms.length,
-    lessons: subjects.reduce(
-      (acc, sub) => acc + (sub.lecturesPerWeek || 0) + (sub.labsPerWeek || 0),
-      0
-    ),
-    totalPeriods: subjects.reduce(
-      (acc, sub) => acc + (sub.lecturesPerWeek || 0) + (sub.labsPerWeek || 0),
-      0
-    ),
+    totalPeriods: weeklyTotals.grandTotalHours, // Use the pre-calculated total from the store
   };
 
   // Create the function to handle the API call
   const handleGenerateClick = async () => {
     setIsLoading(true);
     setError(null);
+    setGeneratedData(null);
 
-    // Prepare the payload object with all the data
-    const payload = {
-      timetableNames: store.timetableNames,
-      days: store.days,
-      periodsPerDay: store.periodsPerDay,
-      subjects: store.subjects,
-      faculty: store.faculty,
-      rooms: store.rooms,
-      // You can add any other relevant data from your store here
-    };
+    // OPTIMIZED: Send the entire store state or a more complete payload
+    const payload = { ...store };
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/generate/", {
@@ -66,25 +174,25 @@ const ReviewGenerate = () => {
       });
 
       if (!response.ok) {
-        // Handle HTTP errors like 404 or 500
-        throw new Error(`Server responded with status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({})); // Try to parse error response
+        throw new Error(
+          `Server Error: ${response.status} - ${
+            errorData.detail || response.statusText
+          }`
+        );
       }
 
       const result = await response.json();
       console.log("✅ Success! Response from Django:", result);
+      setGeneratedData(result); // NEW: Store the successful result
 
-      // TODO: Here is where you would store the result and navigate to the next step
-      // For example, you might have another function in your Zustand store:
-      // store.setGeneratedTimetable(result);
-      // history.push('/next-step'); // (if using React Router)
-
-      alert(
-        "Timetable generated successfully! Check the console for the response."
-      );
+      alert("Timetable generated successfully!");
+      // Example of programmatic navigation:
+      // history.push('/path-to-view-timetable');
     } catch (err) {
       console.error("❌ Error sending data to Django:", err);
       setError(err.message);
-      alert("Failed to generate timetable. See console for details.");
+      alert(`Failed to generate timetable: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -134,40 +242,36 @@ const ReviewGenerate = () => {
           {/* ... The rest of your component remains the same ... */}
 
           {/* Setup Overview */}
-          <div className="pb-4 sm:pb-6">
-            <div className="flex items-center mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                aria-hidden="true"
-                data-slot="icon"
-                className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 mr-2 sm:mr-3"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
-                ></path>
-              </svg>
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                Setup Overview
-              </h2>
-            </div>
-
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Setup Overview
+            </h3>
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {/* OPTIMIZED: Using the new reusable OverviewCard */}
               <OverviewCard
                 label="Subjects / Courses"
                 value={overview.subjects}
+                icon={<IconBook />}
               />
-              <Classes label="Classes / Groups" value={overview.classes} />
-              <Faculty label="Faculty" value={overview.teachers} />
-              <Rooms label="Rooms" value={overview.rooms} />
               <OverviewCard
-                label="Total Lesson Periods (including double, triple)"
+                label="Classes / Groups"
+                value={overview.classes}
+                icon={<IconUsers />}
+              />
+              <OverviewCard
+                label="Faculty"
+                value={overview.faculty}
+                icon={<IconAcademicCap />}
+              />
+              <OverviewCard
+                label="Rooms"
+                value={overview.rooms}
+                icon={<IconBuilding />}
+              />
+              <OverviewCard
+                label="Total Weekly Periods"
                 value={overview.totalPeriods}
+                icon={<IconClock />}
               />
             </div>
           </div>
@@ -228,55 +332,81 @@ const ReviewGenerate = () => {
           </div>
         </div>
 
-        <div class="bg-gray-50 rounded-lg p-4 mt-6">
-          <div class="flex justify-between items-center">
+        {/* NEW: JSON Data Viewer */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Store Data Inspector
+            </h3>
+            <button
+              onClick={() => setShowJson(!showJson)}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              {showJson ? "Hide" : "Show"} Raw Data
+            </button>
+          </div>
+          {showJson && (
+            <pre className="bg-gray-900 text-white rounded-lg p-4 mt-4 overflow-x-auto text-xs">
+              <code>{JSON.stringify(store, null, 2)}</code>
+            </pre>
+          )}
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-4 mt-6">
+          <div className="flex justify-between items-center">
             <Link
               to="/dashboard/timetable/new/rooms"
-              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+              className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
               data-discover="true"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
-                class="h-5 w-5 sm:mr-2"
+                className="h-5 w-5 sm:mr-2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                 ></path>
               </svg>
-              <span class="hidden sm:inline">Previous</span>
+              <span className="hidden sm:inline">Previous</span>
             </Link>
 
-            <div class="text-sm text-gray-500 text-center px-2">
-              Step <span class="font-semibold text-gray-700">2</span> of{" "}
-              <span class="font-semibold text-gray-700">7</span>
+            <div className="text-sm text-gray-500 text-center px-2">
+              Step <span className="font-semibold text-gray-700">2</span> of{" "}
+              <span className="font-semibold text-gray-700">7</span>
             </div>
 
             <Link
               to="/dashboard/timetable/new/review"
-              class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 cursor-not-allowed"
+              className={`inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+                !generatedData
+                  ? "bg-indigo-300 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+              // NEW: Prevent navigation if timetable is not generated
+              onClick={(e) => !generatedData && e.preventDefault()}
               aria-disabled="false"
               data-discover="true"
             >
-              <span class="hidden sm:inline">Next</span>
+              <span className="hidden sm:inline">Next</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
-                class="h-5 w-5 sm:ml-2"
+                className="h-5 w-5 sm:ml-2"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                 ></path>
               </svg>
@@ -287,117 +417,5 @@ const ReviewGenerate = () => {
     </div>
   );
 };
-
-// Info Card and Overview Card components remain the same
-const InfoCard = ({ label, value, colSpan }) => (
-  <div
-    className={`bg-gray-50 p-3 sm:p-4 rounded-lg ${
-      colSpan ? "sm:col-span-2" : ""
-    }`}
-  >
-    <p className="text-xs sm:text-sm text-gray-600 mb-1">{label}</p>
-    <p className="font-medium text-gray-800 text-sm sm:text-base">{value}</p>
-  </div>
-);
-
-const OverviewCard = ({ label, value }) => (
-  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 flex-shrink-0"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
-      ></path>
-    </svg>
-    <div>
-      <span className="block text-lg sm:text-xl font-bold text-indigo-600">
-        {value}
-      </span>
-      <span className="block text-xs sm:text-sm text-gray-700">{label}</span>
-    </div>
-  </div>
-);
-
-const Classes = ({ label, value }) => (
-  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 flex-shrink-0"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-      ></path>
-    </svg>
-    <div>
-      <span className="block text-lg sm:text-xl font-bold text-indigo-600">
-        {value}
-      </span>
-      <span className="block text-xs sm:text-sm text-gray-700">{label}</span>
-    </div>
-  </div>
-);
-
-const Faculty = ({ label, value }) => (
-  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 flex-shrink-0"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
-      ></path>
-    </svg>
-    <div>
-      <span className="block text-lg sm:text-xl font-bold text-indigo-600">
-        {value}
-      </span>
-      <span className="block text-xs sm:text-sm text-gray-700">{label}</span>
-    </div>
-  </div>
-);
-
-const Rooms = ({ label, value }) => (
-  <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 flex-shrink-0"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-      ></path>
-    </svg>
-    <div>
-      <span className="block text-lg sm:text-xl font-bold text-indigo-600">
-        {value}
-      </span>
-      <span className="block text-xs sm:text-sm text-gray-700">{label}</span>
-    </div>
-  </div>
-);
 
 export default ReviewGenerate;
