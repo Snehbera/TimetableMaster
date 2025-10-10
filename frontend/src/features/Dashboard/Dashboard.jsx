@@ -91,7 +91,10 @@ function Dashboard() {
             <div className="quick-actions-section">
               <h3 className="section-title">Quick Actions</h3>
               <div className="actions-grid">
-                <Link className="action-button indigo" to="/dashboard/timetable/new">
+                <Link
+                  className="action-button indigo"
+                  to="/dashboard/timetable/new"
+                >
                   <div className="button-content">
                     <div className="button-text-group">
                       <svg
@@ -263,8 +266,8 @@ function Dashboard() {
                   </div>
                   <p className="button-description">
                     View live daily schedules with real-time substitutions and
-                    changes. See actual teaching assignments for all classNamees and
-                    teachers
+                    changes. See actual teaching assignments for all classNamees
+                    and teachers
                   </p>
                 </button>
               </div>

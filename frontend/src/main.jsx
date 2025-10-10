@@ -6,6 +6,7 @@ import Layout from "./Layout.jsx";
 import Mytimetables from "./features/Timetables/Timetables.jsx";
 import Dashboard from "./features/Dashboard/Dashboard.jsx";
 import Settings from "./features/Settings/Settings.jsx";
+import User from "./features/User/User.jsx";
 
 import Landing from "./features/Landing/Landing.jsx";
 import Login from "./features/Login/Login.jsx";
@@ -15,9 +16,9 @@ import NTTLayout from "./features/Timetables/NewTimetable/NTTLayout.jsx";
 import GeneralSettings from "./features/Timetables/NewTimetable/Steps/GeneralSettings.jsx";
 import Subjects from "./features/Timetables/NewTimetable/Steps/Subjects.jsx";
 import Faculty from "./features/Timetables/NewTimetable/Steps/Faculty.jsx";
-import Classes from "./features/Timetables/NewTimetable/Steps/Classes.jsx"
+import Classes from "./features/Timetables/NewTimetable/Steps/Classes.jsx";
 import Rooms from "./features/Timetables/NewTimetable/Steps/Rooms.jsx";
-import GeneratedJSON from "./features/Timetables/NewTimetable/Steps/ReviewGenerate.jsx"
+import GeneratedJSON from "./features/Timetables/NewTimetable/Steps/ReviewGenerate.jsx";
 
 const router = createBrowserRouter([
   // Route for the landing page
@@ -30,7 +31,7 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-   {
+  {
     path: "/signup",
     element: <Signup />,
   },
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
         path: "settings",
         element: <Settings />,
       },
+      {
+        path: "user",
+        element: <User />,
+      },
     ],
   },
 
@@ -70,7 +75,7 @@ const router = createBrowserRouter([
         path: "subjects",
         element: <Subjects />,
       },
-       {
+      {
         path: "faculty",
         element: <Faculty />,
       },
@@ -78,11 +83,11 @@ const router = createBrowserRouter([
         path: "classes",
         element: <Classes />,
       },
-       {
+      {
         path: "rooms",
         element: <Rooms />,
       },
-        {
+      {
         path: "review",
         element: <GeneratedJSON />,
       },
