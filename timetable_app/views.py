@@ -248,7 +248,7 @@ def generate_single_semester_view_api_send(request, semester_id):
         return JsonResponse({'success': False, 'error': f"Configuration for {semester.name} is incomplete."}, status=400)
 
     solver = TimetableSolver(config)
-    success, timetable_result = solver.solve()
+    success, timetable_result = solver.solve(30)
 
     if not success:
         return JsonResponse({'success': False, 'error': f"Failed to generate for {semester.name}. Constraints too tight."}, status=422)
@@ -294,54 +294,54 @@ def generate_single_semester_view_api_recieve_send(request):
     source_json_from_react = request.data
     # user = request.user
 
-    # try:
-        # --- WORKFLOW STEP 1 & 2: Transform the data and load it into the DB ---
-    with transaction.atomic():
-        master_json = transform_frontend_json(source_json_from_react)
-        semester_obj = import_data(master_json)
+    try:
+            # --- WORKFLOW STEP 1 & 2: Transform the data and load it into the DB ---
+        with transaction.atomic():
+            master_json = transform_frontend_json(source_json_from_react)
+            semester_obj = import_data(master_json)
 
-    if not semester_obj:
-        return Response({"error": "No valid semester data could be imported from the provided JSON."}, status=400)
+        if not semester_obj:
+            return Response({"error": "No valid semester data could be imported from the provided JSON."}, status=400)
 
-    # --- WORKFLOW STEP 3 & 4: Generate timetable and send response ---
-    config = generate_config_from_models(semester=semester_obj)
-    
-    if not config.get('divisions') or not config.get('subjects'):
-        return Response({'error': f"Configuration for {semester_obj.name} is incomplete after import."}, status=400)
+        # --- WORKFLOW STEP 3 & 4: Generate timetable and send response ---
+        config = generate_config_from_models(semester=semester_obj)
+        
+        if not config.get('divisions') or not config.get('subjects'):
+            return Response({'error': f"Configuration for {semester_obj.name} is incomplete after import."}, status=400)
 
-    solver = TimetableSolver(config)
-    success, timetable_result = solver.solve()
+        solver = TimetableSolver(config)
+        success, timetable_result = solver.solve()
 
-    if not success:
-        return Response({'error': f"Data imported, but failed to generate timetable for {semester_obj.name}."}, status=422)
+        if not success:
+            return Response({'error': f"Data imported, but failed to generate timetable for {semester_obj.name}."}, status=422)
 
-    processed_timetable = _process_solver_output(solver, config, timetable_result)
-    
-    result = TimetableResult.objects.create(solution_found=True, timetable_json=timetable_result)
-    
-    # Construct and return the final JSON response
-    periods_raw = config.get('settings', {}).get('periods_per_day', [])
-    breaks_raw = config.get('settings', {}).get('breaks_after_period', {})
-    final_slots_list = []
-    for i, slot_time in enumerate(periods_raw):
-        final_slots_list.append({'index': i, 'time': slot_time, 'type': 'period'})
-        if str(i + 1) in breaks_raw:
-            final_slots_list.append({'index': None, 'time': breaks_raw[str(i + 1)], 'type': 'break'})
-    
-    json_response_data = {
-        'success': True,
-        'semester': {'number': semester_obj.number, 'name': semester_obj.name},
-        'timetableId': result.id,
-        'config': {
-            'working_days': config.get('settings', {}).get('working_days', []),
-            'slots_and_breaks': final_slots_list,
-        },
-        'timetable': processed_timetable,
-    }
-    return Response(json_response_data)
+        processed_timetable = _process_solver_output(solver, config, timetable_result)
+        
+        result = TimetableResult.objects.create(solution_found=True, timetable_json=timetable_result)
+        
+        # Construct and return the final JSON response
+        periods_raw = config.get('settings', {}).get('periods_per_day', [])
+        breaks_raw = config.get('settings', {}).get('breaks_after_period', {})
+        final_slots_list = []
+        for i, slot_time in enumerate(periods_raw):
+            final_slots_list.append({'index': i, 'time': slot_time, 'type': 'period'})
+            if str(i + 1) in breaks_raw:
+                final_slots_list.append({'index': None, 'time': breaks_raw[str(i + 1)], 'type': 'break'})
+        
+        json_response_data = {
+            'success': True,
+            'semester': {'number': semester_obj.number, 'name': semester_obj.name},
+            'timetableId': result.id,
+            'config': {
+                'working_days': config.get('settings', {}).get('working_days', []),
+                'slots_and_breaks': final_slots_list,
+            },
+            'timetable': processed_timetable,
+        }
+        return Response(json_response_data)
 
-    # except Exception as e:
-    #     return Response({'error': f'A critical error occurred: {str(e)}'}, status=500)
+    except Exception as e:
+        return Response({'error': f'A critical error occurred: {str(e)}'}, status=500)
     
 
 def import_data_from_json(master_json): # Renamed and user parameter removed
