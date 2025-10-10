@@ -171,7 +171,7 @@ const InfoIcon = ({ className = "" }) => (
     xmlns:xlink="http://www.w3.org/1999/xlink"
     viewBox="0 0 416.979 416.979"
     xml:space="preserve"
-    className={`${className}`}
+    className={className}
     fill="currentColor"
   >
     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -402,7 +402,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
             onChange={(e) => setTextInput(e.target.value)}
           />
           <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200 mt-2">
-            <InfoIcon />
+            <InfoIcon className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
             <div className="text-xs text-blue-700 space-y-1">
               <p>
                 Use the format:{" "}

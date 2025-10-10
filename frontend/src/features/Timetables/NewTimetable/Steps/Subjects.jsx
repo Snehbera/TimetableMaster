@@ -115,40 +115,7 @@ const AddIcon = () => (
     />
   </svg>
 );
-const PrevIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 mr-2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-    />
-  </svg>
-);
-const NextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 ml-2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
-    />
-  </svg>
-);
+
 const InfoIcon = ({ className = "" }) => (
   <svg
     version="1.1"
@@ -157,7 +124,7 @@ const InfoIcon = ({ className = "" }) => (
     xmlns:xlink="http://www.w3.org/1999/xlink"
     viewBox="0 0 416.979 416.979"
     xml:space="preserve"
-    className={`text-blue-500 ${className}`}
+    className={className}
     fill="currentColor"
   >
     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -323,7 +290,7 @@ const AvailabilityModal = ({ subject, onClose, onSave }) => {
           </h2>
           <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm">
             <div className="flex">
-              <InfoIcon className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
+              <InfoIcon className="h-10 w-10 mx-auto text-blue-400" />
               <div>
                 <p className="text-blue-700">
                   Mark periods when <strong>{subject.name}</strong> is{" "}
@@ -566,7 +533,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
             <div>
               <div className="mb-4">
                 <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <InfoIcon />
+                  <InfoIcon className="h-5 w-5 text-blue-400" />
                   <div>
                     <h3 className="text-xs font-medium text-blue-800">
                       How to Export from Excel or Google Sheets
@@ -648,7 +615,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
                 id="text-import"
                 rows="8"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                placeholder="Mathematics&#10;Physics&#10;Chemistry&#10;Biology..."
+                placeholder="OS - Operating System&#10;SE - Software Engineering..."
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
               />
@@ -787,7 +754,7 @@ export default function Subjects() {
             <div>
               {subjects.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-3">
-                  <InfoIcon className="h-10 w-10 mx-auto text-blue-50" />
+                  <InfoIcon className="h-10 w-10 mx-auto text-blue-400" />
                   <h3 className="text-sm font-medium text-gray-900">
                     No subjects added yet
                   </h3>
