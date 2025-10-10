@@ -383,100 +383,107 @@ def view_timetable_detail(request, pk):
     return render(request, 'timetable_app/timetable_result.html', context)
 
 ####################################################################################33
-def generate_single_semester_view_api(request, semester_id):
+def generate_single_semester_view_api_send(request, semester_id):
     """
-    Generates a timetable for only ONE specified semester, and returns the
-    full result as a JSON response.
+    Generates a timetable and returns a clean, efficient JSON response for React.
+    (This function is now identical to generate_single_semester_view_api_recieve_send)
     """
     try:
-        semester = get_object_or_404(Semester, number=semester_id)
-    except Exception:
-        return JsonResponse({'success': False, 'error': f'Semester ID {semester_id} not found.'}, status=404)
+        semester = Semester.objects.get(number=semester_id)
+    except Semester.DoesNotExist:
+        return JsonResponse({'success': False, 'error': f'Semester with number {semester_id} not found.'}, status=404)
 
     start_time = timezone.now()
-    print("stated generating timetable in single semester")
-
-    # Assuming these functions are correctly imported and defined elsewhere
     config = generate_config_from_models(semester)
-    solver = TimetableSolver(config)
+    
+    if not config.get('divisions') or not config.get('subjects'):
+        return JsonResponse({'success': False, 'error': f"Configuration for {semester.name} is incomplete."}, status=400)
 
-    print("calling timetablesolver")
+    solver = TimetableSolver(config)
     success, timetable_result = solver.solve()
 
-    # --- Handle Failure ---
     if not success:
-        error_message = f"Failed to generate timetable for {semester.name}. The constraints might be too tight."
-        # Save failure result (optional)
-        TimetableResult.objects.create(
-            solution_found=False,
-            runtime_seconds=(timezone.now() - start_time).total_seconds(),
-            timetable_json=json.dumps({'error': error_message})
-        )
-        return JsonResponse({
-            'success': False,
-            'error': error_message,
-            'semester_id': semester_id
-        }, status=500) # Internal Server Error for generation failure
+        return JsonResponse({'success': False, 'error': f"Failed to generate for {semester.name}. Constraints too tight."}, status=422)
 
-    # Convert raw solver output to standard dictionary for JSON serialization
     raw_timetable_data = {div: dict(days) for div, days in timetable_result.items()}
-
-    # --- Process Data for Detailed View (if needed in JSON) ---
-    # The processed data usually contains more human-readable info (like subject name instead of ID)
-    template_ready_timetable = _process_solver_output(solver, config, raw_timetable_data)
-
-    # --- SAVE RESULT ---
-    timetable_json_data = json.dumps(raw_timetable_data) # Save the raw data
-
-    result = TimetableResult(
+    processed_timetable = _process_solver_output(solver, config, raw_timetable_data)
+    
+    result = TimetableResult.objects.create(
         solution_found=True,
         runtime_seconds=(timezone.now() - start_time).total_seconds(),
-        timetable_json=timetable_json_data
+        timetable_json=raw_timetable_data
     )
-    print("json data saved for result ID:", result.id if result.id else 'new object')
-    result.save()
     
-    # --- Prepare Slots and Breaks for JSON Output ---
     periods_raw = config.get('settings', {}).get('periods_per_day', [])
     breaks_raw = config.get('settings', {}).get('breaks_after_period', {})
-    working_days_count = len(config.get('settings', {}).get('working_days', []))
-
     final_slots_list = []
     for i, slot_time in enumerate(periods_raw):
-        # Add the regular period slot
-        final_slots_list.append({
-            'index': str(i),
-            'time': slot_time,
-            'type': 'period'
-        })
-
-        # Check if a break follows this period index (using 1-based index from config)
+        final_slots_list.append({'index': i, 'time': slot_time, 'type': 'period'})
         if str(i + 1) in breaks_raw:
-            final_slots_list.append({
-                'index': None,
-                'time': breaks_raw[str(i + 1)],
-                'type': 'break'
-            })
-
-    # --- Return JSON Response ---
+            final_slots_list.append({'index': None, 'time': breaks_raw[str(i + 1)], 'type': 'break'})
+    
     json_response_data = {
         'success': True,
-        'semester': {
-            'id': semester.number,
-            'name': semester.name, # Assuming your Semester model has a 'name' field
-        },
-        'timetable_id': result.id, # ID of the saved TimetableResult object
-        'runtime_seconds': result.runtime_seconds,
+        'semester': {'number': semester.number, 'name': semester.name},
+        'timetableId': result.id,
+        'runtimeSeconds': result.runtime_seconds,
         'config': {
-            'divisions': config.get('divisions', {}),
             'working_days': config.get('settings', {}).get('working_days', []),
             'slots_and_breaks': final_slots_list,
-            'num_working_days': working_days_count,
-            'num_rows': len(final_slots_list),
         },
-        # The main generated timetable data, often used for display/API consumption
-        'raw_timetable_data': raw_timetable_data, # Use the raw data for minimal API output
-        'processed_timetable': template_ready_timetable, # Use the processed data for richer API output
+        'timetable': processed_timetable,
     }
+    return JsonResponse(json_response_data)
 
+
+def generate_single_semester_view_api_recieve_send(request, semester_id):
+    """
+    Generates a timetable and returns a clean, efficient JSON response for React.
+    (This function is now identical to generate_single_semester_view_api_send)
+    """
+    try:
+        semester = Semester.objects.get(number=semester_id)
+    except Semester.DoesNotExist:
+        return JsonResponse({'success': False, 'error': f'Semester with number {semester_id} not found.'}, status=404)
+
+    start_time = timezone.now()
+    config = generate_config_from_models(semester)
+    
+    if not config.get('divisions') or not config.get('subjects'):
+        return JsonResponse({'success': False, 'error': f"Configuration for {semester.name} is incomplete."}, status=400)
+
+    solver = TimetableSolver(config)
+    success, timetable_result = solver.solve()
+
+    if not success:
+        return JsonResponse({'success': False, 'error': f"Failed to generate for {semester.name}. Constraints too tight."}, status=422)
+
+    raw_timetable_data = {div: dict(days) for div, days in timetable_result.items()}
+    processed_timetable = _process_solver_output(solver, config, raw_timetable_data)
+    
+    result = TimetableResult.objects.create(
+        solution_found=True,
+        runtime_seconds=(timezone.now() - start_time).total_seconds(),
+        timetable_json=raw_timetable_data
+    )
+    
+    periods_raw = config.get('settings', {}).get('periods_per_day', [])
+    breaks_raw = config.get('settings', {}).get('breaks_after_period', {})
+    final_slots_list = []
+    for i, slot_time in enumerate(periods_raw):
+        final_slots_list.append({'index': i, 'time': slot_time, 'type': 'period'})
+        if str(i + 1) in breaks_raw:
+            final_slots_list.append({'index': None, 'time': breaks_raw[str(i + 1)], 'type': 'break'})
+    
+    json_response_data = {
+        'success': True,
+        'semester': {'number': semester.number, 'name': semester.name},
+        'timetableId': result.id,
+        'runtimeSeconds': result.runtime_seconds,
+        'config': {
+            'working_days': config.get('settings', {}).get('working_days', []),
+            'slots_and_breaks': final_slots_list,
+        },
+        'timetable': processed_timetable,
+    }
     return JsonResponse(json_response_data)
