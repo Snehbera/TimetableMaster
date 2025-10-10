@@ -19,6 +19,7 @@ const IconBook = () => (
     />
   </svg>
 );
+
 const IconUsers = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -35,6 +36,7 @@ const IconUsers = () => (
     ></path>
   </svg>
 );
+
 const IconAcademicCap = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -53,6 +55,7 @@ const IconAcademicCap = () => (
     />
   </svg>
 );
+
 const IconBuilding = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -69,6 +72,7 @@ const IconBuilding = () => (
     />
   </svg>
 );
+
 const IconClock = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -85,6 +89,7 @@ const IconClock = () => (
     />
   </svg>
 );
+
 const InfoCard = ({ label, value, colSpan }) => (
   <div
     className={`bg-gray-50 p-3 sm:p-4 rounded-lg ${
@@ -97,6 +102,7 @@ const InfoCard = ({ label, value, colSpan }) => (
     </p>
   </div>
 );
+
 const OverviewCard = ({ label, value, icon }) => (
   <div className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm flex items-center space-x-3 sm:space-x-4">
     <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -111,17 +117,92 @@ const OverviewCard = ({ label, value, icon }) => (
   </div>
 );
 
-// ... inside the component
+// ✅ Helper function to recursively remove all 'id' keys
+const removeIdsRecursively = (obj) => {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(removeIdsRecursively);
+
+  const newObj = {};
+  for (const key in obj) {
+    if (key !== "id") newObj[key] = removeIdsRecursively(obj[key]);
+  }
+  return newObj;
+};
+
+// ✅ Master cleanup: removes all IDs and replaces them with readable names/shortNames
+const cleanStoreDataDeep = (store) => {
+  const { subjects, faculty, rooms, timetableNames, ...rest } = store;
+
+  // 1️⃣ --- Create lookup maps ---
+  const subjectIdToShortName = new Map();
+  subjects.forEach((sub) => {
+    if (sub.id !== undefined && sub.shortName)
+      subjectIdToShortName.set(sub.id, sub.shortName);
+  });
+
+  const timetableIdToName = new Map();
+  timetableNames.forEach((tt) => {
+    if (tt.id !== undefined && tt.name) timetableIdToName.set(tt.id, tt.name);
+  });
+
+  // 2️⃣ --- Clean Subjects (remove IDs) ---
+  const cleanedSubjects = subjects.map(({ id, ...rest }) => rest);
+
+  // 3️⃣ --- Clean Faculty (replace assignedSubjects IDs → shortNames) ---
+  const cleanedFaculty = faculty.map(({ id, assignedSubjects = [], ...f }) => ({
+    ...f,
+    assignedSubjects: assignedSubjects.map(
+      (sid) => subjectIdToShortName.get(sid) || sid
+    ),
+  }));
+
+  // 4️⃣ --- Clean Rooms (replace timetableId & subjectId → readable names) ---
+  const cleanedRooms = rooms.map(({ id, homeRoomFor = {}, ...room }) => {
+    const { timetableId, subjectId, ...restHome } = homeRoomFor;
+
+    const newHome = {
+      ...restHome,
+      ...(timetableId !== undefined
+        ? { timetableName: timetableIdToName.get(timetableId) || timetableId }
+        : {}),
+      ...(subjectId !== undefined
+        ? { subjectShortName: subjectIdToShortName.get(subjectId) || subjectId }
+        : {}),
+    };
+
+    return { ...room, homeRoomFor: newHome };
+  });
+
+  // 5️⃣ --- Recursive cleanup for other leftover IDs ---
+  const removeIdsRecursively = (obj) => {
+    if (obj === null || typeof obj !== "object") return obj;
+    if (Array.isArray(obj)) return obj.map(removeIdsRecursively);
+    const newObj = {};
+    for (const key in obj) {
+      if (key !== "id") newObj[key] = removeIdsRecursively(obj[key]);
+    }
+    return newObj;
+  };
+
+  const cleanedRest = removeIdsRecursively(rest);
+
+  // 6️⃣ --- Return final cleaned structure ---
+  return {
+    ...cleanedRest,
+    subjects: cleanedSubjects,
+    faculty: cleanedFaculty,
+    rooms: cleanedRooms,
+  };
+};
+
 const ReviewGenerate = () => {
-  // Get all data from the store
-  const navigate = useNavigate(); // ✅ Changed to useNavigate
+  const navigate = useNavigate();
   const store = useTimetableStore();
 
-  // State for API communication and new features
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [generatedData, setGeneratedData] = useState(null); // NEW: To store successful response
-  const [showJson, setShowJson] = useState(false); // NEW: State for toggling JSON view
+  const [generatedData, setGeneratedData] = useState(null);
+  const [showJson, setShowJson] = useState(false);
 
   const {
     timetableNames,
@@ -133,7 +214,6 @@ const ReviewGenerate = () => {
     weeklyTotals,
   } = store;
 
-  // --- CHANGE 1: Get all timetable names ---
   const firstTimetableWorkingDays = timetableNames[0]?.workingDays || {};
 
   const workingDays = Object.entries(firstTimetableWorkingDays)
@@ -143,7 +223,6 @@ const ReviewGenerate = () => {
   const allTimetableDisplayNames =
     timetableNames.map((tt) => tt.name || "Untitled").join(", ") || "None";
 
-  // OPTIMIZED: Simplified the overview object
   const overview = {
     subjects: subjects.length,
     classes: timetableNames.reduce(
@@ -152,47 +231,35 @@ const ReviewGenerate = () => {
     ),
     faculty: faculty.length,
     rooms: rooms.length,
-    totalPeriods: weeklyTotals.grandTotalHours, // Use the pre-calculated total from the store
+    totalPeriods: weeklyTotals.grandTotalHours,
   };
+  const cleanStoreData = cleanStoreDataDeep(store);
 
-  // Create the function to handle the API call
   const handleGenerateClick = async () => {
     setIsLoading(true);
     setError(null);
-    setGeneratedData(null);
-
-    // OPTIMIZED: Send the entire store state or a more complete payload
-    const payload = { ...store };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/generate/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://10.100.102.76:8000/timetable/r/generate-semester-api/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cleanStoreData), // ✅ send cleaned data
+        }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({})); // Try to parse error response
-        throw new Error(
-          `Server Error: ${response.status} - ${
-            errorData.detail || response.statusText
-          }`
-        );
-      }
+      if (!response.ok) throw new Error("Failed to generate timetable");
 
       const result = await response.json();
       console.log("✅ Success! Response from Django:", result);
-      setGeneratedData(result); // NEW: Store the successful result
 
-      alert("Timetable generated successfully!");
-      // Example of programmatic navigation:
-      // history.push('/path-to-view-timetable');
+      setGeneratedData(result);
+      navigate("/dashboard/timetable/view", {
+        state: { timetableData: result },
+      });
     } catch (err) {
-      console.error("❌ Error sending data to Django:", err);
       setError(err.message);
-      alert(`Failed to generate timetable: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -225,7 +292,6 @@ const ReviewGenerate = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {/* --- CHANGE 3: Display all names and update the label --- */}
               <InfoCard
                 label="Timetables to Generate"
                 value={allTimetableDisplayNames}
@@ -239,15 +305,12 @@ const ReviewGenerate = () => {
             </div>
           </div>
 
-          {/* ... The rest of your component remains the same ... */}
-
           {/* Setup Overview */}
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Setup Overview
             </h3>
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-              {/* OPTIMIZED: Using the new reusable OverviewCard */}
               <OverviewCard
                 label="Subjects / Courses"
                 value={overview.subjects}
@@ -287,11 +350,9 @@ const ReviewGenerate = () => {
               <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 All your data is ready. Click the button to start the process.
               </p>
-              {/* Display error messages */}
               {error && <p className="text-red-500 mt-2">Error: {error}</p>}
             </div>
 
-            {/* 5. Update the button's onClick and disabled state */}
             <button
               onClick={handleGenerateClick}
               disabled={isLoading}
@@ -311,12 +372,11 @@ const ReviewGenerate = () => {
                 strokeWidth={1.5}
                 stroke="currentColor"
               >
-                {/* Conditionally render icon based on loading state */}
                 {isLoading ? (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691V5.006h-4.992a8.25 8.25 0 01-11.667 0c0 0 0 0 0 0z"
+                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691V5.006h-4.992a8.25 8.25 0 01-11.667 0z"
                   />
                 ) : (
                   <path
@@ -326,13 +386,12 @@ const ReviewGenerate = () => {
                   />
                 )}
               </svg>
-              {/* Change button text while loading */}
               <span>{isLoading ? "Generating..." : "Generate Timetable"}</span>
             </button>
           </div>
         </div>
 
-        {/* NEW: JSON Data Viewer */}
+        {/* JSON Data Inspector */}
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-800">
@@ -347,17 +406,17 @@ const ReviewGenerate = () => {
           </div>
           {showJson && (
             <pre className="bg-gray-900 text-white rounded-lg p-4 mt-4 overflow-x-auto text-xs">
-              <code>{JSON.stringify(store, null, 2)}</code>
+              <code>{JSON.stringify(cleanStoreData, null, 2)}</code>
             </pre>
           )}
         </div>
 
+        {/* Navigation Footer */}
         <div className="bg-gray-50 rounded-lg p-4 mt-6">
           <div className="flex justify-between items-center">
             <Link
               to="/dashboard/timetable/new/rooms"
               className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
-              data-discover="true"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -365,7 +424,6 @@ const ReviewGenerate = () => {
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 stroke="currentColor"
-                aria-hidden="true"
                 className="h-5 w-5 sm:mr-2"
               >
                 <path
@@ -389,10 +447,7 @@ const ReviewGenerate = () => {
                   ? "bg-indigo-300 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"
               }`}
-              // NEW: Prevent navigation if timetable is not generated
               onClick={(e) => !generatedData && e.preventDefault()}
-              aria-disabled="false"
-              data-discover="true"
             >
               <span className="hidden sm:inline">Next</span>
               <svg
@@ -401,7 +456,6 @@ const ReviewGenerate = () => {
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 stroke="currentColor"
-                aria-hidden="true"
                 className="h-5 w-5 sm:ml-2"
               >
                 <path

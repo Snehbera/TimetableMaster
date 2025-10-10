@@ -26,7 +26,6 @@ const useTimetableStore = create(
     (set, get) => ({
       timetableNames: [
         {
-          id: Date.now(),
           name: "Untitled",
           subdivisions: [""],
           workingDays: { ...initialWorkingDays },
@@ -44,7 +43,7 @@ const useTimetableStore = create(
       faculty: [],
       rooms: [],
 
-     // --- ACTION TO CALCULATE TOTALS (MODIFIED) ---
+      // --- ACTION TO CALCULATE TOTALS (MODIFIED) ---
       calculateWeeklyTotals: () =>
         set((state) => {
           const totals = state.subjects.reduce(
@@ -81,61 +80,76 @@ const useTimetableStore = create(
           timetableNames: [
             ...state.timetableNames,
             {
-              id: Date.now(),
               name: "",
               subdivisions: [""],
               workingDays: { ...initialWorkingDays },
             },
           ],
         })),
-      updateTimetableName: (id, value) =>
+      updateTimetableName: (
+        index,
+        value // CHANGED: from id to index
+      ) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === id ? { ...tt, name: value } : tt
+          timetableNames: state.timetableNames.map((tt, i) =>
+            i === index ? { ...tt, name: value } : tt
           ),
         })),
-      updateTimetableSemester: (id, value) =>
+      updateTimetableSemester: (
+        index,
+        value // CHANGED: from id to index
+      ) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === id ? { ...tt, semester: value } : tt
+          timetableNames: state.timetableNames.map((tt, i) =>
+            i === index ? { ...tt, semester: value } : tt
           ),
         })),
-      removeTimetableName: (id) =>
+      removeTimetableName: (
+        index // CHANGED: from id to index
+      ) =>
         set((state) => ({
           timetableNames:
             state.timetableNames.length > 1
-              ? state.timetableNames.filter((tt) => tt.id !== id)
+              ? state.timetableNames.filter((_, i) => i !== index)
               : state.timetableNames,
         })),
-      addSubdivision: (timetableId) =>
+      // 🔁 CHANGED: Now uses timetableIndex
+      addSubdivision: (timetableIndex) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === timetableId
+          timetableNames: state.timetableNames.map((tt, i) =>
+            i === timetableIndex
               ? { ...tt, subdivisions: [...tt.subdivisions, ""] }
               : tt
           ),
         })),
-      updateSubdivision: (timetableId, subIndex, value) =>
+      updateSubdivision: (
+        timetableIndex,
+        subIndex,
+        value // CHANGED
+      ) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === timetableId
+          timetableNames: state.timetableNames.map((tt, i) =>
+            i === timetableIndex
               ? {
                   ...tt,
-                  subdivisions: tt.subdivisions.map((sub, i) =>
-                    i === subIndex ? value : sub
+                  subdivisions: tt.subdivisions.map((sub, j) =>
+                    j === subIndex ? value : sub
                   ),
                 }
               : tt
           ),
         })),
-      removeSubdivision: (timetableId, subIndex) =>
+      removeSubdivision: (
+        timetableIndex,
+        subIndex // CHANGED
+      ) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) =>
-            tt.id === timetableId
+          timetableNames: state.timetableNames.map((tt, i) =>
+            i === timetableIndex
               ? {
                   ...tt,
                   subdivisions: tt.subdivisions.filter(
-                    (_, i) => i !== subIndex
+                    (_, j) => j !== subIndex
                   ),
                 }
               : tt
@@ -149,11 +163,13 @@ const useTimetableStore = create(
       setTimings: (newTimings) => set({ timings: newTimings }),
 
       // --- Action to toggle working days per timetable ---
-      toggleWorkingDayForTimetable: (timetableId, dayName) =>
+      toggleWorkingDayForTimetable: (
+        timetableIndex,
+        dayName // CHANGED
+      ) =>
         set((state) => ({
-          timetableNames: state.timetableNames.map((tt) => {
-            if (tt.id === timetableId) {
-              // If tt.workingDays is missing, use the default initialWorkingDays as a base.
+          timetableNames: state.timetableNames.map((tt, i) => {
+            if (i === timetableIndex) {
               const currentWorkingDays = tt.workingDays || initialWorkingDays;
               return {
                 ...tt,
@@ -166,12 +182,10 @@ const useTimetableStore = create(
             return tt;
           }),
         })),
-
       // --- 2 Step:- Actions for Subjects (MODIFIED) --- //
       addSubject: () => {
         set((state) => {
           const newSubject = {
-            id: Date.now(),
             name: "",
             shortName: "",
             color: getRandomColor(),
@@ -184,26 +198,29 @@ const useTimetableStore = create(
         get().calculateWeeklyTotals(); // Trigger calculation
       },
 
-      removeSubject: (id) => {
+      removeSubject: (index) => {
+        // CHANGED
         set((state) => ({
-          subjects: state.subjects.filter((subject) => subject.id !== id),
+          subjects: state.subjects.filter((_, i) => i !== index),
         }));
-        get().calculateWeeklyTotals(); // Trigger calculation
+        get().calculateWeeklyTotals();
       },
-
-      updateSubjectName: (id, newName) =>
+      updateSubjectName: (
+        index,
+        newName // CHANGED
+      ) =>
         set((state) => ({
-          subjects: state.subjects.map((subject) =>
-            subject.id === id ? { ...subject, name: newName } : subject
+          subjects: state.subjects.map((subject, i) =>
+            i === index ? { ...subject, name: newName } : subject
           ),
         })),
-
-      updateSubjectShortName: (id, newShortName) =>
+      updateSubjectShortName: (
+        index,
+        newShortName // CHANGED
+      ) =>
         set((state) => ({
-          subjects: state.subjects.map((subject) =>
-            subject.id === id
-              ? { ...subject, shortName: newShortName }
-              : subject
+          subjects: state.subjects.map((subject, i) =>
+            i === index ? { ...subject, shortName: newShortName } : subject
           ),
         })),
 
@@ -230,10 +247,11 @@ const useTimetableStore = create(
         get().calculateWeeklyTotals(); // Trigger calculation
       },
 
-      updateSubjectAvailability: (id, newAvailability) =>
+      // 🔁 CHANGED: Now uses index instead of ID
+      updateSubjectAvailability: (index, newAvailability) =>
         set((state) => ({
-          subjects: state.subjects.map((subject) =>
-            subject.id === id
+          subjects: state.subjects.map((subject, i) =>
+            i === index
               ? { ...subject, availability: newAvailability }
               : subject
           ),
@@ -245,7 +263,6 @@ const useTimetableStore = create(
           faculty: [
             ...state.faculty,
             {
-              id: Date.now(),
               name: "",
               shortName: "",
               assignedSubjects: [], // Use an array to match the component
@@ -254,32 +271,33 @@ const useTimetableStore = create(
         }));
       },
 
-      removeFaculty: (id) => {
+      removeFaculty: (index) => {
+        // CHANGED
         set((state) => ({
-          faculty: state.faculty.filter((f) => f.id !== id),
+          faculty: state.faculty.filter((_, i) => i !== index),
         }));
       },
-
-      updateFacultyName: (id, newName) => {
+      updateFacultyName: (index, newName) => {
+        // CHANGED
         set((state) => ({
-          faculty: state.faculty.map((f) =>
-            f.id === id ? { ...f, name: newName } : f
+          faculty: state.faculty.map((f, i) =>
+            i === index ? { ...f, name: newName } : f
           ),
         }));
       },
-
-      updateFacultyShortName: (id, newShortName) => {
+      updateFacultyShortName: (index, newShortName) => {
+        // CHANGED
         set((state) => ({
-          faculty: state.faculty.map((f) =>
-            f.id === id ? { ...f, shortName: newShortName } : f
+          faculty: state.faculty.map((f, i) =>
+            i === index ? { ...f, shortName: newShortName } : f
           ),
         }));
       },
-
-      setAssignedSubjects: (facultyId, subjectIds) => {
+      setAssignedSubjects: (facultyIndex, subjectNames) => {
+        // CHANGED & WARNING
         set((state) => ({
-          faculty: state.faculty.map((f) =>
-            f.id === facultyId ? { ...f, assignedSubjects: subjectIds } : f
+          faculty: state.faculty.map((f, i) =>
+            i === facultyIndex ? { ...f, assignedSubjects: subjectNames } : f
           ),
         }));
       },
@@ -305,49 +323,42 @@ const useTimetableStore = create(
             }
           });
 
-          const newFaculty = newFacultyData.map((facData) => {
-            // Find subject IDs from the provided short names
-            const assignedSubjectIds = (
-              facData.assignedSubjectsShortNames || []
-            )
-              .map((shortName) =>
-                subjectShortNameToIdMap.get(shortName.toLowerCase())
-              )
-              .filter((id) => id !== undefined); // Filter out any subjects that weren't found
-
-            return {
-              id: Date.now() + Math.random(),
-              name: facData.name,
-              shortName: facData.shortName,
-              assignedSubjects: assignedSubjectIds,
-            };
-          });
+          const newFaculty = newFacultyData.map((facData) => ({
+            // - REMOVED 'id'
+            name: facData.name,
+            shortName: facData.shortName,
+            // Assuming you assign by name/shortname now
+            assignedSubjects: facData.assignedSubjectsShortNames || [],
+          }));
           return { faculty: [...state.faculty, ...newFaculty] };
         });
       },
 
-      setFacultyAvailability: (facultyId, availabilityGrid) => {
+      // 🔁 CHANGED: Now uses index instead of ID
+      setFacultyAvailability: (facultyIndex, availabilityGrid) => {
         set((state) => ({
-          faculty: state.faculty.map((f) =>
-            f.id === facultyId ? { ...f, availability: availabilityGrid } : f
+          faculty: state.faculty.map((f, i) =>
+            i === facultyIndex ? { ...f, availability: availabilityGrid } : f
           ),
         }));
       },
 
-      // --- 4 Step:- Actions for Classes (MODIFIED) --- //
-      updateSubjectValue: (subjectId, field, value) => {
+      // 4----
+      // 🔁 CHANGED: Now uses index instead of ID
+      updateSubjectValue: (subjectIndex, field, value) => {
         set((state) => ({
-          subjects: state.subjects.map((s) =>
-            s.id === subjectId ? { ...s, [field]: Math.max(0, value) } : s
+          subjects: state.subjects.map((s, i) =>
+            i === subjectIndex ? { ...s, [field]: Math.max(0, value) } : s
           ),
         }));
-        get().calculateWeeklyTotals(); // Trigger calculation
+        get().calculateWeeklyTotals();
       },
 
-      toggleSubjectDoubleSlot: (subjectId) => {
+      // 🔁 CHANGED: Now uses index instead of ID
+      toggleSubjectDoubleSlot: (subjectIndex) => {
         set((state) => ({
-          subjects: state.subjects.map((s) =>
-            s.id === subjectId ? { ...s, isDoubleSlot: !s.isDoubleSlot } : s
+          subjects: state.subjects.map((s, i) =>
+            i === subjectIndex ? { ...s, isDoubleSlot: !s.isDoubleSlot } : s
           ),
         }));
       },
@@ -358,20 +369,15 @@ const useTimetableStore = create(
           const { timetableNames, subjects, rooms } = state;
           const newRooms = [];
 
-          // 1. Process Classrooms for each main division
-          (timetableNames || []).forEach((tt) => {
-            const assignment = { timetableId: tt.id, subIndex: -1 };
+          (timetableNames || []).forEach((tt, ttIndex) => {
+            const assignment = { timetableIndex: ttIndex, subIndex: -1 };
             const existingRoom = rooms.find(
               (r) =>
-                r.type === "classroom" &&
                 JSON.stringify(r.homeRoomFor) === JSON.stringify(assignment)
             );
-
-            if (existingRoom) {
-              newRooms.push(existingRoom); // Keep existing room data
-            } else {
+            if (!existingRoom) {
               newRooms.push({
-                id: `c_${tt.id}`, // Use a consistent ID
+                // - REMOVED 'id'
                 name: "",
                 type: "classroom",
                 homeRoomFor: assignment,
@@ -379,31 +385,25 @@ const useTimetableStore = create(
             }
           });
 
-          // 2. Process Labs for each subject within each subdivision
-          (timetableNames || []).forEach((tt) => {
-            (tt.subdivisions || []).forEach((sub, index) => {
+          (timetableNames || []).forEach((tt, ttIndex) => {
+            (tt.subdivisions || []).forEach((sub, subIndex) => {
               if (sub) {
-                // Find subjects that have labs
                 (subjects || [])
                   .filter((s) => s.labsPerWeek > 0)
-                  .forEach((subject) => {
+                  .forEach((subject, subjectIndex) => {
                     const assignment = {
-                      timetableId: tt.id,
-                      subIndex: index,
-                      subjectId: subject.id,
+                      timetableIndex: ttIndex,
+                      subIndex: subIndex,
+                      subjectIndex: subjectIndex, // Use index
                     };
                     const existingLab = rooms.find(
                       (r) =>
-                        r.type === "lab" &&
                         JSON.stringify(r.homeRoomFor) ===
-                          JSON.stringify(assignment)
+                        JSON.stringify(assignment)
                     );
-
-                    if (existingLab) {
-                      newRooms.push(existingLab); // Keep existing lab data
-                    } else {
+                    if (!existingLab) {
                       newRooms.push({
-                        id: `l_${tt.id}_${index}_${subject.id}`, // Use a consistent ID
+                        // - REMOVED 'id'
                         name: "",
                         type: "lab",
                         homeRoomFor: assignment,
@@ -414,17 +414,33 @@ const useTimetableStore = create(
             });
           });
 
-          return { rooms: newRooms };
+          // Combine existing and new, ensuring no duplicates
+          const allRooms = [...rooms, ...newRooms];
+          const uniqueRooms = allRooms.filter(
+            (v, i, a) =>
+              a.findIndex(
+                (t) =>
+                  JSON.stringify(t.homeRoomFor) ===
+                  JSON.stringify(v.homeRoomFor)
+              ) === i
+          );
+          return { rooms: uniqueRooms };
         });
       },
 
-      updateRoomName: (roomId, newName) => {
+      // 🔁 CHANGED: Now uses index instead of ID
+      updateRoomName: (roomId, newName) =>
         set((state) => ({
-          rooms: state.rooms.map((r) =>
-            r.id === roomId ? { ...r, name: newName } : r
-          ),
-        }));
-      },
+          rooms: state.rooms.map((room) => {
+            // If this is the room we want to update...
+            if (room.id === roomId) {
+              // ...return a new object with the updated name.
+              return { ...room, name: newName };
+            }
+            // Otherwise, return the original, unchanged room.
+            return room;
+          }),
+        })),
     }),
     {
       name: "timetable-storage",
