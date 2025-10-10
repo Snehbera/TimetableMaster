@@ -241,7 +241,7 @@ const ReviewGenerate = () => {
 
     try {
       const response = await fetch(
-        "http://10.100.102.76:8000/timetable/r/generate-semester-api/",
+        "http://10.100.102.27:8000/timetable/r/generate-semester-api/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -255,7 +255,7 @@ const ReviewGenerate = () => {
       console.log("✅ Success! Response from Django:", result);
 
       setGeneratedData(result);
-      navigate("/dashboard/timetable/view", {
+      navigate("/dashboard/timetable/Viewtimetable", {
         state: { timetableData: result },
       });
     } catch (err) {

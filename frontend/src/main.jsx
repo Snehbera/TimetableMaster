@@ -92,11 +92,13 @@ const router = createBrowserRouter([
         path: "review",
         element: <GeneratedJSON />,
       },
-      {
-        path: "Viewtimetable",
-        element: <Viewtimetable />,
-      },
     ],
+  },
+  // 👇 ADD THIS NEW TOP-LEVEL ROUTE FOR VIEWING THE TIMETABLE
+  // This is now a separate route and is not nested inside the "new" flow.
+  {
+    path: "/dashboard/timetable/Viewtimetable", // ✅ This path is lowercase and matches the navigate() call
+    element: <Viewtimetable />, // Renders the ViewTimetable component directly
   },
 ]);
 

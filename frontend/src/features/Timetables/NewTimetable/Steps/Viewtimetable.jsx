@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom"; // 👈 Import useLocation and Link
 
 // --- Timetable Data ---
 // In a real application, this would likely be fetched from an API.
@@ -639,20 +640,42 @@ const Footer = ({ timetableId }) => (
   </footer>
 );
 
-// --- Main App Component ---
+// --- Main ViewTimetable Component ---
 
-export default function App() {
-  const [data] = useState(timetableJSON);
-  const divisions = Object.keys(data.timetable);
-  const [currentDivision, setCurrentDivision] = useState(divisions[0]);
+const ViewTimetable = () => {
+  // 👈 Renamed component from App to ViewTimetable
+  // 1. REMOVE the hardcoded dummy data
+  // const [data] = useState(timetableJSON); // ❌ We don't need this anymore
 
-  if (!data.success) {
+  // 2. GET data from the navigation state
+  const location = useLocation();
+  const data = location.state?.timetableData; // ✅ This is the real data from Django
+
+  // 3. HANDLE cases where data is missing (e.g., page refresh or direct URL access)
+  if (!data || !data.success) {
     return (
-      <div className="p-8 text-center text-red-600">
-        Error: Timetable data could not be loaded.
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">
+            No Timetable Data Found
+          </h2>
+          <p className="text-gray-700 mb-6">
+            Please generate a timetable first to view the results.
+          </p>
+          <Link
+            to="/dashboard/timetable/new/review" // Adjust this path if needed
+            className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Go Back to Generate
+          </Link>
+        </div>
       </div>
     );
   }
+
+  // 4. PREPARE state using the received data
+  const divisions = Object.keys(data.timetable);
+  const [currentDivision, setCurrentDivision] = useState(divisions[0]);
 
   return (
     <div className="bg-gray-100 text-gray-800 min-h-screen">
@@ -672,4 +695,6 @@ export default function App() {
       </div>
     </div>
   );
-}
+};
+
+export default ViewTimetable; // 👈 Export the renamed component
