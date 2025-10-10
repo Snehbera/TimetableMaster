@@ -1,0 +1,94 @@
+{% load app_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Timetable - Semester {{ semester.number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 40px; table-layout: fixed; }
+        th, td { border: 1px solid #444; padding: 6px; text-align: center; font-size: 14px; min-height: 50px; }
+        th { background-color: #c0c0c0; font-weight: bold; }
+        .offday { background-color: #eee; font-weight: bold; color: #888; }
+        .doublelec { background-color: #d9eaf7; }
+        .lab { background-color: #e6f4ea; }
+        .block-inner { display: flex; flex-direction: column; font-size: 0.9em; justify-content: center; height: 100%; }
+        .faculty { font-style: italic; color: #333; }
+        .lab-item { margin: 2px 0; }
+        h1, h2 { text-align: center; margin-bottom: 15px; }
+        .error { color: red; text-align: center; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<h1>Semester {{ semester.number }} Timetable</h1>
+
+{% if error %}
+    <h2 class="error">{{ error }}</h2>
+{% elif timetable %}
+    <h2>Solution Found in {{ result.runtime_seconds|floatformat:2 }} seconds</h2>
+{% endif %}
+
+{% for div_code, days_list in timetable.items %}
+    <h2>Division: {{ div_code }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>TIME</th>
+                {% for day_obj in days_list %}
+                    <th>{{ day_obj.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot_no, slot_time in slots.items %}
+            <tr>
+                <td>{{ slot_time }}</td>
+                {% for day_obj in days_list %}
+                    {% if day_obj.is_offday %}
+                        {% if forloop.parentloop.counter0 == 0 %}
+                            <td class="offday" rowspan="{{ slots|length }}">OFF</td>
+                        {% endif %}
+                    {% else %}
+
+                        {# The final corrected line using our new filter #}
+                        {% with cell=day_obj.slots|get_item:slot_no %}
+                            {% if cell.type == 'Placeholder' %}
+                                {# This cell is part of a larger block, so we render nothing #}
+                            {% elif cell.type == 'DoubleLec' %}
+                                <td class="doublelec" rowspan="2">
+                                    <div class="block-inner">
+                                        <span>{{ cell.subject }}</span>
+                                        <span class="faculty">{{ cell.faculty }}</span>
+                                    </div>
+                                </td>
+                            {% elif cell.type == 'LabBlock' %}
+                                <td class="lab" rowspan="2">
+                                    <div class="block-inner">
+                                        {% for lab in cell.details %}
+                                            <div class="lab-item">{{ lab.partition }}: {{ lab.lab }} ({{ lab.faculty }})</div>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            {% elif cell.type == 'Lec' %}
+                                <td>
+                                    <div class="block-inner">
+                                        <span>{{ cell.subject }}</span>
+                                        <span class="faculty">{{ cell.faculty }}</span>
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
+
+</body>
+</html>

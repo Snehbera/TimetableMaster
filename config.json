@@ -1,0 +1,69 @@
+{
+  "settings": {
+    "working_days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "periods_per_day": [
+      "07:30-08:25",
+      "08:25-09:20",
+      "09:50-10:45",
+      "10:45-11:40",
+      "11:50-12:45",
+      "12:45-01:40"
+    ],
+    "breaks_after_period": {
+      "2": "BREAK (09:20-09:50)",
+      "4": "SHORT BREAK (11:40-11:50)"
+    }
+  },
+  "faculty": {
+    "BUT": { "name": "Birju Tank" },
+    "KSR": { "name": "Kinjal Raja" },
+    "YNM": { "name": "Yagnesh Makwana" },
+    "ARV": { "name": "Ashwini Vaidya" },
+    "NMV": { "name": "Nisha Vadodariya" },
+    "JPB": { "name": "Jil Bhatti" },
+    "NPB": { "name": "Nirali Borad" },
+    "DRP": { "name": "Devangi Paneri" },
+    "NRV": { "name": "Niraj Vangani" },
+    "HHM": { "name": "Hiren Makwana" },
+    "MMP": { "name": "Mukesh Patel" },
+    "KVP": { "name": "Kajal Paradava" },
+    "YBS": { "name": "Yagnesh Shukla" },
+    "SNJ": { "name": "Samir Joshi" }
+  },
+  "5": {
+    "divisions": {
+      "BX": { "off_day": "Monday", "partitions": ["BX1", "BX2", "BX3"] },
+      "BY": { "off_day": "Saturday", "partitions": ["BY1", "BY2"] },
+      "BZ": { "off_day": "Monday", "partitions": ["BZ1", "BZ2"] }
+    },
+    "subjects": {
+      "ADA": { "name": "Analysis And Design Of Algorithms", "lectures": 3, "labs": 1 },
+      "APY": { "name": "Advanced Python Programming", "lectures": 2, "labs": 1 },
+      "IOT": { "name": "Internet of Things", "lectures": 3, "labs": 1 },
+      "OS": { "name": "Operating Systems", "lectures": 3, "labs": 1 },
+      "SE": { "name": "Software Engineering", "lectures": 2, "labs": 1 },
+      "C2P": { "name": "Concept To Practice", "lectures": 2, "labs": 0 },
+      "CAP": { "name": "Career Acceleration Program", "lectures": 0, "labs": 0, "double_periods": 1 },
+      "AP": { "name": "Android Programming", "lectures": 2, "labs": 1 },
+      "MN": { "name": "Modern Networks", "lectures": 1, "labs": 0 }
+    },
+    "faculty_assignments": {
+      "ADA": { "BX": "BUT", "BY": "BUT" },
+      "APY": { "BY": "KSR", "BZ": "KSR" },
+      "AP": { "BX": "DRP" },
+      "IOT": { "BX": "YBS", "BY": "YNM", "BZ": "YNM" },
+      "MN": { "BX": "SNJ", "BY": "ARV", "BZ": "ARV" },
+      "SE": { "BX": "NPB", "BY": "NPB", "BZ": "NPB" },
+      "OS": { "BX": "KVP", "BY": "NMV", "BZ": "NMV" },
+      "C2P": { "BX": "NMV", "BY": "DRP", "BZ": "DRP" },
+      "CAP": { "BX": "NRV", "BY": "HHM", "BZ": "NRV" }
+    }
+  }
+}
