@@ -19,6 +19,7 @@ import Faculty from "./features/Timetables/NewTimetable/Steps/Faculty.jsx";
 import Classes from "./features/Timetables/NewTimetable/Steps/Classes.jsx";
 import Rooms from "./features/Timetables/NewTimetable/Steps/Rooms.jsx";
 import GeneratedJSON from "./features/Timetables/NewTimetable/Steps/ReviewGenerate.jsx";
+import Viewtimetable from "./features/Timetables/NewTimetable/Steps/Viewtimetable.jsx";
 
 const router = createBrowserRouter([
   // Route for the landing page
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
       {
         path: "review",
         element: <GeneratedJSON />,
+      },
+      {
+        path: "Viewtimetable",
+        element: <Viewtimetable />,
       },
     ],
   },
