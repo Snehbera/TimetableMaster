@@ -1,347 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom"; // 👈 Import useLocation and Link
-
-// --- Timetable Data ---
-// In a real application, this would likely be fetched from an API.
-const timetableJSON = {
-  success: true,
-  semester: { number: 5, name: "5th Semester" },
-  timetableId: 230,
-  runtimeSeconds: 0.149669,
-  config: {
-    working_days: [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ],
-    slots_and_breaks: [
-      { index: 0, time: "07:30-08:25", type: "period" },
-      { index: 1, time: "08:25-09:20", type: "period" },
-      { index: null, time: "BREAK (09:20-09:50)", type: "break" },
-      { index: 2, time: "09:50-10:45", type: "period" },
-      { index: 3, time: "10:45-11:40", type: "period" },
-      { index: null, time: "SHORT BREAK (11:40-11:50)", type: "break" },
-      { index: 4, time: "11:50-12:45", type: "period" },
-      { index: 5, time: "12:45-01:40", type: "period" },
-    ],
-  },
-  timetable: {
-    BX: [
-      {
-        name: "Monday",
-        is_offday: true,
-        slots: [
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-        ],
-      },
-      {
-        name: "Tuesday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BX1", lab: "AP", faculty: "DRP" },
-              { partition: "BX2", lab: "IOT", faculty: "YBS" },
-              { partition: "BX3", lab: "ADA", faculty: "BUT" },
-            ],
-          },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BX1", lab: "IOT", faculty: "YBS" },
-              { partition: "BX2", lab: "AP", faculty: "DRP" },
-              { partition: "BX3", lab: "OS", faculty: "KVP" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BX", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BX", subject: "IOT", faculty: "YBS" },
-        ],
-      },
-      {
-        name: "Wednesday",
-        is_offday: false,
-        slots: [
-          { type: "DoubleLec", division: "BX", subject: "CAP", faculty: "NRV" },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BX1", lab: "ADA", faculty: "BUT" },
-              { partition: "BX2", lab: "OS", faculty: "KVP" },
-              { partition: "BX3", lab: "SE", faculty: "NPB" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BX", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BX", subject: "IOT", faculty: "YBS" },
-        ],
-      },
-      {
-        name: "Thursday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BX1", lab: "SE", faculty: "NPB" },
-              { partition: "BX2", lab: "ADA", faculty: "BUT" },
-              { partition: "BX3", lab: "IOT", faculty: "YBS" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BX", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BX", subject: "OS", faculty: "KVP" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BX1", lab: "OS", faculty: "KVP" },
-              { partition: "BX2", lab: "SE", faculty: "NPB" },
-              { partition: "BX3", lab: "AP", faculty: "DRP" },
-            ],
-          },
-          { type: "Placeholder" },
-        ],
-      },
-      {
-        name: "Friday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BX", subject: "IOT", faculty: "YBS" },
-          { type: "Lec", division: "BX", subject: "OS", faculty: "KVP" },
-          { type: "Lec", division: "BX", subject: "SE", faculty: "NPB" },
-          { type: "Lec", division: "BX", subject: "C2P", faculty: "NMV" },
-          { type: "Lec", division: "BX", subject: "AP", faculty: "DRP" },
-          { type: "Lec", division: "BX", subject: "MN", faculty: "SNJ" },
-        ],
-      },
-      {
-        name: "Saturday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BX", subject: "OS", faculty: "KVP" },
-          { type: "Lec", division: "BX", subject: "SE", faculty: "NPB" },
-          { type: "Lec", division: "BX", subject: "C2P", faculty: "NMV" },
-          { type: "Lec", division: "BX", subject: "AP", faculty: "DRP" },
-          null,
-          null,
-        ],
-      },
-    ],
-    BY: [
-      {
-        name: "Monday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BY1", lab: "APY", faculty: "KSR" },
-              { partition: "BY2", lab: "SE", faculty: "NPB" },
-            ],
-          },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BY1", lab: "ADA", faculty: "BUT" },
-              { partition: "BY2", lab: "APY", faculty: "KSR" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BY", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BY", subject: "APY", faculty: "KSR" },
-        ],
-      },
-      {
-        name: "Tuesday",
-        is_offday: false,
-        slots: [
-          { type: "DoubleLec", division: "BY", subject: "CAP", faculty: "HHM" },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BY1", lab: "OS", faculty: "NMV" },
-              { partition: "BY2", lab: "ADA", faculty: "BUT" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BY", subject: "IOT", faculty: "YNM" },
-          { type: "Lec", division: "BY", subject: "OS", faculty: "NMV" },
-        ],
-      },
-      {
-        name: "Wednesday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BY1", lab: "IOT", faculty: "YNM" },
-              { partition: "BY2", lab: "OS", faculty: "NMV" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BY", subject: "APY", faculty: "KSR" },
-          { type: "Lec", division: "BY", subject: "C2P", faculty: "DRP" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BY1", lab: "SE", faculty: "NPB" },
-              { partition: "BY2", lab: "IOT", faculty: "YNM" },
-            ],
-          },
-          { type: "Placeholder" },
-        ],
-      },
-      {
-        name: "Thursday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BY", subject: "IOT", faculty: "YNM" },
-          { type: "Lec", division: "BY", subject: "OS", faculty: "NMV" },
-          { type: "Lec", division: "BY", subject: "SE", faculty: "NPB" },
-          { type: "Lec", division: "BY", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BY", subject: "MN", faculty: "ARV" },
-          null,
-        ],
-      },
-      {
-        name: "Friday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BY", subject: "ADA", faculty: "BUT" },
-          { type: "Lec", division: "BY", subject: "IOT", faculty: "YNM" },
-          { type: "Lec", division: "BY", subject: "OS", faculty: "NMV" },
-          { type: "Lec", division: "BY", subject: "C2P", faculty: "DRP" },
-          { type: "Lec", division: "BY", subject: "SE", faculty: "NPB" },
-          null,
-        ],
-      },
-      {
-        name: "Saturday",
-        is_offday: true,
-        slots: [
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-        ],
-      },
-    ],
-    BZ: [
-      {
-        name: "Monday",
-        is_offday: true,
-        slots: [
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-          { type: "OffDay" },
-        ],
-      },
-      {
-        name: "Tuesday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BZ1", lab: "OS", faculty: "NMV" },
-              { partition: "BZ2", lab: "SE", faculty: "NPB" },
-            ],
-          },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BZ1", lab: "APY", faculty: "KSR" },
-              { partition: "BZ2", lab: "IOT", faculty: "YNM" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BZ", subject: "APY", faculty: "KSR" },
-          { type: "Lec", division: "BZ", subject: "IOT", faculty: "YNM" },
-        ],
-      },
-      {
-        name: "Wednesday",
-        is_offday: false,
-        slots: [
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BZ1", lab: "SE", faculty: "NPB" },
-              { partition: "BZ2", lab: "APY", faculty: "KSR" },
-            ],
-          },
-          { type: "Placeholder" },
-          {
-            type: "LabBlock",
-            details: [
-              { partition: "BZ1", lab: "IOT", faculty: "YNM" },
-              { partition: "BZ2", lab: "OS", faculty: "NMV" },
-            ],
-          },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BZ", subject: "APY", faculty: "KSR" },
-          { type: "Lec", division: "BZ", subject: "OS", faculty: "NMV" },
-        ],
-      },
-      {
-        name: "Thursday",
-        is_offday: false,
-        slots: [
-          { type: "DoubleLec", division: "BZ", subject: "CAP", faculty: "NRV" },
-          { type: "Placeholder" },
-          { type: "Lec", division: "BZ", subject: "IOT", faculty: "YNM" },
-          { type: "Lec", division: "BZ", subject: "OS", faculty: "NMV" },
-          null,
-          null,
-        ],
-      },
-      {
-        name: "Friday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BZ", subject: "IOT", faculty: "YNM" },
-          { type: "Lec", division: "BZ", subject: "SE", faculty: "NPB" },
-          { type: "Lec", division: "BZ", subject: "C2P", faculty: "DRP" },
-          { type: "Lec", division: "BZ", subject: "MN", faculty: "ARV" },
-          { type: "Lec", division: "BZ", subject: "OS", faculty: "NMV" },
-          null,
-        ],
-      },
-      {
-        name: "Saturday",
-        is_offday: false,
-        slots: [
-          { type: "Lec", division: "BZ", subject: "SE", faculty: "NPB" },
-          { type: "Lec", division: "BZ", subject: "C2P", faculty: "DRP" },
-          null,
-          null,
-          null,
-          null,
-        ],
-      },
-    ],
-  },
-};
+import React, { useState, useRef } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // --- Helper Functions ---
 const isCurrentSlot = (dayName, timeRange) => {
@@ -356,26 +16,18 @@ const isCurrentSlot = (dayName, timeRange) => {
     "Saturday",
   ];
   const currentDayName = days[now.getDay()];
-
   if (currentDayName !== dayName) return false;
-
   try {
     const [startTimeStr, endTimeStr] = timeRange.split("-");
     const [startHour, startMinute] = startTimeStr.split(":").map(Number);
-
     let endHour = parseInt(endTimeStr.split(":")[0], 10);
     const endMinute = parseInt(endTimeStr.split(":")[1], 10);
-
-    // Simple logic to handle PM times (e.g., 01:40 is 13:40)
     if (endHour < startHour) endHour += 12;
-
     const currentTime = now.getHours() * 60 + now.getMinutes();
     const startTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;
-
     return currentTime >= startTime && currentTime < endTime;
   } catch (e) {
-    console.error("Error parsing time:", timeRange, e);
     return false;
   }
 };
@@ -386,16 +38,16 @@ const Header = () => (
   <header className="text-center mb-6 bg-white p-6 rounded-xl shadow-md border border-gray-200">
     <div className="flex justify-center items-center gap-4 flex-wrap">
       <img
-        src="https://placehold.co/80x80/e2e8f0/334155?text=Logo"
-        alt="University Logo"
-        className="h-16 w-16 rounded-full"
+        src="https://www.atmiyauni.ac.in/wp-content/uploads/2018/08/logo-2.png"
+        alt="Atmiya University Logo"
+        className="h-16"
       />
       <div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-          University Timetable System
+          Atmiya University Timetable
         </h1>
         <p className="text-md text-gray-600">
-          Yogidham Gurukul, Kalawad Road, Rajkot - 360005, Gujarat (INDIA)
+          Yogidham Gurukul, Kalawad Road, Rajkot-360005, Gujarat (INDIA)
         </p>
       </div>
     </div>
@@ -407,17 +59,17 @@ const InfoBar = ({ semester, division }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
       <div>
         <span className="font-bold text-gray-700">B.Tech. Semester:</span>
-        <span className="font-semibold text-blue-700 ml-2">
+        <span className="font-semibold text-indigo-700 ml-2">
           {semester.number}
         </span>
       </div>
       <div>
         <span className="font-bold text-gray-700">Division:</span>
-        <span className="font-semibold text-blue-700 ml-2">{division}</span>
+        <span className="font-semibold text-indigo-700 ml-2">{division}</span>
       </div>
       <div>
         <span className="font-bold text-gray-700">Branch:</span>
-        <span className="font-semibold text-blue-700 ml-2">
+        <span className="font-semibold text-indigo-700 ml-2">
           Computer Engineering
         </span>
       </div>
@@ -435,9 +87,9 @@ const DivisionSwitcher = ({
       <button
         key={div}
         onClick={() => setCurrentDivision(div)}
-        className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 ${
+        className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
           currentDivision === div
-            ? "bg-gray-900 text-white shadow-lg"
+            ? "bg-indigo-600 text-white shadow-lg"
             : "bg-white text-gray-700 hover:bg-gray-100"
         }`}
       >
@@ -447,74 +99,127 @@ const DivisionSwitcher = ({
   </div>
 );
 
+// ✨ New component for handling actions
+const ActionButtons = ({ timetableRef }) => {
+  const navigate = useNavigate();
+
+  const handleRegenerate = () => {
+    navigate("/dashboard/timetable/new/review");
+  };
+
+  const handleSavePDF = () => {
+    const input = timetableRef.current;
+    if (!input) return;
+
+    // Give a little time for the hover/active states to clear before capture
+    setTimeout(() => {
+      html2canvas(input, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        logging: false, // Disables console logging from the library
+        onclone: (document) => {
+          // Remove the action buttons from the clone so they aren't in the PDF
+          const buttons = document.getElementById("action-buttons");
+          if (buttons) {
+            buttons.style.display = "none";
+          }
+        },
+      }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        // A4 page dimensions in pixels at 96 DPI: 794x1123 (portrait)
+        // We use landscape so it's 1123x794
+        const pdfWidth = 1123;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "px",
+          format: [pdfWidth, pdfHeight],
+        });
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Timetable-${new Date().toISOString().slice(0, 10)}.pdf`);
+      });
+    }, 150);
+  };
+
+  return (
+    <div
+      id="action-buttons"
+      className="flex justify-center items-center gap-4 my-8 print:hidden"
+    >
+      <button
+        onClick={handleRegenerate}
+        className="px-6 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors"
+      >
+        Regenerate
+      </button>
+      <button
+        onClick={handleSavePDF}
+        className="px-6 py-2 font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
+      >
+        Save as PDF
+      </button>
+    </div>
+  );
+};
+
+// 🎨 UPDATED SlotContent component
 const SlotContent = ({ slot }) => {
-  if (!slot) return null;
+  if (!slot) return <div className="h-16"></div>;
 
   switch (slot.type) {
     case "Lec":
     case "DoubleLec":
       return (
-        <div className="p-2">
-          <p className="font-bold text-sm md:text-base">{slot.subject}</p>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">
-            ({slot.faculty})
-          </p>
+        <div className="p-2 flex justify-center items-center h-full">
+          <p className="font text-xs text-slate-800">{slot.subject}</p>
+          <p className="text-xs text-slate-500 mt-1">({slot.faculty})</p>
         </div>
       );
     case "LabBlock":
       return (
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full">
           {slot.details.map((d, index) => (
             <div
               key={index}
-              className="flex justify-between items-center text-xs md:text-sm p-1.5 border-b border-gray-300 last:border-b-0"
+              // ✅ CHANGE: Removed the border classes from this line
+              className="flex-1 flex flex justify-center items-center text-xs p-1"
             >
-              <span>
-                <strong className="font-semibold">{d.partition}:</strong>{" "}
-                {d.lab}
-              </span>
-              <span className="font-medium text-gray-600">({d.faculty})</span>
+              <p className="font-semibold text-slate-700">
+                {d.partition}: {d.lab}
+              </p>
+              <p className="text-slate-500">({d.faculty})</p>
             </div>
           ))}
         </div>
       );
-    case "OffDay":
-      // This case is not actively used in the table rendering for off days,
-      // but kept for completeness.
-      return <p className="font-semibold">Off Day</p>;
     default:
-      return null;
+      return <div className="h-16"></div>;
   }
 };
 
-const Timetable = ({ config, timetableData }) => {
-  // Using a plain variable for tracking rowspans within a single render pass.
-  // It gets re-initialized on every render, which is what we want.
+// 🎨 UPDATED Timetable component
+const Timetable = React.forwardRef(({ config, timetableData }, ref) => {
   let rowspanTracker = new Array(config.working_days.length).fill(0);
   let srNo = 0;
 
   return (
-    <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
-      <table
-        className="w-full"
-        style={{
-          borderCollapse: "separate",
-          borderSpacing: 0,
-          border: "1px solid #d1d5db",
-        }}
-      >
-        <thead className="bg-gray-200">
+    <div
+      ref={ref}
+      className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200 p-2"
+    >
+      <table className="w-full border-collapse">
+        <thead className="bg-slate-100">
           <tr>
-            <th className="p-3 border border-gray-300 font-bold uppercase text-gray-700 w-1/12">
+            <th className="p-2 border border-slate-300 font-bold uppercase text-xs text-slate-600">
               Sr. No
             </th>
-            <th className="p-3 border border-gray-300 font-bold uppercase text-gray-700">
+            <th className="p-2 border border-slate-300 font-bold uppercase text-xs text-slate-600">
               Time
             </th>
             {config.working_days.map((day) => (
               <th
                 key={day}
-                className="p-3 border border-gray-300 font-bold uppercase text-gray-700"
+                className="p-2 border border-slate-300 font-bold uppercase text-xs text-slate-600"
               >
                 {day}
               </th>
@@ -527,11 +232,11 @@ const Timetable = ({ config, timetableData }) => {
               return (
                 <tr
                   key={`break-${rowIndex}`}
-                  className="bg-red-100 text-red-800 font-bold"
+                  className="bg-indigo-50 font-bold"
                 >
                   <td
                     colSpan={config.working_days.length + 2}
-                    className="p-2 text-center border border-gray-300 tracking-widest"
+                    className="p-1 text-center border border-slate-300 text-indigo-800 text-xs tracking-wider"
                   >
                     {item.time}
                   </td>
@@ -543,15 +248,14 @@ const Timetable = ({ config, timetableData }) => {
             const currentPeriodIndex = item.index;
 
             return (
-              <tr key={item.time}>
-                <td className="p-3 text-center border border-gray-300 font-bold bg-gray-50">
+              <tr key={item.time} className="text-center">
+                <td className="p-2 border border-slate-300 font-bold text-sm text-slate-700 bg-slate-50">
                   {srNo}
                 </td>
-                <td className="p-3 text-center border border-gray-300 font-semibold bg-gray-50">
+                <td className="p-2 border border-slate-300 font-semibold text-sm text-slate-700 bg-slate-50">
                   {item.time}
                 </td>
                 {timetableData.map((dayData, dayIndex) => {
-                  // Handle Off Days with correct rowspan for period blocks
                   if (dayData.is_offday) {
                     const isStartOfPeriodBlock =
                       rowIndex === 0 ||
@@ -570,21 +274,20 @@ const Timetable = ({ config, timetableData }) => {
                       return (
                         <td
                           key={`${dayData.name}-off-${rowIndex}`}
-                          className="p-2 text-center align-middle border border-gray-300 bg-gray-100 text-gray-400"
+                          className="p-2 align-middle border border-slate-300 bg-slate-50 text-slate-400"
                           rowSpan={periodBlockSize}
                         >
-                          <div className="flex items-center justify-center h-full min-h-[6rem]">
-                            <span className="transform -rotate-90 whitespace-nowrap tracking-widest uppercase font-bold text-xl">
+                          <div className="flex items-center justify-center h-full min-h-[5rem]">
+                            <span className="transform -rotate-90 whitespace-nowrap tracking-widest uppercase font-bold text-lg">
                               HOLIDAY
                             </span>
                           </div>
                         </td>
                       );
                     }
-                    return null; // This slot is part of an already rendered rowspan block
+                    return null;
                   }
 
-                  // Handle regular working days
                   if (rowspanTracker[dayIndex] > 0) {
                     rowspanTracker[dayIndex]--;
                     return null;
@@ -595,17 +298,11 @@ const Timetable = ({ config, timetableData }) => {
                     slot?.type === "DoubleLec" || slot?.type === "LabBlock"
                       ? 2
                       : 1;
-
-                  if (rowSpan > 1) {
-                    rowspanTracker[dayIndex] = rowSpan - 1;
-                  }
+                  if (rowSpan > 1) rowspanTracker[dayIndex] = rowSpan - 1;
 
                   const isCurrent = isCurrentSlot(dayData.name, item.time);
-
-                  const cellClasses = `p-0 text-center border border-gray-300 relative ${
-                    isCurrent
-                      ? "shadow-inner shadow-blue-400 ring-2 ring-blue-500 z-10"
-                      : ""
+                  const cellClasses = `p-0 border border-slate-300 relative align-top ${
+                    isCurrent ? "ring-2 ring-indigo-500 z-10" : ""
                   }`;
 
                   return (
@@ -615,7 +312,7 @@ const Timetable = ({ config, timetableData }) => {
                       rowSpan={rowSpan}
                     >
                       {isCurrent && (
-                        <span className="absolute top-1.5 right-1.5 h-3 w-3 rounded-full bg-red-500 border-2 border-white animate-pulse"></span>
+                        <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></span>
                       )}
                       <SlotContent slot={slot} />
                     </td>
@@ -628,7 +325,7 @@ const Timetable = ({ config, timetableData }) => {
       </table>
     </div>
   );
-};
+});
 
 const Footer = ({ timetableId }) => (
   <footer className="text-center mt-8 text-sm text-gray-500">
@@ -643,15 +340,10 @@ const Footer = ({ timetableId }) => (
 // --- Main ViewTimetable Component ---
 
 const ViewTimetable = () => {
-  // 👈 Renamed component from App to ViewTimetable
-  // 1. REMOVE the hardcoded dummy data
-  // const [data] = useState(timetableJSON); // ❌ We don't need this anymore
-
-  // 2. GET data from the navigation state
   const location = useLocation();
-  const data = location.state?.timetableData; // ✅ This is the real data from Django
+  const data = location.state?.timetableData;
+  const timetableRef = useRef(null); // ✨ Create a ref for the timetable component
 
-  // 3. HANDLE cases where data is missing (e.g., page refresh or direct URL access)
   if (!data || !data.success) {
     return (
       <div className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -663,7 +355,7 @@ const ViewTimetable = () => {
             Please generate a timetable first to view the results.
           </p>
           <Link
-            to="/dashboard/timetable/new/review" // Adjust this path if needed
+            to="/dashboard/timetable/new/review"
             className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Go Back to Generate
@@ -673,7 +365,6 @@ const ViewTimetable = () => {
     );
   }
 
-  // 4. PREPARE state using the received data
   const divisions = Object.keys(data.timetable);
   const [currentDivision, setCurrentDivision] = useState(divisions[0]);
 
@@ -687,7 +378,12 @@ const ViewTimetable = () => {
           currentDivision={currentDivision}
           setCurrentDivision={setCurrentDivision}
         />
+
+        {/* ✨ Action buttons are added here */}
+        <ActionButtons timetableRef={timetableRef} />
+
         <Timetable
+          ref={timetableRef} // Pass the ref to the Timetable component
           config={data.config}
           timetableData={data.timetable[currentDivision]}
         />
@@ -697,4 +393,4 @@ const ViewTimetable = () => {
   );
 };
 
-export default ViewTimetable; // 👈 Export the renamed component
+export default ViewTimetable;

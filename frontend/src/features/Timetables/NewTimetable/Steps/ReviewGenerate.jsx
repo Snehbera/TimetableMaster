@@ -356,37 +356,89 @@ const ReviewGenerate = () => {
             <button
               onClick={handleGenerateClick}
               disabled={isLoading}
-              className={`flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-white font-medium rounded-lg shadow-lg transition-all duration-300 w-full sm:w-auto ${
+              // 🎨 I've added your custom color and ensured the text is white
+              className={`relative flex items-center justify-center px-6 py-3 font-medium text-white rounded-lg shadow-lg transition-all duration-300 w-full sm:w-auto sm:min-w-[220px] overflow-hidden ${
                 isLoading
-                  ? "bg-indigo-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
+                  ? "bg-[#8c7df9] cursor-not-allowed" // Lighter shade for disabled state
+                  : "bg-[#4f39f6] hover:bg-[#422de0] active:scale-95" // Your color + a darker hover shade
               }`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${
-                  isLoading ? "animate-spin" : ""
+              {/* The SVG and Text are now absolutely positioned to allow for smooth cross-fading */}
+              <div
+                className={`transition-opacity duration-300 ${
+                  isLoading ? "opacity-0" : "opacity-100"
                 }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
               >
-                {isLoading ? (
+                <div className="flex items-center">
+                  {/* Default Icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"
+                    />
+                  </svg>
+                  <span>Generate Timetable</span>
+                </div>
+              </div>
+
+              <div
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                  isLoading ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {/* ✨ New, cleaner spinner SVG */}
+                <svg
+                  className="w-5 h-5 mr-3 animate-spin"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691V5.006h-4.992a8.25 8.25 0 01-11.667 0z"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"
-                  />
-                )}
-              </svg>
-              <span>{isLoading ? "Generating..." : "Generate Timetable"}</span>
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+
+                {/* ✨ Animated ellipsis for a more dynamic loading text */}
+                <span className="flex items-center">
+                  Generating
+                  <span
+                    className="animate-bounce-dot"
+                    style={{ animationDelay: "0ms" }}
+                  >
+                    .
+                  </span>
+                  <span
+                    className="animate-bounce-dot"
+                    style={{ animationDelay: "150ms" }}
+                  >
+                    .
+                  </span>
+                  <span
+                    className="animate-bounce-dot"
+                    style={{ animationDelay: "300ms" }}
+                  >
+                    .
+                  </span>
+                </span>
+              </div>
             </button>
           </div>
         </div>
