@@ -182,7 +182,7 @@ const SlotContent = ({ slot }) => {
             <div
               key={index}
               // ✅ CHANGE: Removed the border classes from this line
-              className="flex-1 flex flex justify-center items-center text-xs p-1"
+              className="flex-1 flex justify-center items-center text-xs p-1"
             >
               <p className="font-semibold text-slate-700">
                 {d.partition}: {d.lab}
