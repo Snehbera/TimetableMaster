@@ -57,7 +57,8 @@ class Faculty(models.Model):
 
 class FacultyAvailability(models.Model):
     """
-    Stores specific time slots when a faculty member is unavailable.
+    Stores a faculty member's availability for an entire day using
+    boolean fields for each slot. True = Available, False = Unavailable.
     """
     DAY_CHOICES = [
         ('Monday', 'Monday'),
@@ -66,21 +67,35 @@ class FacultyAvailability(models.Model):
         ('Thursday', 'Thursday'),
         ('Friday', 'Friday'),
         ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'), 
     ]
 
-    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='unavailability_slots')
-    day = models.CharField(max_length=10, choices=DAY_CHOICES)
-    slot_index = models.PositiveIntegerField(
-        help_text="The index of the period (e.g., 0 for the first period, 1 for the second)"
+    faculty = models.ForeignKey(
+        Faculty, 
+        on_delete=models.CASCADE, 
+        related_name='availability_schedule'
     )
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+
+    # 6 boolean fields, one for each slot in the day.
+    # True means the faculty is available by default.
+    slot_1 = models.BooleanField(default=True)
+    slot_2 = models.BooleanField(default=True)
+    slot_3 = models.BooleanField(default=True)
+    slot_4 = models.BooleanField(default=True)
+    slot_5 = models.BooleanField(default=True)
+    slot_6 = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ('faculty', 'day', 'slot_index')
+        # Ensures a faculty can only have one availability entry per day.
+        unique_together = ('faculty', 'day')
         verbose_name_plural = "Faculty Availabilities"
 
     def __str__(self):
-        return f"{self.faculty.name} is unavailable on {self.day} at slot {self.slot_index}"
+        # Creates a readable summary for the Django admin.
+        unavailable_slots = [f"Slot {i}" for i in range(1, 7) if not getattr(self, f'slot_{i}')]
+        if not unavailable_slots:
+            return f"{self.faculty.name} is fully available on {self.day}"
+        return f"{self.faculty.name} on {self.day} is unavailable for: {', '.join(unavailable_slots)}"
 
 class Subject(models.Model):
     code = models.CharField(max_length=10, unique=True, primary_key=True)
