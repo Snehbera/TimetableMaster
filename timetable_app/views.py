@@ -5,174 +5,22 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from collections import defaultdict
 import json
-
-# Make sure to import ALL your required models
-from .models import (
-    Semester, 
-    Subject, 
-    Division, 
-    Faculty, 
-    FacultyAssignment, 
-    Setting, 
-    TimetableResult, 
-    FacultyAvailability
-)
+from .helper_views import _process_solver_output
 from .timetablegenerator_django import TimetableSolver
 
+from requests import Response
+from django.db import transaction  # For safe database operations
+# DRF Imports for the API view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-def _process_solver_output(solver, config, raw_timetable_data):
-    """
-    Takes the raw solver output and converts it into a template-friendly 
-    structure by adding 'type', 'faculty', and 'Placeholder' cells.
-    (This function remains unchanged from your provided code)
-    """
-    template_ready_timetable = {}
-    slots_per_day_count = len(config['settings']['periods_per_day'])
-    working_days = config['settings']['working_days']
-
-    for div_code, raw_days_data in raw_timetable_data.items():
-        division_off_day = config['divisions'].get(div_code, {}).get('off_day')
-        day_schedule_list = []
-        
-        for day_name in working_days:
-            
-            # Check for OFF DAY first
-            if day_name == division_off_day:
-                day_schedule_list.append({
-                    'name': day_name,
-                    'is_offday': True,
-                    'slots': [{'type': 'OffDay'}] * slots_per_day_count
-                })
-                continue
-            
-            raw_day_slots = raw_days_data.get(day_name, [None] * slots_per_day_count)
-            final_day_slots = []
-            i = 0
-            
-            while i < len(raw_day_slots):
-                cell = raw_day_slots[i]
-                
-                if cell is None:
-                    final_day_slots.append(None)
-                    i += 1
-                    continue
-                
-                if isinstance(cell, dict) and cell.get('type') == 'Placeholder':
-                    final_day_slots.append({'type': 'Placeholder'})
-                    i += 1
-                    continue
-
-                is_double_lec = (
-                    isinstance(cell, dict) and cell.get('subject') and
-                    i + 1 < len(raw_day_slots) and cell == raw_day_slots[i+1]
-                )
-                is_lab_block = isinstance(cell, list)
-                
-                if is_double_lec:
-                    entry = cell.copy()
-                    fac_code = solver._get_faculty(div_code, entry['subject'], "lecture")
-                    entry['faculty'] = fac_code
-                    entry['type'] = 'DoubleLec'
-                    final_day_slots.append(entry)
-                    final_day_slots.append({'type': 'Placeholder'}) 
-                    i += 2 
-                elif is_lab_block:
-                    entry = {'type': 'LabBlock', 'details': cell}
-                    final_day_slots.append(entry)
-                    span = 2 
-                    for _ in range(1, span):
-                        final_day_slots.append({'type': 'Placeholder'})
-                    i += span 
-                elif isinstance(cell, dict) and cell.get('subject'):
-                    entry = cell.copy()
-                    fac_code = solver._get_faculty(div_code, entry['subject'], "lecture")
-                    entry['faculty'] = fac_code
-                    entry['type'] = 'Lec'
-                    final_day_slots.append(entry)
-                    i += 1
-                else:
-                    final_day_slots.append(None)
-                    i += 1
-
-            day_schedule_list.append({
-                'name': day_name,
-                'is_offday': False, 
-                'slots': final_day_slots
-            })
-        
-        template_ready_timetable[div_code] = day_schedule_list
-        
-    return template_ready_timetable
+# Your models and solver
+from .models import Semester, Subject, Division, Faculty, FacultyAssignment, Setting, TimetableResult
+from .timetablegenerator_django import TimetableSolver
+from .helper_views import *
 
 
-# ==============================================================================
-# 2. CONFIG GENERATION (*** MODIFIED ***)
-# ==============================================================================
-
-def generate_config_from_models(semester=None, existing_faculty_schedule=set()):
-    config = {
-        'settings': {},
-        'divisions': {},
-        'subjects': {},
-        'faculty': {},
-        'faculty_assignments': defaultdict(dict),
-        'faculty_unavailability': set() # Changed from list to set for efficiency
-    }
-
-    # Populate settings
-    settings_data = {s.key: s.value for s in Setting.objects.all()}
-    config['settings'].update(settings_data)
-
-    # Populate faculty
-    config['faculty'] = {f.code: {'name': f.name} for f in Faculty.objects.all()}
-
-    # *** NEW: Fetch and process faculty unavailability ***
-    for availability in FacultyAvailability.objects.select_related('faculty'):
-        # Iterate through the 6 boolean slot fields
-        for i in range(1, 7):
-            is_available = getattr(availability, f'slot_{i}')
-            # If the slot is False (unavailable), add it to the constraint set
-            if not is_available:
-                # The tuple format is (faculty_code, day_name, slot_index)
-                # Slot index is 0-based (slot_1 -> index 0)
-                config['faculty_unavailability'].add(
-                    (availability.faculty.code, availability.day, i - 1)
-                )
-
-    # Add existing schedules from other semesters (for department-wide generation)
-    config['faculty_unavailability'].update(existing_faculty_schedule)
-
-    # If a semester is specified, filter data for it
-    if semester:
-        divisions = Division.objects.filter(semester=semester)
-        subjects = Subject.objects.filter(semester=semester)
-        assignments = FacultyAssignment.objects.filter(subject__semester=semester)
-
-        for div in divisions:
-            config['divisions'][div.code] = {'off_day': div.off_day, 'partitions': div.get_partitions_list()}
-        
-        for sub in subjects:
-            config['subjects'][sub.code] = {
-                'name': sub.name, 'lectures': sub.lectures, 'labs': sub.labs, 'double_periods': sub.double_periods
-            }
-
-        for assignment in assignments:
-            config['faculty_assignments'][assignment.subject.code][assignment.division.code] = assignment.faculty.code
-        
-        # Override with complex assignments if they exist for the semester
-        setting_key = f"FACULTY_ASSIGNMENTS_{semester.number}"
-        try:
-            complex_assignments = Setting.objects.get(key=setting_key).value
-            config['faculty_assignments'] = complex_assignments
-        except Setting.DoesNotExist:
-            pass # It's okay if this doesn't exist, we just use the simple model data
-
-    return config
-
-# ==============================================================================
-# 3. SINGLE SEMESTER VIEW
-# ==============================================================================
-# timetable_app/views.py (Inside generate_single_semester_view function)
 
 def generate_single_semester_view(request, semester_id):
     """
@@ -187,7 +35,7 @@ def generate_single_semester_view(request, semester_id):
 
     print("calling timetablesolver")
     solver = TimetableSolver(config) 
-    success, timetable_result = solver.solve() 
+    success, timetable_result = solver.solve(30) 
 
     if not success:
         error_message = f"Failed to generate timetable for {semester.name}. The constraints might be too tight."
@@ -436,37 +284,42 @@ def generate_single_semester_view_api_send(request, semester_id):
     return JsonResponse(json_response_data)
 
 
-def generate_single_semester_view_api_recieve_send(request, semester_id):
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def generate_single_semester_view_api_recieve_send(request):        
     """
-    Generates a timetable and returns a clean, efficient JSON response for React.
-    (This function is now identical to generate_single_semester_view_api_send)
+    Receives JSON from React, transforms it, saves it to the database for the
+    logged-in user, generates a timetable, and returns the result.
     """
-    try:
-        semester = Semester.objects.get(number=semester_id)
-    except Semester.DoesNotExist:
-        return JsonResponse({'success': False, 'error': f'Semester with number {semester_id} not found.'}, status=404)
+    source_json_from_react = request.data
+    # user = request.user
 
-    start_time = timezone.now()
-    config = generate_config_from_models(semester)
+    # try:
+        # --- WORKFLOW STEP 1 & 2: Transform the data and load it into the DB ---
+    with transaction.atomic():
+        master_json = transform_frontend_json(source_json_from_react)
+        semester_obj = import_data(master_json)
+
+    if not semester_obj:
+        return Response({"error": "No valid semester data could be imported from the provided JSON."}, status=400)
+
+    # --- WORKFLOW STEP 3 & 4: Generate timetable and send response ---
+    config = generate_config_from_models(semester=semester_obj)
     
     if not config.get('divisions') or not config.get('subjects'):
-        return JsonResponse({'success': False, 'error': f"Configuration for {semester.name} is incomplete."}, status=400)
+        return Response({'error': f"Configuration for {semester_obj.name} is incomplete after import."}, status=400)
 
     solver = TimetableSolver(config)
     success, timetable_result = solver.solve()
 
     if not success:
-        return JsonResponse({'success': False, 'error': f"Failed to generate for {semester.name}. Constraints too tight."}, status=422)
+        return Response({'error': f"Data imported, but failed to generate timetable for {semester_obj.name}."}, status=422)
 
-    raw_timetable_data = {div: dict(days) for div, days in timetable_result.items()}
-    processed_timetable = _process_solver_output(solver, config, raw_timetable_data)
+    processed_timetable = _process_solver_output(solver, config, timetable_result)
     
-    result = TimetableResult.objects.create(
-        solution_found=True,
-        runtime_seconds=(timezone.now() - start_time).total_seconds(),
-        timetable_json=raw_timetable_data
-    )
+    result = TimetableResult.objects.create(solution_found=True, timetable_json=timetable_result)
     
+    # Construct and return the final JSON response
     periods_raw = config.get('settings', {}).get('periods_per_day', [])
     breaks_raw = config.get('settings', {}).get('breaks_after_period', {})
     final_slots_list = []
@@ -477,13 +330,65 @@ def generate_single_semester_view_api_recieve_send(request, semester_id):
     
     json_response_data = {
         'success': True,
-        'semester': {'number': semester.number, 'name': semester.name},
+        'semester': {'number': semester_obj.number, 'name': semester_obj.name},
         'timetableId': result.id,
-        'runtimeSeconds': result.runtime_seconds,
         'config': {
             'working_days': config.get('settings', {}).get('working_days', []),
             'slots_and_breaks': final_slots_list,
         },
         'timetable': processed_timetable,
     }
-    return JsonResponse(json_response_data)
+    return Response(json_response_data)
+
+    # except Exception as e:
+    #     return Response({'error': f'A critical error occurred: {str(e)}'}, status=500)
+    
+
+def import_data_from_json(master_json): # Renamed and user parameter removed
+    """
+    Takes the transformed "master" JSON and saves its data to the
+    database. (No longer scoped to a user).
+    """
+    # Clear all previous timetable data for a clean import
+    Setting.objects.all().delete()
+    FacultyAssignment.objects.all().delete()
+    Division.objects.all().delete()
+    Subject.objects.all().delete()
+    Semester.objects.all().delete()
+    Faculty.objects.all().delete()
+
+    # Load shared data
+    for key, value in master_json.get("settings", {}).items():
+        Setting.objects.update_or_create(key=key, defaults={"value": value})
+    
+    for code, details in master_json.get("faculty", {}).items():
+        Faculty.objects.update_or_create(code=code, defaults={"name": details["name"]})
+
+    # Process each semester block
+    for key, semester_data in master_json.items():
+        
+            semester_number = int(key)  
+            semester_obj, _ = Semester.objects.get_or_create(
+                number=semester_number, 
+                defaults={'name': f'Semester {semester_number}'}
+            )
+            
+            for code, details in semester_data.get("subjects", {}).items():
+                Subject.objects.update_or_create(code=code, defaults={**details, "semester": semester_obj})
+
+            for code, details in semester_data.get("divisions", {}).items():
+                partitions_str = ",".join(details.get("partitions", []))
+                Division.objects.update_or_create(code=code, defaults={
+                    "name": f"{code} Division", "off_day": details.get("off_day"),
+                    "partitions": partitions_str, "semester": semester_obj
+                })
+            
+            for subject_code, assignments in semester_data.get("faculty_assignments", {}).items():
+                subject_obj = Subject.objects.get(code=subject_code, semester=semester_obj)
+                for division_code, faculty_code in assignments.items():
+                    division_obj = Division.objects.get(code=division_code, semester=semester_obj)
+                    faculty_obj = Faculty.objects.get(code=faculty_code)
+                    FacultyAssignment.objects.create(subject=subject_obj, division=division_obj, faculty=faculty_obj)
+            
+            return semester_obj
+    return None
