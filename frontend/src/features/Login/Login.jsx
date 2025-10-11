@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-// SVG Icons from the original HTML (using the provided paths)
+// --- SVG Icons (No changes needed here) ---
+
 const ClockIcon = (props) => (
   <svg
     {...props}
@@ -134,15 +136,58 @@ const GoogleIcon = (props) => {
   );
 };
 
+// --- Main Login Component ---
+
 const Login = () => {
   const navigate = useNavigate();
 
-  // Simulate a successful login and redirect
-  const handleLogin = () => {
-    // In a real app, you would have your authentication logic here.
-    // For now, we'll just navigate directly.
-    console.log("Login successful, redirecting to dashboard...");
-    navigate("/dashboard");
+  // State for form inputs, errors, and loading status
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // The Django API endpoint
+  const API_URL = "http://10.100.102.27:8000/auth/login/";
+
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+    setLoading(true); // Set loading state
+    setError(""); // Clear previous errors
+
+    try {
+      // Send POST request to the Django backend
+      const response = await axios.post(API_URL, {
+        email: email,
+        password: password,
+      });
+
+      // Assuming the backend returns a token upon successful login
+      const token = response.data.token; // 1. Token is received here
+
+      // 2. You correctly store the token right here
+      localStorage.setItem("authToken", token); // ✅ THIS IS THE CORRECT SPOT
+
+      // Set the authorization header for subsequent requests globally
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; //
+
+      console.log("Login successful:", response.data); //
+      navigate("/dashboard"); // Redirect to the dashboard
+    } catch (err) {
+      setLoading(false); // Stop loading
+      if (err.response) {
+        // The server responded with an error (e.g., 400, 401)
+        console.error("Login Error:", err.response.data);
+        // Set a user-friendly error message. Adjust based on your API's error format.
+        setError(err.response.data.detail || "Invalid email or password.");
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError("Network error. Could not connect to the server.");
+      } else {
+        // Something else happened
+        setError("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   const backgroundPatternStyle = {
@@ -165,27 +210,17 @@ const Login = () => {
     boxShadow: "rgba(0, 0, 0, 0.1) 0px 2px 4px",
     transition: "background-color 0.3s, box-shadow 0.3s",
     width: "100%",
-    // Removed redundant `style` for font-weight, using Tailwind `font-medium` in `className` instead
   };
 
   const googleSpanStyle = {
-    fontWeight: 500, // Kept for demonstration, though `font-medium` in Tailwind is better
+    fontWeight: 500,
   };
-
-  // State for form inputs would typically be handled here in a real application
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-
-  // The style attributes like `style="opacity: 1; transform: none;"` have been removed
-  // as they typically represent animation/transition states managed by a library,
-  // not static styles in a foundational component.
 
   return (
     <main className="">
       <div className="min-h-screen flex flex-col md:flex-row">
         {/* Left Section: Marketing/Welcome Info */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white p-12 flex flex-col justify-center relative overflow-hidden">
-          {/* Background Pattern and Effects */}
           <div className="absolute inset-0 opacity-10">
             <div
               className="absolute inset-0"
@@ -206,17 +241,14 @@ const Login = () => {
                 management with the most intelligent timetable generator.
               </p>
               <ul className="space-y-4 mb-8">
-                {/* Feature 1 */}
                 <li className="flex items-center space-x-3 text-indigo-100">
                   <ClockIcon className="w-5 h-5 flex-shrink-0" />
                   <span>Save hours of manual scheduling work</span>
                 </li>
-                {/* Feature 2 */}
                 <li className="flex items-center space-x-3 text-indigo-100">
                   <CalendarIcon className="w-5 h-5 flex-shrink-0" />
                   <span>Access your timetables anywhere, anytime</span>
                 </li>
-                {/* Feature 3 */}
                 <li className="flex items-center space-x-3 text-indigo-100">
                   <ShieldCheckIcon className="w-5 h-5 flex-shrink-0" />
                   <span>Secure and reliable scheduling platform</span>
@@ -224,13 +256,10 @@ const Login = () => {
               </ul>
             </div>
           </div>
-          {/* Large Blur Effect */}
           <div className="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4">
             <div className="w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
           </div>
         </div>
-
-        {/* --- */}
 
         {/* Right Section: Login Form */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-gray-50">
@@ -240,17 +269,11 @@ const Login = () => {
                 Log In to Your Account
               </h2>
 
-              {/* Google Login Button */}
-              <button
-                type="button"
-                style={googleButtonStyle}
-                // Tailwind classes for hover/active states can also be used here if preferred
-              >
+              <button type="button" style={googleButtonStyle}>
                 <GoogleIcon />
                 <span style={googleSpanStyle}>Continue with Google</span>
               </button>
 
-              {/* Divider */}
               <div className="my-6 flex items-center">
                 <hr className="flex-grow border-t border-gray-200" />
                 <span className="mx-4 text-sm text-gray-500">
@@ -259,9 +282,7 @@ const Login = () => {
                 <hr className="flex-grow border-t border-gray-200" />
               </div>
 
-              {/* Email/Password Form */}
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                {/* Email Field */}
+              <form className="space-y-6" onSubmit={handleLogin}>
                 <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
@@ -276,13 +297,13 @@ const Login = () => {
                       placeholder="Enter your email"
                       required
                       type="email"
-                      // Add state management here: value={email} onChange={(e) => setEmail(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                     <EnvelopeIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                 </div>
 
-                {/* Password Field */}
                 <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
@@ -297,24 +318,27 @@ const Login = () => {
                       placeholder="Enter your password"
                       required
                       type="password"
-                      // Add state management here: value={password} onChange={(e) => setPassword(e.target.value)}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                     <LockClosedIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                 </div>
 
-                {/* Submit Button */}
+                {error && (
+                  <p className="text-sm text-red-600 text-center">{error}</p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
                   tabIndex="0"
-                  onClick={handleLogin}
+                  disabled={loading}
                 >
-                  Log In
+                  {loading ? "Logging in..." : "Log In"}
                 </button>
               </form>
 
-              {/* Links */}
               <p className="mt-4 text-center text-gray-600">
                 <a
                   className="text-indigo-600 hover:text-indigo-700 font-medium"

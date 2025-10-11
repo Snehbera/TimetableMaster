@@ -239,17 +239,44 @@ const ReviewGenerate = () => {
     setIsLoading(true);
     setError(null);
 
+    // 1️⃣ Retrieve the token from localStorage
+    const token = localStorage.getItem("authToken");
+
+    // Optional: Check if the token exists before making the call
+    if (!token) {
+      setError("Authentication error: No token found. Please log in again.");
+      setIsLoading(false);
+      // You might want to redirect to the login page here
+      // navigate("/login");
+      return;
+    }
+
     try {
       const response = await fetch(
         "http://10.100.102.27:8000/timetable/r/generate-semester-api/",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cleanStoreData), // ✅ send cleaned data
+          // 2️⃣ Add the Authorization header
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`, // Use the retrieved token here
+          },
+          body: JSON.stringify(cleanStoreData),
         }
       );
 
-      if (!response.ok) throw new Error("Failed to generate timetable");
+      if (!response.ok) {
+        // Handle specific auth errors like 401 Unauthorized
+        if (response.status === 401) {
+          setError("Your session has expired. Please log in again.");
+          // Consider clearing localStorage and redirecting
+          // localStorage.removeItem("authToken");
+          // navigate("/login");
+        } else {
+          throw new Error("Failed to generate timetable");
+        }
+        return; // Stop execution if response is not ok
+      }
 
       const result = await response.json();
       console.log("✅ Success! Response from Django:", result);
@@ -264,7 +291,6 @@ const ReviewGenerate = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="space-y-6">

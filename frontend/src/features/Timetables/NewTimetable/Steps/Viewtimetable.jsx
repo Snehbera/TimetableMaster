@@ -38,7 +38,7 @@ const Header = () => (
   <header className="text-center mb-6 bg-white p-6 rounded-xl shadow-md border border-gray-200">
     <div className="flex justify-center items-center gap-4 flex-wrap">
       <img
-        src="https://www.atmiyauni.ac.in/wp-content/uploads/2018/08/logo-2.png"
+        src="https://atmiyauni.ac.in/images/logo.png"
         alt="Atmiya University Logo"
         className="h-16"
       />
