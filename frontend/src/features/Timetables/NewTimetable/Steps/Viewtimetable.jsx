@@ -43,7 +43,7 @@ const Header = () => (
         className="h-16"
       />
       <div>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+        <h1 className="text-3xl md:text-2xl font-bold text-gray-900">
           Atmiya University Timetable
         </h1>
         <p className="text-md text-gray-600">

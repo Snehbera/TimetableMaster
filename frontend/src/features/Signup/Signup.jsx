@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useUserProfileStore from "../../Stores/userProfileStore"; // Make sure this path is correct
 
 // --- SVG ICON COMPONENTS ---
 
@@ -193,14 +194,91 @@ const GoogleIcon = (props) => {
 };
 
 const Signup = () => {
-  // Convert original inline styles to JSX objects
+  const navigate = useNavigate();
 
+  // --- ZUSTAND STORE ACTIONS ---
+  const { setName, setEmail, setPhone, setFacultyId } = useUserProfileStore();
+
+  // --- LOCAL COMPONENT STATE ---
+  const [formData, setFormData] = useState({
+    fullName: "",
+    facultyId: "",
+    email: "",
+    countryCode: "+91",
+    phoneNumber: "",
+    password: "",
+  });
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // --- HANDLERS ---
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const fullPhoneNumber = `${formData.countryCode}${formData.phoneNumber}`;
+
+    // Prepare data for the Django backend (using snake_case is a common convention)
+    const postData = {
+      full_name: formData.fullName,
+      faculty_id: formData.facultyId,
+      email: formData.email,
+      phone: fullPhoneNumber,
+      password: formData.password,
+    };
+
+    try {
+      // Make the API call to your Django server
+      const response = await fetch("http://10.100.102.27:8000/auth/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Try to get a specific error message, otherwise show a generic one
+        const errorMessage =
+          Object.values(errorData).flat().join(" ") ||
+          "Failed to create account.";
+        throw new Error(errorMessage);
+      }
+
+      // If registration is successful:
+      // 1. Update the Zustand store (do not store the password)
+      setName(formData.fullName);
+      setEmail(formData.email);
+      setFacultyId(formData.facultyId);
+      setPhone(fullPhoneNumber);
+
+      // 2. Navigate to the login page or a dashboard
+      console.log("Account created successfully!");
+      navigate("/login");
+    } catch (err) {
+      setError(err.message);
+      console.error("Signup error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- INLINE STYLES (from original code) ---
   const backgroundPatternStyle = {
     backgroundImage:
       "radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0)",
     backgroundSize: "40px 40px",
   };
-
   const googleButtonStyle = {
     display: "flex",
     justifyContent: "center",
@@ -216,7 +294,6 @@ const Signup = () => {
     transition: "background-color 0.3s, box-shadow 0.3s",
     width: "100%",
   };
-
   const googleSpanStyle = {
     fontWeight: 500,
   };
@@ -226,14 +303,12 @@ const Signup = () => {
       <div className="flex flex-col md:flex-row min-h-screen">
         {/* Left Section: Marketing/Value Proposition */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white p-12 flex flex-col justify-center relative overflow-hidden">
-          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div
               className="absolute inset-0"
               style={backgroundPatternStyle}
             ></div>
           </div>
-
           <div className="relative z-10">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
@@ -247,8 +322,6 @@ const Signup = () => {
                 Join 40,000+ schools worldwide who trust TimetableMaster for
                 their scheduling needs.
               </p>
-
-              {/* Free Plan Callout */}
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 mb-8">
                 <div className="flex items-center space-x-3 mb-2">
                   <div className="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
@@ -263,8 +336,6 @@ const Signup = () => {
                   creating schedules immediately with our free version.
                 </p>
               </div>
-
-              {/* Feature List */}
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center space-x-3 text-indigo-100">
                   <CalendarIcon className="w-5 h-5 flex-shrink-0" />
@@ -283,8 +354,6 @@ const Signup = () => {
                   <span>No credit card needed for free plan</span>
                 </li>
               </ul>
-
-              {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-6 mt-12">
                 <div className="text-center">
                   <div className="text-2xl font-bold">40,000+</div>
@@ -301,8 +370,6 @@ const Signup = () => {
               </div>
             </div>
           </div>
-
-          {/* Large Blur Effect */}
           <div className="absolute bottom-0 right-0 transform translate-x-1/4 translate-y-1/4">
             <div className="w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
           </div>
@@ -315,15 +382,10 @@ const Signup = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                 Create Your Account
               </h2>
-
-              {/* Google Signup Button */}
               <button type="button" style={googleButtonStyle}>
-                {/* Note: /google-icon-logo.webp is a local path and requires you to place the asset in your project's public folder or import it. */}
                 <GoogleIcon />
                 <span style={googleSpanStyle}>Continue with Google</span>
               </button>
-
-              {/* Divider */}
               <div className="my-6 flex items-center">
                 <hr className="flex-grow border-t border-gray-200" />
                 <span className="mx-4 text-sm text-gray-500">
@@ -331,11 +393,15 @@ const Signup = () => {
                 </span>
                 <hr className="flex-grow border-t border-gray-200" />
               </div>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                {error && (
+                  <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+                    {error}
+                  </p>
+                )}
 
-              {/* Detailed Signup Form */}
-              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 {/* Full Name Field */}
-                <div className="mb-4">
+                <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
                     htmlFor="fullName"
@@ -348,16 +414,39 @@ const Signup = () => {
                       id="fullName"
                       placeholder="Enter your full name"
                       required
-                      minLength="2" // Added minLength validation
+                      minLength="2"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                      // Remove redundant value="" in React
+                      value={formData.fullName}
+                      onChange={handleChange}
                     />
                     <UserIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                 </div>
 
+                {/* Faculty ID Field */}
+                <div>
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                    htmlFor="facultyId"
+                  >
+                    Faculty ID
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="facultyId"
+                      placeholder="Enter your faculty ID"
+                      required
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      value={formData.facultyId}
+                      onChange={handleChange}
+                    />
+                    <CreditCardIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                </div>
+
                 {/* Email Address Field */}
-                <div className="mb-4">
+                <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
                     htmlFor="email"
@@ -371,13 +460,15 @@ const Signup = () => {
                       placeholder="Enter your email"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                       required
+                      value={formData.email}
+                      onChange={handleChange}
                     />
                     <MailIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                 </div>
 
                 {/* Phone Number Field */}
-                <div className="mb-4">
+                <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
                     htmlFor="countryCode"
@@ -385,26 +476,28 @@ const Signup = () => {
                     Phone Number
                   </label>
                   <div className="flex gap-2">
-                    {/* Country Code Input */}
                     <div className="relative w-1/3">
                       <input
                         type="tel"
                         id="countryCode"
-                        placeholder="+1"
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         required
+                        value={formData.countryCode}
+                        onChange={handleChange}
                       />
                       <GlobeIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
-                    {/* Main Phone Number Input */}
                     <div className="relative w-2/3">
                       <input
                         type="tel"
+                        id="phoneNumber"
                         placeholder="Phone number"
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         required
-                        pattern="[0-9]{10}" // Added pattern for exactly 10 digits
-                        maxLength="10" // Added maxLength for user experience
+                        pattern="[0-9]{10}"
+                        maxLength="10"
+                        value={formData.phoneNumber}
+                        onChange={handleChange}
                       />
                       <PhoneIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
@@ -412,7 +505,7 @@ const Signup = () => {
                 </div>
 
                 {/* Password Field */}
-                <div className="mb-4">
+                <div>
                   <label
                     className="block text-sm font-medium text-gray-700 mb-2"
                     htmlFor="password"
@@ -425,23 +518,24 @@ const Signup = () => {
                       id="password"
                       placeholder="Choose a strong password"
                       required
+                      minLength="8"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      value={formData.password}
+                      onChange={handleChange}
                     />
                     <LockIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
-                  tabIndex="0"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
                 >
-                  Create Account
+                  {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
               </form>
 
-              {/* Login Link */}
               <p className="mt-6 text-center text-gray-600">
                 Already have an account?{" "}
                 <Link

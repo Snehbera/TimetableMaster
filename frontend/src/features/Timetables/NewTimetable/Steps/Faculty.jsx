@@ -50,13 +50,13 @@ const UserGroupIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
-    stroke-width="1.5"
+    strokeWidth="1.5"
     stroke="currentColor"
     className="h-5 w-5 mr-2 text-indigo-600"
   >
     <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
     ></path>
   </svg>
@@ -174,11 +174,11 @@ const InfoIcon = ({ className = "" }) => (
     className={className}
     fill="currentColor"
   >
-    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
     <g
       id="SVGRepo_tracerCarrier"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     ></g>
     <g id="SVGRepo_iconCarrier">
       {" "}
@@ -920,55 +920,55 @@ export default function Faculty() {
               </button>
             </div>
           </div>
-          <div class="bg-gray-50 rounded-lg p-4 mt-6">
-            <div class="flex justify-between items-center">
+          <div className="bg-gray-50 rounded-lg p-4 mt-6">
+            <div className="flex justify-between items-center">
               <Link
                 to="/dashboard/timetable/new/subjects"
-                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+                className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
                 data-discover="true"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   aria-hidden="true"
-                  class="h-5 w-5 sm:mr-2"
+                  className="h-5 w-5 sm:mr-2"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                   ></path>
                 </svg>
-                <span class="hidden sm:inline">Previous</span>
+                <span className="hidden sm:inline">Previous</span>
               </Link>
 
-              <div class="text-sm text-gray-500 text-center px-2">
-                Step <span class="font-semibold text-gray-700">2</span> of{" "}
-                <span class="font-semibold text-gray-700">7</span>
+              <div className="text-sm text-gray-500 text-center px-2">
+                Step <span className="font-semibold text-gray-700">2</span> of{" "}
+                <span className="font-semibold text-gray-700">7</span>
               </div>
 
               <Link
-                to="/dashboard/timetable/new/classes"
-                class="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                to="/dashboard/timetable/new/classNamees"
+                className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                 aria-disabled="false"
                 data-discover="true"
               >
-                <span class="hidden sm:inline">Next</span>
+                <span className="hidden sm:inline">Next</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   aria-hidden="true"
-                  class="h-5 w-5 sm:ml-2"
+                  className="h-5 w-5 sm:ml-2"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                   ></path>
                 </svg>

@@ -5,8 +5,8 @@ const useUserProfileStore = create(
   persist(
     (set) => ({
       // Default initial state for the user profile
-      name: "Sneh Bera",
-      email: "berasneh845@gmail.com",
+      name: "",
+      email: "",
       phone: "",
       facultyId: "",
 
