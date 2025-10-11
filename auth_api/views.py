@@ -1,11 +1,13 @@
 # auth_api/views.py
 
+from multiprocessing.managers import Token
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CustomRegistrationSerializer, LoginSerializer
 from django.contrib.auth import authenticate, login, get_user_model
+from rest_framework.authtoken.models import Token
 
 # 1. Custom Register View (Uses DRF's standard CreateAPIView)
 class RegisterView(generics.CreateAPIView):
@@ -57,7 +59,8 @@ class LoginView(generics.GenericAPIView):
             # If email doesn't exist, treat it as an authentication failure.
             return Response({
                     "detail": "Authentication failed. Invalid email or password.",
-                    "is_success": False},
+                    "is_success": False,
+                    },
                     status=status.HTTP_401_UNAUTHORIZED
             )
             
@@ -67,11 +70,14 @@ class LoginView(generics.GenericAPIView):
         if user is not None:
             # 3. Success: Log the user in (sets session)
             login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            print("token key:",token.key)
             
             # You can also return a token if you switch to TokenAuthentication/JWT
             return Response({
                 "detail": "Login successful.",
-                "is_success": True
+                "is_success": True,
+                "token": token.key
             })
         else:
             # 4. Failure: Invalid credentials

@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from .models import Semester, Subject, Division, Faculty, FacultyAssignment, Setting, TimetableResult
 from .timetablegenerator_django import TimetableSolver
 from .helper_views import *
+from django.contrib.auth import get_user_model
 
 
 def _process_solver_output(solver, config, raw_timetable_data):
@@ -113,7 +114,7 @@ def _process_solver_output(solver, config, raw_timetable_data):
 from collections import defaultdict
 from .models import Setting, Faculty, FacultyAvailability, Division, Subject, FacultyAssignment
 
-def generate_config_from_models(semester, existing_faculty_schedule=set()):
+def generate_config_from_models(user,semester, existing_faculty_schedule=set()):
     """
     Pulls data from models for a SPECIFIC USER to create the configuration
     dictionary for the TimetableSolver.
@@ -130,15 +131,15 @@ def generate_config_from_models(semester, existing_faculty_schedule=set()):
     # --- ALL QUERIES ARE NOW FILTERED BY 'user' ---
 
     # 1. Populate user-specific settings
-    settings_data = {s.key: s.value for s in Setting.objects.all()}
+    settings_data = {s.key: s.value for s in Setting.objects.filter(user=user)}
     config['settings'].update(settings_data)
 
     # 2. Populate user-specific faculty
-    config['faculty'] = {f.code: {'name': f.name} for f in Faculty.objects.all()}
+    config['faculty'] = {f.code: {'name': f.name} for f in Faculty.objects.filter(user=user)}
 
     # 3. Populate user-specific faculty unavailability
     # The 'faculty__user=user' query correctly traverses the relationship
-    for availability in FacultyAvailability.objects.all():
+    for availability in FacultyAvailability.objects.filter(faculty__user=user):
         for i in range(1, 7):
             if not getattr(availability, f'slot_{i}', True):
                 config['faculty_unavailability'].add(
@@ -150,9 +151,10 @@ def generate_config_from_models(semester, existing_faculty_schedule=set()):
     # 4. If a semester is provided, populate user- and semester-specific data
     if semester:
         # Filter by both semester AND user
-        divisions = Division.objects.filter(semester=semester)
-        subjects = Subject.objects.filter(semester=semester)
-        assignments = FacultyAssignment.objects.filter(subject__semester=semester)
+        divisions = Division.objects.filter(user=user, semester=semester) # ⭐ FILTERED
+        subjects = Subject.objects.filter(user=user, semester=semester)   # ⭐ FILTERED
+        # Assignments filter via the related Subject/Division which are user-scoped.
+        assignments = FacultyAssignment.objects.filter(subject__user=user, subject__semester=semester) # ⭐ FILTERED
 
         for div in divisions:
             config['divisions'][div.code] = {'off_day': div.off_day, 'partitions': div.get_partitions_list()}
@@ -251,51 +253,76 @@ def transform_frontend_json(source_data):
     target_json[semester_key] = semester_data
     return target_json
 
-
-def import_data(master_json):
+# timetable_app/helper_views.py (or wherever this function is defined)
+def import_data(master_json, user): 
     """
     Takes the transformed "master" JSON and saves its data to the
     database, scoped to the provided user.
     """
-    # Clear all previous timetable data FOR THIS USER ONLY for a clean import
-    Setting.objects.all().delete()
-    FacultyAssignment.objects.all().delete()
-    Division.objects.all().delete()
-    Subject.objects.all().delete()
-    Semester.objects.all().delete()
-    Faculty.objects.all().delete()
+    
+    # --- Clear operations must filter by user ---
+    Setting.objects.filter(user=user).delete() # Corrected filter
+    FacultyAssignment.objects.filter(subject__user=user).delete() 
+    Division.objects.filter(user=user).delete()
+    Subject.objects.filter(user=user).delete()
+    Semester.objects.filter(user=user).delete()
+    Faculty.objects.filter(user=user).delete()
 
-    # Load shared data for the user
+
+    # Load shared data
     for key, value in master_json.get("settings", {}).items():
-        Setting.objects.update_or_create( key=key, defaults={"value": value})
+        Setting.objects.update_or_create(user=user, key=key, defaults={"value": value})
     
     for code, details in master_json.get("faculty", {}).items():
-        Faculty.objects.update_or_create( code=code, defaults={"name": details["name"]})
+        Faculty.objects.update_or_create(user=user, code=code, defaults={"name": details["name"]})
 
-    # Process each semester block found in the JSON
+    # Process each semester block
     for key, semester_data in master_json.items():
+        
         if key.isdigit():
-            semester_number = int(key)
-            semester_obj, _ = Semester.objects.get_or_create( number=semester_number, defaults={'name': f'Semester {semester_number}'})
+            semester_number = int(key) 
             
+            # Use user=user in get_or_create
+            semester_obj, _ = Semester.objects.get_or_create(
+                user=user, # ⭐ ADDED
+                number=semester_number, 
+                defaults={'name': f'Semester {semester_number}'}
+            )
             # Populate semester-specific data
             for code, details in semester_data.get("subjects", {}).items():
-                Subject.objects.update_or_create( code=code, defaults={**details, "semester": semester_obj})
+                # ⭐ CRITICAL FIX: Pass user=user
+                Subject.objects.update_or_create(user=user, code=code, defaults={**details, "semester": semester_obj})
 
             for code, details in semester_data.get("divisions", {}).items():
                 partitions_str = ",".join(details.get("partitions", []))
-                Division.objects.update_or_create( code=code, defaults={
+                # ⭐ CRITICAL FIX: Pass user=user
+                Division.objects.update_or_create(user=user, code=code, defaults={
                     "name": f"{code} Division", "off_day": details.get("off_day"),
                     "partitions": partitions_str, "semester": semester_obj
-                })
-            
-            for subject_code, assignments in semester_data.get("faculty_assignments", {}).items():
-                subject_obj = Subject.objects.get( code=subject_code, semester=semester_obj)
-                for division_code, faculty_code in assignments.items():
-                    division_obj = Division.objects.get( code=division_code, semester=semester_obj)
-                    faculty_obj = Faculty.objects.get( code=faculty_code)
-                    FacultyAssignment.objects.create( subject=subject_obj, division=division_obj, faculty=faculty_obj)
-            
-            return semester_obj # Return the created semester object
-    return None
+                })            
+            # ... (Faculty Assignment logic remains)
 
+            for subject_code, assignments in semester_data.get("faculty_assignments", {}).items():
+                
+                # Fetch Subject (must be filtered by user and semester)
+                subject_obj = Subject.objects.get(user=user, code=subject_code, semester=semester_obj)
+                
+                for division_code, faculty_code in assignments.items():
+                    
+                    # Fetch Division (must be filtered by user and semester)
+                    division_obj = Division.objects.get(user=user, code=division_code, semester=semester_obj)
+                    
+                    # Fetch Faculty (must be filtered by user)
+                    faculty_obj = Faculty.objects.get(user=user, code=faculty_code)
+                    
+                    # Create the Assignment record
+                    FacultyAssignment.objects.create(
+                        user=user,
+                        subject=subject_obj, 
+                        division=division_obj, 
+                        faculty=faculty_obj
+                    )
+
+
+            return semester_obj
+    return None
