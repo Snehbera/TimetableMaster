@@ -1,9 +1,12 @@
 # timetable_app/models.py
 
 from django.db import models
+from django.contrib.auth import get_user_model
+
 
 class Setting(models.Model):
     key = models.CharField(max_length=50, unique=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='settings') 
     value = models.JSONField()
 
     def __str__(self):
@@ -12,6 +15,7 @@ class Setting(models.Model):
 # In timetable_app/models.py
 
 class Semester(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='semesters') 
     # --- Define the choices for the number field ---
     SEMESTER_CHOICES = [
         (1, '1st Semester'),
@@ -49,6 +53,7 @@ class Semester(models.Model):
         super().save(*args, **kwargs)
 
 class Faculty(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='faculties') 
     code = models.CharField(max_length=5, unique=True, primary_key=True)
     name = models.CharField(max_length=100)
 
@@ -60,6 +65,7 @@ class FacultyAvailability(models.Model):
     Stores a faculty member's availability for an entire day using
     boolean fields for each slot. True = Available, False = Unavailable.
     """
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) 
     DAY_CHOICES = [
         ('Monday', 'Monday'),
         ('Tuesday', 'Tuesday'),
@@ -84,6 +90,9 @@ class FacultyAvailability(models.Model):
     slot_4 = models.BooleanField(default=True)
     slot_5 = models.BooleanField(default=True)
     slot_6 = models.BooleanField(default=True)
+    slot_7 = models.BooleanField(default=True)
+    slot_8 = models.BooleanField(default=True)
+    slot_9 = models.BooleanField(default=True)
 
     class Meta:
         # Ensures a faculty can only have one availability entry per day.
@@ -98,6 +107,7 @@ class FacultyAvailability(models.Model):
         return f"{self.faculty.name} on {self.day} is unavailable for: {', '.join(unavailable_slots)}"
 
 class Subject(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='subjects') 
     code = models.CharField(max_length=10, unique=True, primary_key=True)
     name = models.CharField(max_length=200)
     lectures = models.IntegerField(default=0)
@@ -111,6 +121,7 @@ class Subject(models.Model):
         return f"{self.code} ({self.lectures}L, {self.labs}Lab, {self.double_periods}DL, {semester_name})"
 
 class Division(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='divisions') 
     name = models.CharField(max_length=100, default="null")
     code = models.CharField(max_length=10, unique=True, primary_key=True)
     off_day = models.CharField(max_length=15)
@@ -127,6 +138,7 @@ class Division(models.Model):
 
 
 class FacultyAssignment(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) 
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     division = models.ForeignKey(Division, on_delete=models.CASCADE)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
@@ -140,6 +152,7 @@ class FacultyAssignment(models.Model):
 
 # To hold timetable results
 class TimetableResult(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='timetableresults') 
     generation_time = models.DateTimeField(auto_now_add=True)
     solution_found = models.BooleanField(default=False)
     # The actual timetable data stored as JSON

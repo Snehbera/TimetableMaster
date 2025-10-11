@@ -43,16 +43,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django.contrib.sites',
+    'allauth.socialaccount',  
+    'allauth',             # <-- CRITICAL ADDITION
+    'allauth.account',    
 ]
 
 EXTERNAL_APP = [
     'timetable_app', 
     'rest_framework',
-    "corsheaders"
+    "corsheaders",
+    'auth_api',                      # Keep your custom app
+    'rest_framework.authtoken',
+    'rest_auth',
+    'rest_auth.registration',
 ]
 
 INSTALLED_APPS += EXTERNAL_APP
 
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -62,6 +72,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
 ]
 
 EXTERNAL_MIDDLEWARE = [

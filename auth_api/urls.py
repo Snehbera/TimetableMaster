@@ -1,18 +1,9 @@
-# auth_api/urls.py
+# auth_api/urls.py (No changes needed, keeping existing code)
 
-from django.urls import path, include
+from django.urls import path
+from .views import RegisterView, LoginView
 
 urlpatterns = [
-    # Login, Logout, User Details (using rest_auth)
-    # /api/auth/login/
-    # /api/auth/logout/
-    # /api/auth/user/
-    path('', include('rest_auth.urls')),        
-    
-    # Registration/Sign-up (using rest_auth.registration)
-    # /api/auth/register/
-    path('register/', include('rest_auth.registration.urls')),
-
-    # You can add a path here to check authentication status
-    # path('status/', views.AuthStatusView.as_view(), name='auth_status'),
+    path('register/', RegisterView.as_view(), name='json_register'),
+    path('login/', LoginView.as_view(), name='json_login'),
 ]

@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('timetable/', include('timetable_app.urls')),
     
+    path('auth/', include('auth_api.urls')),
     # NEW LINE: Redirects the root path ('') to the desired app path.
     path('', lambda request: redirect('timetable/generate-semester/5', permanent=False)),
 ]
