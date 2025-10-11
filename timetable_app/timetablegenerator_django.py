@@ -56,6 +56,7 @@ class TimetableSolver:
             for partition in div_partitions:
                 self.unassigned_labs[partition].update(lab_subjects_for_div)
 
+        # FIX: The required classes list now includes a pre-sort to improve heuristic
         self.all_required_classes = self._create_required_classes_list()
         self.possible_lecture_slots, self.possible_lab_slots = self._precompute_possible_slots()
         
@@ -97,12 +98,15 @@ class TimetableSolver:
             return True
         
         if any(self.timetable[div][day][s] is not None for s in range(previous_slot_idx)):
-             return False
-             
+              return False
+              
         return True
 
     def _create_required_classes_list(self) -> List[ClassInfo]:
-        """Builds a list of all classes to be scheduled."""
+        """
+        Builds a list of all classes to be scheduled, prioritizing blocks and 
+        subjects with more total classes (heuristic).
+        """
         required = []
         for div in self.divisions:
             num_lab_sessions_for_div = sum(
@@ -122,11 +126,29 @@ class TimetableSolver:
                 for _ in range(details.get('lectures', 0)):
                     required.append({'type': 'Lec', 'division': div, 'subject': sub})
 
-        blocks = [c for c in required if c['type'] != 'Lec']
-        lectures = [c for c in required if c['type'] == 'Lec']
-        random.shuffle(blocks)
-        random.shuffle(lectures)
-        return blocks + lectures
+        # ⭐ OPTIMIZATION FIX: Prioritize hard-to-place blocks and more frequent subjects.
+        def class_priority(class_info):
+            class_type = class_info['type']
+            subject_code = class_info['subject']
+            
+            # Priority 1: Place Concurrent Labs first (most restrictive)
+            if class_type == 'ConcurrentLabBlock':
+                return 3
+            # Priority 2: Place Double Lectures next (still restrictive)
+            if class_type == 'DoubleLec':
+                return 2
+            # Priority 3: Single Lectures (Least restrictive)
+            if class_type == 'Lec':
+                # Secondary sort: prioritize subjects with more total weekly hours to compact them earlier.
+                if subject_code:
+                    details = self.subjects.get(subject_code, {})
+                    total_hours = details.get('lectures', 0) + 2 * details.get('double_periods', 0)
+                    return 1 + total_hours / 100 # Add a small number based on size
+            return 1 # Fallback for lectures
+            
+        required.sort(key=class_priority, reverse=True) # Sort in descending priority
+        
+        return required
 
     def _precompute_possible_slots(self) -> Tuple[Dict[str, list], Dict[str, list]]:
         # Logic remains the same (unchanged)
@@ -336,7 +358,7 @@ class TimetableSolver:
                             self.unassigned_labs[lab['partition']].add(lab['lab'])
         return False
 
-    def solve(self, timeout: int = 10) -> Tuple[bool, Dict]:
+    def solve(self, timeout: int = 30) -> Tuple[bool, Dict]:
         self.start_time = time.time()
         self.timeout = timeout
         self.timed_out = False
