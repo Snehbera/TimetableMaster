@@ -446,7 +446,7 @@ export default function App() {
 
   return (
     <div className="font-sans">
-      <div className="bg-gradient-to-br from-purple-600 to-indigo-800">
+      <div className=" w-screen h-dvh bg-gradient-to-br from-purple-600 to-indigo-800">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
           <nav className="flex items-center justify-between mb-16">
             <div className="flex items-center gap-2">
