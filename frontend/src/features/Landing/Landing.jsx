@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router";
-
+import {
+  Sparkles,
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Users,
+  Menu,
+  X,
+} from "lucide-react";
 // It's a good practice to have icons as their own components
 const SparklesIcon = (props) => (
   <svg
@@ -444,213 +453,244 @@ export default function App() {
       "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDI0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00ek0xMiAxNmMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptMCAyNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')",
   };
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="font-sans">
-      <div className=" w-screen h-dvh bg-gradient-to-br from-purple-600 to-indigo-800">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          <nav className="flex items-center justify-between mb-16">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-                <SparklesIcon
-                  className="w-6 h-6 text-purple-600"
-                  aria-hidden="true"
-                />
-              </div>
-              <span className="text-white text-xl font-bold">TimeTablePro</span>
+     <div className="relative w-screen h-dvh overflow-y-auto overflow-x-hidden bg-gradient-to-br from-purple-600 to-indigo-800">
+      
+      {/* Container */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 md:pt-20 md:pb-32">
+        
+        {/* Navigation */}
+        <nav className="flex items-center justify-between mb-12 md:mb-16">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0">
+              <Sparkles className="w-6 h-6 text-purple-600" />
             </div>
-            <div className="hidden md:flex items-center gap-8">
+            <span className="text-white text-xl font-bold">TimeTablePro</span>
+          </div>
+
+          {/* Desktop Menu (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-8">
+            {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (
               <a
-                href="#features"
+                key={item}
+                href={`#${item.toLowerCase().replace(/ /g, "-")}`}
                 className="text-white/90 hover:text-white transition-colors"
               >
-                Features
+                {item}
               </a>
-              <a
-                href="#how-it-works"
-                className="text-white/90 hover:text-white transition-colors"
-              >
-                How it Works
-              </a>
-              <a
-                href="#testimonials"
-                className="text-white/90 hover:text-white transition-colors"
-              >
-                Testimonials
-              </a>
-              <a
-                href="#faq"
-                className="text-white/90 hover:text-white transition-colors"
-              >
-                FAQ
-              </a>
-              <Link
-                to="/login"
-                className="text-white/90 hover:text-white transition-colors"
-              >
-                Login
-              </Link>
-              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 bg-white text-purple-600 hover:bg-white/90">
-                Get Started
+            ))}
+            <Link
+              to="/login"
+              className="text-white/90 hover:text-white transition-colors"
+            >
+              Login
+            </Link>
+            <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all h-9 px-4 py-2 bg-white text-purple-600 hover:bg-white/90">
+              Get Started
+            </button>
+          </div>
+
+          {/* Mobile Menu Button (Visible on Mobile) */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+        </nav>
+
+        {/* Mobile Navigation Dropdown Overlay */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-20 left-0 w-full px-4 z-50 md:hidden">
+            <div className="bg-white rounded-2xl p-6 shadow-2xl flex flex-col gap-4 animate-in slide-in-from-top-5 duration-200">
+              {["Features", "How it Works", "Testimonials", "FAQ"].map(
+                (item) => (
+                  <a
+                    key={item}
+                    href={`#${item.toLowerCase().replace(/ /g, "-")}`}
+                    className="text-gray-800 font-medium hover:text-purple-600 py-2 border-b border-gray-100 last:border-0"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item}
+                  </a>
+                )
+              )}
+              <div className="flex flex-col gap-3 mt-2">
+                <Link
+                  to="/login"
+                  className="w-full text-center py-2 text-gray-600 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <button className="w-full py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700">
+                  Get Started
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Hero Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Column: Text */}
+          <div className="text-white space-y-8 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mx-auto lg:mx-0">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm">Smart Scheduling Made Simple</span>
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-bold tracking-tight leading-tight">
+              Effortless Timetables in Minutes
+            </h1>
+            
+            <p className="text-lg sm:text-xl text-white/90 max-w-xl mx-auto lg:mx-0">
+              Create perfect schedules for schools, colleges, and organizations.
+              Our AI-powered generator eliminates conflicts and saves you hours
+              of manual work.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all h-12 sm:h-10 rounded-md px-6 bg-white text-purple-600 hover:bg-white/90 group w-full sm:w-auto">
+                Start Free Trial
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium h-12 sm:h-10 rounded-md px-6 border-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all w-full sm:w-auto">
+                Watch Demo
               </button>
             </div>
-          </nav>
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-white space-y-8">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-                <SparklesIcon className="w-4 h-4" aria-hidden="true" />
-                <span className="text-sm">Smart Scheduling Made Simple</span>
+            
+            {/* Stats Section */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 pt-4">
+              <div className="text-center sm:text-left">
+                <div className="text-3xl font-bold">10,000+</div>
+                <div className="text-white/80 text-sm">Active Users</div>
               </div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl text-white font-bold tracking-tight">
-                Effortless Timetables in Minutes
-              </h1>
-              <p className="text-xl text-white/90 max-w-xl">
-                Create perfect schedules for schools, colleges, and
-                organizations. Our AI-powered generator eliminates conflicts and
-                saves you hours of manual work.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 bg-white text-purple-600 hover:bg-white/90 group">
-                  Start Free Trial
-                  <ArrowRightIcon
-                    className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
-                    aria-hidden="true"
-                  />
-                </button>
-                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md px-6 border-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all">
-                  Watch Demo
-                </button>
+              <div className="hidden sm:block w-px h-12 bg-white/30"></div>
+              <div className="text-center sm:text-left">
+                <div className="text-3xl font-bold">500+</div>
+                <div className="text-white/80 text-sm">Institutions</div>
               </div>
-              <div className="flex items-center gap-8 pt-4">
-                <div>
-                  <div className="text-3xl font-bold">10,000+</div>
-                  <div className="text-white/80 text-sm">Active Users</div>
+              <div className="hidden sm:block w-px h-12 bg-white/30"></div>
+              <div className="text-center sm:text-left">
+                <div className="text-3xl font-bold">4.9/5</div>
+                <div className="text-white/80 text-sm">Rating</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Visual (Hidden on Tablet/Mobile for cleanliness, Visible on Large Screens) */}
+          <div className="relative hidden lg:block">
+            <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-white/20">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-gray-900 font-semibold">
+                      Weekly Schedule
+                    </h3>
+                    <p className="text-sm text-gray-500">Computer Science</p>
+                  </div>
                 </div>
-                <div className="w-px h-12 bg-white/30"></div>
-                <div>
-                  <div className="text-3xl font-bold">500+</div>
-                  <div className="text-white/80 text-sm">Institutions</div>
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
+              <div className="space-y-3">
+                {/* Schedule Item 1 */}
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                  <div className="w-2 h-12 bg-blue-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900 font-medium">
+                      Data Structures
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <p className="text-xs text-gray-500">
+                        9:00 AM - 10:30 AM
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-blue-600">
+                    MON
+                  </div>
                 </div>
-                <div className="w-px h-12 bg-white/30"></div>
-                <div>
-                  <div className="text-3xl font-bold">4.9/5</div>
-                  <div className="text-white/80 text-sm">Rating</div>
+                 {/* Schedule Item 2 */}
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                  <div className="w-2 h-12 bg-purple-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900 font-medium">
+                      Algorithms
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <p className="text-xs text-gray-500">
+                        11:00 AM - 12:30 PM
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-purple-600">
+                    TUE
+                  </div>
+                </div>
+                 {/* Schedule Item 3 */}
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-pink-50 to-pink-100 rounded-lg border border-pink-200">
+                  <div className="w-2 h-12 bg-pink-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900 font-medium">
+                      Database Systems
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <p className="text-xs text-gray-500">
+                        2:00 PM - 3:30 PM
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-pink-600">
+                    WED
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="relative hidden lg:block">
-              <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-white/20">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <CalendarIcon
-                        className="w-6 h-6 text-white"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-gray-900 font-semibold">
-                        Weekly Schedule
-                      </h3>
-                      <p className="text-sm text-gray-500">Computer Science</p>
-                    </div>
-                  </div>
-                  <CircleCheckIcon
-                    className="w-6 h-6 text-green-500"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                    <div className="w-2 h-12 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900 font-medium">
-                        Data Structures
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <ClockIcon
-                          className="w-3 h-3 text-gray-500"
-                          aria-hidden="true"
-                        />
-                        <p className="text-xs text-gray-500">
-                          9:00 AM - 10:30 AM
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-blue-600">
-                      MON
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-                    <div className="w-2 h-12 bg-purple-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900 font-medium">
-                        Algorithms
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <ClockIcon
-                          className="w-3 h-3 text-gray-500"
-                          aria-hidden="true"
-                        />
-                        <p className="text-xs text-gray-500">
-                          11:00 AM - 12:30 PM
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-purple-600">
-                      TUE
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-pink-50 to-pink-100 rounded-lg border border-pink-200">
-                    <div className="w-2 h-12 bg-pink-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900 font-medium">
-                        Database Systems
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <ClockIcon
-                          className="w-3 h-3 text-gray-500"
-                          aria-hidden="true"
-                        />
-                        <p className="text-xs text-gray-500">
-                          2:00 PM - 3:30 PM
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs bg-white px-2 py-1 rounded font-semibold text-pink-600">
-                      WED
-                    </div>
-                  </div>
-                </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute -top-4 -right-4 z-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20 transform rotate-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-5 h-5 text-purple-600" />
+                <p className="text-sm text-gray-900 font-medium">
+                  Class: 30 Students
+                </p>
               </div>
-              <div className="absolute -top-4 -right-4 z-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20 transform rotate-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <UsersIcon
-                    className="w-5 h-5 text-purple-600"
-                    aria-hidden="true"
-                  />
-                  <p className="text-sm text-gray-900 font-medium">
-                    Class: 30 Students
-                  </p>
-                </div>
-                <div className="w-24 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
-              </div>
-              <div className="absolute -bottom-4 -left-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20 transform -rotate-3">
+              <div className="w-24 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+            </div>
+            
+             <div className="absolute -bottom-4 -left-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20 transform -rotate-3">
                 <div className="flex items-center gap-2">
-                  <CircleCheckIcon
-                    className="w-5 h-5 text-green-500"
-                    aria-hidden="true"
-                  />
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                   <p className="text-sm text-gray-900 font-medium">
                     No Conflicts
                   </p>
                 </div>
               </div>
-              <div className="absolute -top-8 left-1/2 w-20 h-20 bg-yellow-400/20 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-8 right-1/4 w-32 h-32 bg-pink-400/20 rounded-full blur-3xl"></div>
-            </div>
+
+            <div className="absolute -top-8 left-1/2 w-20 h-20 bg-yellow-400/20 rounded-full blur-2xl"></div>
+            <div className="absolute -bottom-8 right-1/4 w-32 h-32 bg-pink-400/20 rounded-full blur-3xl"></div>
           </div>
         </div>
       </div>
+    </div>
       <section
         id="features"
         className="py-24 bg-gradient-to-b from-white to-gray-50"
