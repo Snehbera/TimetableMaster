@@ -114,10 +114,10 @@ def _process_solver_output(solver, config, raw_timetable_data):
 from collections import defaultdict
 from .models import Setting, Faculty, FacultyAvailability, Division, Subject, FacultyAssignment
 
-def generate_config_from_models(user,semester, existing_faculty_schedule=set()):
+def generate_config_from_models(user, semester, existing_faculty_schedule=set()):
     """
-    Pulls data from models for a SPECIFIC USER to create the configuration
-    dictionary for the TimetableSolver.
+    Pulls data from models for a SPECIFIC USER and maps FacultyAvailability 
+    boolean slots to 0-indexed indices for the solver.
     """
     config = {
         'settings': {},
@@ -128,46 +128,57 @@ def generate_config_from_models(user,semester, existing_faculty_schedule=set()):
         'faculty_unavailability': set()
     }
 
-    # --- ALL QUERIES ARE NOW FILTERED BY 'user' ---
-
-    # 1. Populate user-specific settings
+    # 1. Populate user-specific settings (Slots are taken from here)
     settings_data = {s.key: s.value for s in Setting.objects.filter(user=user)}
     config['settings'].update(settings_data)
 
     # 2. Populate user-specific faculty
     config['faculty'] = {f.code: {'name': f.name} for f in Faculty.objects.filter(user=user)}
 
-    # 3. Populate user-specific faculty unavailability
-    # The 'faculty__user=user' query correctly traverses the relationship
-    for availability in FacultyAvailability.objects.filter(faculty__user=user):
-        for i in range(1, 7):
-            if not getattr(availability, f'slot_{i}', True):
+    # 3. Populate user-specific faculty unavailability from the boolean model
+    # We check slot_1 through slot_9. If False, the faculty is NOT available.
+    availabilities = FacultyAvailability.objects.filter(user=user).select_related('faculty')
+    for availability in availabilities:
+        for i in range(1, 10):  # i is 1 to 9
+            field_name = f'slot_{i}'
+            # getattr(availability, 'slot_1') returns True or False
+            is_available = getattr(availability, field_name, True)
+            
+            if not is_available:
+                # Add to set as (FacultyCode, DayName, SlotIndex)
+                # We use i-1 because slot_1 is index 0 in the solver's logic
                 config['faculty_unavailability'].add(
                     (availability.faculty.code, availability.day, i - 1)
                 )
     
+    # Merge existing schedules (clashes from other semesters)
     config['faculty_unavailability'].update(existing_faculty_schedule)
 
-    # 4. If a semester is provided, populate user- and semester-specific data
+    # 4. Semester-specific data
     if semester:
-        # Filter by both semester AND user
-        divisions = Division.objects.filter(user=user, semester=semester) # ⭐ FILTERED
-        subjects = Subject.objects.filter(user=user, semester=semester)   # ⭐ FILTERED
-        # Assignments filter via the related Subject/Division which are user-scoped.
-        assignments = FacultyAssignment.objects.filter(subject__user=user, subject__semester=semester) # ⭐ FILTERED
+        divisions = Division.objects.filter(user=user, semester=semester)
+        subjects = Subject.objects.filter(user=user, semester=semester)
+        assignments = FacultyAssignment.objects.filter(user=user, subject__semester=semester)
 
         for div in divisions:
-            config['divisions'][div.code] = {'off_day': div.off_day, 'partitions': div.get_partitions_list()}
+            config['divisions'][div.code] = {
+                'off_day': div.off_day, 
+                'partitions': div.get_partitions_list()
+            }
         
         for sub in subjects:
             config['subjects'][sub.code] = {
-                'name': sub.name, 'lectures': sub.lectures, 'labs': sub.labs, 'double_periods': sub.double_periods
+                'name': sub.name, 
+                'lectures': sub.lectures, 
+                'labs': sub.labs, 
+                'double_periods': sub.double_periods
             }
 
         for assignment in assignments:
             config['faculty_assignments'][assignment.subject.code][assignment.division.code] = assignment.faculty.code
 
     return config
+
 # ==============================================================================
 # 3. SINGLE SEMESTER VIEW
 # ==============================================================================
