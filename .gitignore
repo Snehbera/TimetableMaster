@@ -23,7 +23,8 @@ backend/venv
 backend/*.sqlite3
 
 # Python cache
-backend/__pycache__
+backend/**/__pycache__/
+backend/**/*.pyc
 
 # OS / Editor specific
 .DS_Store
