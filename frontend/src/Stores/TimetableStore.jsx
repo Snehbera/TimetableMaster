@@ -122,12 +122,12 @@ const useTimetableStore = create(
           timetableNames: state.timetableNames.map((tt) =>
             tt.id === id
               ? {
-                  ...tt,
-                  workingDays: {
-                    ...tt.workingDays,
-                    [dayName]: !tt.workingDays[dayName],
-                  },
-                }
+                ...tt,
+                workingDays: {
+                  ...tt.workingDays,
+                  [dayName]: !tt.workingDays[dayName],
+                },
+              }
               : tt
           ),
         })),
@@ -140,12 +140,12 @@ const useTimetableStore = create(
           timetableNames: state.timetableNames.map((tt) =>
             tt.id === timetableId
               ? {
-                  ...tt,
-                  subdivisions: [
-                    ...tt.subdivisions,
-                    { id: "SUB-" + Date.now(), name: "" },
-                  ],
-                }
+                ...tt,
+                subdivisions: [
+                  ...tt.subdivisions,
+                  { id: "SUB-" + Date.now(), name: "" },
+                ],
+              }
               : tt
           ),
         })),
@@ -155,11 +155,11 @@ const useTimetableStore = create(
           timetableNames: state.timetableNames.map((tt) =>
             tt.id === timetableId
               ? {
-                  ...tt,
-                  subdivisions: tt.subdivisions.map((sub) =>
-                    sub.id === subId ? { ...sub, name: value } : sub
-                  ),
-                }
+                ...tt,
+                subdivisions: tt.subdivisions.map((sub) =>
+                  sub.id === subId ? { ...sub, name: value } : sub
+                ),
+              }
               : tt
           ),
         })),
@@ -169,11 +169,11 @@ const useTimetableStore = create(
           timetableNames: state.timetableNames.map((tt) =>
             tt.id === timetableId
               ? {
-                  ...tt,
-                  subdivisions: tt.subdivisions.filter(
-                    (sub) => sub.id !== subId
-                  ),
-                }
+                ...tt,
+                subdivisions: tt.subdivisions.filter(
+                  (sub) => sub.id !== subId
+                ),
+              }
               : tt
           ),
         })),
@@ -270,6 +270,14 @@ const useTimetableStore = create(
         get().calculateWeeklyTotals();
       },
 
+      // 🔥 THIS FUNCTION WAS MISSING, CAUSING THE DONE BUTTON TO FAIL 🔥
+      updateSubjectAvailability: (id, availabilityGrid) =>
+        set((state) => ({
+          subjects: state.subjects.map((s) =>
+            s.id === id ? { ...s, availability: availabilityGrid } : s
+          ),
+        })),
+
       // --------------------------------------------------------
       // FACULTY MANAGEMENT (ID BASED)
       // --------------------------------------------------------
@@ -338,13 +346,13 @@ const useTimetableStore = create(
           })),
         })),
 
-    // -----------------------------------------------------------------------
+      // -----------------------------------------------------------------------
       //  🔥 HERE IS THE FIX: UPDATED initializeRooms FUNCTION 🔥
       // -----------------------------------------------------------------------
       initializeRooms: () =>
         set((state) => {
           const newRooms = [];
-          
+
           // Helper to check if a room already exists to prevent duplicates
           // We create a "signature" key for each room
           const existingSignatures = new Set(
@@ -358,7 +366,7 @@ const useTimetableStore = create(
           // 1. Create Classrooms (One per Timetable/Division)
           state.timetableNames.forEach((tt) => {
             const classSignature = `CLASS-${tt.id}`;
-            
+
             if (!existingSignatures.has(classSignature)) {
               newRooms.push({
                 id: "ROOM-C-" + Date.now() + Math.random(),
@@ -373,11 +381,11 @@ const useTimetableStore = create(
 
             // 2. Create Lab Rooms (One per Subdivision per Subject-with-Labs)
             const subjectsWithLabs = state.subjects.filter((s) => s.labsPerWeek > 0);
-            
+
             tt.subdivisions.forEach((sub) => {
               subjectsWithLabs.forEach((subj) => {
                 const labSignature = `LAB-${tt.id}-${sub.id}-${subj.id}`;
-                
+
                 if (!existingSignatures.has(labSignature)) {
                   newRooms.push({
                     id: "ROOM-L-" + Date.now() + Math.random(),

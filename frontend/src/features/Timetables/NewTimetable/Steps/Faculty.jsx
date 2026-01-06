@@ -4,231 +4,62 @@ import useTimetableStore from "../../../../Stores/TimetableStore";
 
 // --- SVG Icon Components ---
 const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      fillRule="evenodd"
-      d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
-      clipRule="evenodd"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
   </svg>
 );
 const CheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-5 h-5 mx-auto"
-  >
-    <path
-      fillRule="evenodd"
-      d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
-      clipRule="evenodd"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mx-auto">
+    <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
   </svg>
 );
 const CrossIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-5 h-5 mx-auto"
-  >
-    <path
-      fillRule="evenodd"
-      d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
-      clipRule="evenodd"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mx-auto">
+    <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
   </svg>
 );
 const UserGroupIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    className="h-5 w-5 mr-2 text-indigo-600"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"
-    ></path>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-5 w-5 mr-2 text-indigo-600">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
   </svg>
 );
 const TrashIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-    className="w-5 h-5 inline-block"
-  >
-    {" "}
-    <path
-      fillRule="evenodd"
-      d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
-      clipRule="evenodd"
-    />{" "}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 inline-block">
+    <path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" />
   </svg>
 );
 const SortIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-    className="h-4 w-4 mr-2"
-  >
-    {" "}
-    <path
-      fillRule="evenodd"
-      d="M6.97 2.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.25 4.81V16.5a.75.75 0 0 1-1.5 0V4.81L3.53 8.03a.75.75 0 0 1-1.06-1.06l4.5-4.5Zm9.53 4.28a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V7.5a.75.75 0 0 1 .75-.75Z"
-      clipRule="evenodd"
-    />{" "}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 mr-2">
+    <path fillRule="evenodd" d="M6.97 2.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.25 4.81V16.5a.75.75 0 0 1-1.5 0V4.81L3.53 8.03a.75.75 0 0 1-1.06-1.06l4.5-4.5Zm9.53 4.28a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V7.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
   </svg>
 );
 const ImportIcon = ({ className = "h-4 w-4 mr-2" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className={className}
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-    />{" "}
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
   </svg>
 );
 const AddIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-    className="h-4 w-4 mr-2"
-  >
-    {" "}
-    <path
-      fillRule="evenodd"
-      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
-      clipRule="evenodd"
-    />{" "}
-  </svg>
-);
-const PrevIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 mr-2"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-    />{" "}
-  </svg>
-);
-const NextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className="h-5 w-5 ml-2"
-  >
-    {" "}
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
-    />{" "}
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 mr-2">
+    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clipRule="evenodd" />
   </svg>
 );
 const InfoIcon = ({ className = "" }) => (
-  <svg
-    version="1.1"
-    id="Capa_1"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    viewBox="0 0 416.979 416.979"
-    xml:space="preserve"
-    className={className}
-    fill="currentColor"
-  >
-    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-    <g
-      id="SVGRepo_tracerCarrier"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    ></g>
-    <g id="SVGRepo_iconCarrier">
-      {" "}
-      <g>
-        {" "}
-        <path d="M356.004,61.156c-81.37-81.47-213.377-81.551-294.848-0.182c-81.47,81.371-81.552,213.379-0.181,294.85 c81.369,81.47,213.378,81.551,294.849,0.181C437.293,274.636,437.375,142.626,356.004,61.156z M237.6,340.786 c0,3.217-2.607,5.822-5.822,5.822h-46.576c-3.215,0-5.822-2.605-5.822-5.822V167.885c0-3.217,2.607-5.822,5.822-5.822h46.576 c3.215,0,5.822,2.604,5.822,5.822V340.786z M208.49,137.901c-18.618,0-33.766-15.146-33.766-33.765 c0-18.617,15.147-33.766,33.766-33.766c18.619,0,33.766,15.148,33.766,33.766C242.256,122.755,227.107,137.901,208.49,137.901z"></path>{" "}
-      </g>{" "}
-    </g>
+  <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 416.979 416.979" className={className} fill="currentColor">
+    <path d="M356.004,61.156c-81.37-81.47-213.377-81.551-294.848-0.182c-81.47,81.371-81.552,213.379-0.181,294.85 c81.369,81.47,213.378,81.551,294.849,0.181C437.293,274.636,437.375,142.626,356.004,61.156z M237.6,340.786 c0,3.217-2.607,5.822-5.822,5.822h-46.576c-3.215,0-5.822-2.605-5.822-5.822V167.885c0-3.217,2.607-5.822,5.822-5.822h46.576 c3.215,0,5.822,2.604,5.822,5.822V340.786z M208.49,137.901c-18.618,0-33.766-15.146-33.766-33.765 c0-18.617,15.147-33.766,33.766-33.766c18.619,0,33.766,15.148,33.766,33.766C242.256,122.755,227.107,137.901,208.49,137.901z"></path>
   </svg>
 );
 const SearchIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
   </svg>
 );
 const CalendarIcon = ({ className = "w-3.5 h-3.5 mr-1 text-green-600" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    aria-hidden="true"
-    className={className}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
   </svg>
 );
 const PencilIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity">
     <path d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
   </svg>
 );
@@ -445,30 +276,63 @@ const BulkImportModal = ({ isOpen, onClose, onImport }) => {
   );
 };
 
-// --- Faculty Availability Modal Component ---
+// --- Faculty Availability Modal Component (FIXED) ---
 const FacultyAvailabilityModal = ({ facultyMember, onClose, onSave }) => {
-  const { timings, days } = useTimetableStore();
+  // 1. Get periodsPerDay and timetableNames to derive data
+  const { timings, periodsPerDay, timetableNames } = useTimetableStore();
   const [grid, setGrid] = useState([]);
-  const schoolDays = useMemo(
-    () => (days || []).filter((day) => day.isSchoolDay),
-    [days]
-  );
-  const periodsOnly = useMemo(
-    () => (timings || []).filter((timeSlot) => timeSlot.type === "period"),
-    [timings]
-  );
+
+  // 2. Derive school days from the first timetable's workingDays (Store structure fix)
+  const schoolDays = useMemo(() => {
+    const defaultDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    const daysMap = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
+    
+    // Check if we have workingDays in the first timetable, else use default
+    const workingDaysObj = timetableNames?.[0]?.workingDays;
+    
+    if (!workingDaysObj) {
+      return defaultDays.map(d => ({ name: d, fullName: daysMap[d] }));
+    }
+
+    return Object.keys(daysMap)
+      .filter(key => workingDaysObj[key])
+      .map(key => ({ name: key, fullName: daysMap[key] }));
+
+  }, [timetableNames]);
+
+  // 3. Derive periods: Use 'timings' if available, otherwise generate default 1..N
+  const periodsOnly = useMemo(() => {
+    const existingPeriods = (timings || []).filter((timeSlot) => timeSlot.type === "period");
+    
+    if (existingPeriods.length > 0) {
+      return existingPeriods;
+    }
+    
+    // Fallback generation if timings are empty
+    const count = periodsPerDay || 6;
+    return Array.from({ length: count }, (_, i) => ({ 
+      id: `p-${i}`, 
+      number: i + 1,
+      type: "period" 
+    }));
+  }, [timings, periodsPerDay]);
 
   useEffect(() => {
+    // FIX: Initialize if array lengths match logic (handling empty/fallback)
     if (periodsOnly.length === 0 || schoolDays.length === 0) return;
+    
     const numPeriods = periodsOnly.length;
     const numDays = schoolDays.length;
+    
     const isGridValid =
       facultyMember.availability &&
       facultyMember.availability.length === numPeriods &&
       facultyMember.availability[0]?.length === numDays;
+
     if (isGridValid) {
       setGrid(JSON.parse(JSON.stringify(facultyMember.availability)));
     } else {
+      // Create new grid: All True (Available)
       const newGrid = Array(numPeriods)
         .fill(null)
         .map(() => Array(numDays).fill(true));
@@ -565,7 +429,7 @@ const FacultyAvailabilityModal = ({ facultyMember, onClose, onSave }) => {
                               ? `${formatTime12h(
                                   period.startTime
                                 )} - ${formatTime12h(period.endTime)}`
-                              : "Not set"}
+                              : ""}
                           </span>
                         </div>
                       </td>
@@ -619,7 +483,8 @@ export default function Faculty() {
     bulkImportFaculty,
     setFacultyAvailability,
     timings,
-    days,
+    periodsPerDay, // Get this for calculation fallback
+    timetableNames // Get this for WorkingDays fallback
   } = useTimetableStore();
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState(null);
@@ -632,21 +497,25 @@ export default function Faculty() {
     );
   }, [faculty]);
 
+  // FIX: Recalculate helper logic to match the new Modal derivation
   const calculateAvailability = (availabilityGrid) => {
-    const schoolDays = (days || []).filter((d) => d.isSchoolDay);
-    const periodsOnly = (timings || []).filter((p) => p.type === "period");
+    // Same Logic as in Modal: Derive Days and Periods
+    const workingDaysObj = timetableNames?.[0]?.workingDays || { Mon: true, Tue: true, Wed: true, Thu: true, Fri: true };
+    const schoolDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].filter(k => workingDaysObj[k]);
+    
+    const existingPeriods = (timings || []).filter((p) => p.type === "period");
+    const numPeriods = existingPeriods.length > 0 ? existingPeriods.length : (periodsPerDay || 6);
 
     if (
       !availabilityGrid ||
-      periodsOnly.length === 0 ||
-      schoolDays.length === 0 ||
-      availabilityGrid.length !== periodsOnly.length ||
-      availabilityGrid[0].length !== schoolDays.length
+      availabilityGrid.length !== numPeriods ||
+      availabilityGrid[0]?.length !== schoolDays.length
     ) {
+      // If grid mismatch (old data vs new settings), assume default available
       return { percentOff: 0, isAllAvailable: true };
     }
 
-    const totalSlots = periodsOnly.length * schoolDays.length;
+    const totalSlots = numPeriods * schoolDays.length;
     const offSlots = availabilityGrid
       .flat()
       .filter((isAvailable) => !isAvailable).length;
@@ -916,7 +785,7 @@ export default function Faculty() {
                 type="button"
                 className="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
-                <AddIcon /> Add Facultysubjects
+                <AddIcon /> Add Faculty
               </button>
             </div>
           </div>
@@ -951,7 +820,7 @@ export default function Faculty() {
               </div>
 
               <Link
-                to="/dashboard/timetable/new/classNamees"
+                to="/dashboard/timetable/new/classes"
                 className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                 aria-disabled="false"
                 data-discover="true"
