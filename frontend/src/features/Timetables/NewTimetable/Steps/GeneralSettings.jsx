@@ -735,7 +735,7 @@ function GeneralSettings() {
                 </Link>
 
                 <div className="text-sm text-gray-500 text-center px-2">
-                  Step <span className="font-semibold text-gray-700">2</span> of{" "}
+                  Step <span className="font-semibold text-gray-700">1</span> of{" "}
                   <span className="font-semibold text-gray-700">7</span>
                 </div>
 
