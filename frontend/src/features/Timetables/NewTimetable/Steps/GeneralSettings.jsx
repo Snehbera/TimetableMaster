@@ -277,21 +277,22 @@ const TimetableNames = () => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm mb-5">
       <div className="flex items-center mb-4">
-        <TimetableIcon />
+        {/* Make sure TimetableIcon is imported or replaced with <Icon /> */}
+        <TimetableIcon className="w-6 h-6 mr-2 text-indigo-600" />
         <h2 className="text-lg font-semibold text-gray-900">
-          Divisions / classNamees
+          Divisions / Classes
         </h2>
       </div>
 
-      {(timetableNames || []).map((timetable, index) => (
+      {(timetableNames || []).map((timetable) => (
         <div
-          key={timetable.id}
+          key={timetable.id} // ✅ CORRECT: Using ID instead of index
           className="p-4 border border-gray-300 rounded-lg mb-4 bg-gray-50/50"
         >
           <div className="flex items-center space-x-2">
             <input
               placeholder="e.g., Computer Engineering"
-              className="s1-input-field font-medium"
+              className="s1-input-field font-medium flex-1 p-2 border rounded"
               type="text"
               value={timetable.name}
               onChange={(e) =>
@@ -315,20 +316,27 @@ const TimetableNames = () => {
                 Subdivisions
               </label>
             )}
-            {(timetable.subdivisions || []).map((sub, subIndex) => (
-              <div key={subIndex} className="flex items-center space-x-2">
+            
+            {/* ✅ FIXED: Iterating properly over subdivision objects */}
+            {(timetable.subdivisions || []).map((sub) => (
+              <div key={sub.id} className="flex items-center space-x-2">
                 <input
                   placeholder="e.g., Section A"
-                  className="s1-input-field"
+                  className="s1-input-field flex-1 p-2 border rounded text-sm"
                   type="text"
-                  value={sub}
+                  
+                  // 1. ACCESS THE NAME PROPERTY
+                  value={sub.name} 
+                  
+                  // 2. PASS ID INSTEAD OF INDEX
                   onChange={(e) =>
-                    updateSubdivision(timetable.id, subIndex, e.target.value)
+                    updateSubdivision(timetable.id, sub.id, e.target.value)
                   }
                 />
                 <button
                   type="button"
-                  onClick={() => removeSubdivision(timetable.id, subIndex)}
+                  // 3. PASS ID INSTEAD OF INDEX
+                  onClick={() => removeSubdivision(timetable.id, sub.id)}
                   className="p-2 text-gray-400 hover:text-red-500"
                   aria-label="Remove subdivision"
                 >
@@ -340,9 +348,9 @@ const TimetableNames = () => {
             <button
               type="button"
               onClick={() => addSubdivision(timetable.id)}
-              className="flex items-center text-xs font-medium text-indigo-600"
+              className="flex items-center text-xs font-medium text-indigo-600 hover:text-indigo-800 mt-2"
             >
-              <PlusCircleIcon className="w-4 h-4" />
+              <PlusCircleIcon className="w-4 h-4 mr-1" />
               Add Subdivision
             </button>
           </div>
@@ -352,14 +360,16 @@ const TimetableNames = () => {
       <button
         type="button"
         onClick={addTimetableName}
-        className="flex items-center text-sm font-medium text-indigo-600 mt-4"
+        className="flex items-center text-sm font-medium text-indigo-600 mt-4 hover:text-indigo-800"
       >
-        <PlusCircleIcon />
+        <PlusCircleIcon className="w-5 h-5 mr-1" />
         Add another division
       </button>
     </div>
   );
 };
+
+
 
 // --- Helper Functions for Time Calculation --- //
 const timeToMinutes = (timeStr) => {

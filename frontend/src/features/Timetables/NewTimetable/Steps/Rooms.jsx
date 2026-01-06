@@ -1,58 +1,27 @@
 import React, { useState, useMemo, useEffect } from "react";
-import useTimetableStore from "../../../../Stores/TimetableStore";
-import { Link } from "react-router-dom"; // Corrected import for react-router-dom
+import useTimetableStore from "../../../../Stores/TimetableStore"; // Adjust path if needed
+import { Link } from "react-router-dom";
 
 // --- SVG Icon Components ---
 const BuildingOfficeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6 mr-2 text-indigo-600"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2 text-indigo-600">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6m-6 3h6" />
   </svg>
 );
 const HomeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-5 h-5 mr-2 text-indigo-500"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-indigo-500">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
   </svg>
 );
 const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      fillRule="evenodd"
-      d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
-      clipRule="evenodd"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
   </svg>
 );
 
 // --- Lab Assignment Modal --- //
 const LabAssignmentModal = ({ subdivision, onClose }) => {
-  const { subjects, rooms, updateRoomName } = useTimetableStore();
+  const { subjects, rooms, updateRoomName, initializeRooms } = useTimetableStore();
 
   const subjectsWithLabs = useMemo(
     () => (subjects || []).filter((s) => s.labsPerWeek > 0),
@@ -64,7 +33,7 @@ const LabAssignmentModal = ({ subdivision, onClose }) => {
       (r) =>
         r.type === "lab" &&
         r.homeRoomFor?.timetableId === subdivision.timetableId &&
-        r.homeRoomFor?.subIndex === subdivision.subIndex &&
+        r.homeRoomFor?.subdivisionId === subdivision.subdivisionId && 
         r.homeRoomFor?.subjectId === subjectId
     );
   };
@@ -81,23 +50,35 @@ const LabAssignmentModal = ({ subdivision, onClose }) => {
               Enter the lab room for each required subject.
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <CloseIcon />
           </button>
         </div>
         <div className="p-6 overflow-y-auto space-y-4">
+          {subjectsWithLabs.length === 0 && (
+            <p className="text-gray-500 italic">No subjects with labs found.</p>
+          )}
+
           {subjectsWithLabs.map((subject) => {
             const lab = getLabForSubject(subject.id);
-            if (!lab) return null;
+            
+            // FALLBACK: If lab is missing, show a button to fix it immediately
+            if (!lab) {
+                return (
+                    <div key={subject.id} className="flex justify-between items-center p-3 bg-red-50 border border-red-100 rounded-lg">
+                        <span className="text-red-600 text-sm font-medium">Lab room missing for {subject.name}</span>
+                        <button 
+                            onClick={() => initializeRooms()}
+                            className="px-3 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200"
+                        >
+                            Fix (Create Room)
+                        </button>
+                    </div>
+                );
+            }
 
             return (
-              <div
-                key={subject.id}
-                className="grid grid-cols-2 gap-4 items-center"
-              >
+              <div key={subject.id} className="grid grid-cols-2 gap-4 items-center">
                 <label className="font-medium text-gray-700">
                   {subject.name} ({subject.shortName})
                 </label>
@@ -127,53 +108,56 @@ const LabAssignmentModal = ({ subdivision, onClose }) => {
 
 // --- Main Rooms App --- //
 export default function Rooms() {
-  const { rooms, timetableNames, subjects, initializeRooms, updateRoomName } =
-    useTimetableStore();
+  const { rooms, timetableNames, subjects, initializeRooms, updateRoomName } = useTimetableStore();
   const [editingSubdivision, setEditingSubdivision] = useState(null);
 
+  // --- 🔥 FIX: UPDATED USE EFFECT 🔥 ---
+  // Run initializeRooms regardless of whether rooms exist or not.
+  // The store function (initializeRooms) now has duplicate detection, so this is safe.
+  // This ensures new subjects/labs are added even if you already have classrooms.
   useEffect(() => {
-    initializeRooms();
-  }, [initializeRooms, timetableNames, subjects]);
+    if (timetableNames.length > 0) {
+        initializeRooms();
+    }
+  // We depend on subjects.length so if you add a subject and come back, it updates.
+  }, [initializeRooms, timetableNames.length, subjects.length]);
 
   const { classrooms, subdivisionsWithLabs } = useMemo(() => {
     const classList = [];
     const subList = [];
-    const subMap = new Map();
-
+    
     (timetableNames || []).forEach((tt) => {
-      const classAssignment = { timetableId: tt.id, subIndex: -1 };
+      // 1. Classrooms
       const classroom = rooms.find(
         (r) =>
           r.type === "classroom" &&
-          JSON.stringify(r.homeRoomFor) === JSON.stringify(classAssignment)
+          r.homeRoomFor?.timetableId === tt.id &&
+          r.homeRoomFor?.subdivisionId === null
       );
+
       if (classroom) {
         classList.push({ ...classroom, divisionName: tt.name });
       }
 
-      (tt.subdivisions || []).forEach((sub, index) => {
-        if (sub) {
-          const key = `${tt.id}-${index}`;
-          if (!subMap.has(key)) {
-            subMap.set(key, {
+      // 2. Subdivisions (Labs)
+      (tt.subdivisions || []).forEach((sub) => {
+        if (sub && sub.id) {
+            subList.push({
               timetableId: tt.id,
-              subIndex: index,
-              name: `${tt.name} - ${sub}`,
-              labCount: 0,
+              subdivisionId: sub.id,
+              name: `${tt.name} - ${sub.name}`,
             });
-          }
         }
       });
     });
 
-    const subjectsWithLabsCount = (subjects || []).filter(
-      (s) => s.labsPerWeek > 0
-    ).length;
-    if (subjectsWithLabsCount > 0) {
-      subMap.forEach((sub) => subList.push(sub));
-    }
+    const subjectsWithLabsCount = (subjects || []).filter((s) => s.labsPerWeek > 0).length;
+    
+    return { 
+      classrooms: classList, 
+      subdivisionsWithLabs: subjectsWithLabsCount > 0 ? subList : [] 
+    };
 
-    return { classrooms: classList, subdivisionsWithLabs: subList };
   }, [rooms, timetableNames, subjects]);
 
   return (
@@ -187,10 +171,16 @@ export default function Rooms() {
                   <BuildingOfficeIcon /> Rooms & Labs Assignment
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Classrooms are created per division. Labs are assigned per
-                  subdivision.
+                  Classrooms are created per division. Labs are assigned per subdivision.
                 </p>
               </div>
+              
+              <button 
+                onClick={() => initializeRooms()}
+                className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+              >
+                Force Reset/Initialize Rooms
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -215,7 +205,6 @@ export default function Rooms() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {/* --- MODIFIED SECTION FOR CLASSROOMS --- */}
                       {classrooms.length > 0 ? (
                         classrooms.map((room) => (
                           <tr key={room.id} className="hover:bg-indigo-50/30">
@@ -228,26 +217,18 @@ export default function Rooms() {
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                                 type="text"
                                 value={room.name || ""}
-                                onChange={(e) =>
-                                  updateRoomName(room.id, e.target.value)
-                                }
+                                onChange={(e) => updateRoomName(room.id, e.target.value)}
                               />
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan="2"
-                            className="px-6 py-10 text-center text-sm text-gray-500"
-                          >
-                            No classrooms to display.
-                            <br />
-                            Please add divisions in the General Settings step.
+                          <td colSpan="2" className="px-6 py-10 text-center text-sm text-gray-500">
+                            No classrooms found. Click 'Force Reset/Initialize Rooms'.
                           </td>
                         </tr>
                       )}
-                      {/* --- END MODIFIED SECTION --- */}
                     </tbody>
                   </table>
                 </div>
@@ -272,13 +253,9 @@ export default function Rooms() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {/* --- MODIFIED SECTION FOR LABS --- */}
                       {subdivisionsWithLabs.length > 0 ? (
                         subdivisionsWithLabs.map((sub) => (
-                          <tr
-                            key={`${sub.timetableId}-${sub.subIndex}`}
-                            className="hover:bg-indigo-50/30"
-                          >
+                          <tr key={`${sub.timetableId}-${sub.subdivisionId}`} className="hover:bg-indigo-50/30">
                             <td className="px-6 py-4 font-medium text-gray-800">
                               {sub.name}
                             </td>
@@ -294,18 +271,11 @@ export default function Rooms() {
                         ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan="2"
-                            className="px-6 py-10 text-center text-sm text-gray-500"
-                          >
+                          <td colSpan="2" className="px-6 py-10 text-center text-sm text-gray-500">
                             No labs to assign.
-                            <br />
-                            This requires subjects with labs and named
-                            subdivisions.
                           </td>
                         </tr>
                       )}
-                      {/* --- END MODIFIED SECTION --- */}
                     </tbody>
                   </table>
                 </div>
@@ -319,21 +289,6 @@ export default function Rooms() {
                 to="/dashboard/timetable/new/classes"
                 className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                  className="h-5 w-5 sm:mr-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                  ></path>
-                </svg>
                 <span className="hidden sm:inline">Previous</span>
               </Link>
 
@@ -347,21 +302,6 @@ export default function Rooms() {
                 className="inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 <span className="hidden sm:inline">Next</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                  className="h-5 w-5 sm:ml-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                  ></path>
-                </svg>
               </Link>
             </div>
           </div>
