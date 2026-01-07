@@ -253,7 +253,7 @@ const ReviewGenerate = () => {
 
     try {
       const response = await fetch(
-        "http://10.100.102.27:8000/timetable/r/generate-semester-api/",
+        "http://127.0.0.1:8000/timetable/generate-semester/5/",
         {
           method: "POST",
           // 2️⃣ Add the Authorization header

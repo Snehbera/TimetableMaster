@@ -148,7 +148,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   // The Django API endpoint
-  const API_URL = "http://10.100.102.27:8000/auth/login/";
+  const API_URL = "http://127.0.0.1:8000/auth/login/";
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
