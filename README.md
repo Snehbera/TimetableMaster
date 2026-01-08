@@ -12,9 +12,7 @@ python -m venv env
 .\env\Scripts\activate  # Windows
 
 # Install Dependencies
-pip install django djangorestframework django-cors-headers django-allauth \
-            django-rest-auth google-auth-oauthlib google-api-python-client \
-            pytz WeasyPrint requests
+pip install django djangorestframework django-cors-headers django-allauth django-rest-auth google-auth-oauthlib google-api-python-client pytz WeasyPrint requests
 2. Database InitializationBashpython manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
