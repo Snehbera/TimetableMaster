@@ -92,9 +92,8 @@ const IconClock = () => (
 
 const InfoCard = ({ label, value, colSpan }) => (
   <div
-    className={`bg-gray-50 p-3 sm:p-4 rounded-lg ${
-      colSpan ? "sm:col-span-2" : ""
-    }`}
+    className={`bg-gray-50 p-3 sm:p-4 rounded-lg ${colSpan ? "sm:col-span-2" : ""
+      }`}
   >
     <p className="text-xs sm:text-sm text-gray-600 mb-1">{label}</p>
     <p className="font-medium text-gray-800 text-sm sm:text-base break-words">
@@ -239,49 +238,44 @@ const ReviewGenerate = () => {
     setIsLoading(true);
     setError(null);
 
-    // 1️⃣ Retrieve the token from localStorage
+    // 1️⃣ Retrieve the token - consistent with your screenshot
     const token = localStorage.getItem("authToken");
 
-    // Optional: Check if the token exists before making the call
     if (!token) {
       setError("Authentication error: No token found. Please log in again.");
       setIsLoading(false);
-      // You might want to redirect to the login page here
-      // navigate("/login");
       return;
     }
 
     try {
+      // 2️⃣ Prepare the payload
+      // Ensure cleanStoreData contains the fields your Django API expects
+      const payload = cleanStoreDataDeep(store);
+
       const response = await fetch(
         "http://127.0.0.1:8000/timetable/generate-semester/5/",
         {
           method: "POST",
-          // 2️⃣ Add the Authorization header
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Token ${token}`, // Use the retrieved token here
+            // Use 'Token' or 'Bearer' depending on your Django Auth configuration
+            "Authorization": `Token ${token}`,
           },
-          body: JSON.stringify(cleanStoreData),
+          body: JSON.stringify(payload),
         }
       );
 
       if (!response.ok) {
-        // Handle specific auth errors like 401 Unauthorized
+        const errorData = await response.json().catch(() => ({}));
         if (response.status === 401) {
-          setError("Your session has expired. Please log in again.");
-          // Consider clearing localStorage and redirecting
-          // localStorage.removeItem("authToken");
-          // navigate("/login");
-        } else {
-          throw new Error("Failed to generate timetable");
+          throw new Error("Session expired. Please log in again.");
         }
-        return; // Stop execution if response is not ok
+        throw new Error(errorData.detail || "Failed to generate timetable");
       }
 
       const result = await response.json();
-      console.log("✅ Success! Response from Django:", result);
 
-      setGeneratedData(result);
+      // 3️⃣ Navigate on success
       navigate("/dashboard/timetable/Viewtimetable", {
         state: { timetableData: result },
       });
@@ -291,6 +285,7 @@ const ReviewGenerate = () => {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6">
       <div className="space-y-6">
@@ -383,17 +378,15 @@ const ReviewGenerate = () => {
               onClick={handleGenerateClick}
               disabled={isLoading}
               // 🎨 I've added your custom color and ensured the text is white
-              className={`relative flex items-center justify-center px-6 py-3 font-medium text-white rounded-lg shadow-lg transition-all duration-300 w-full sm:w-auto sm:min-w-[220px] overflow-hidden ${
-                isLoading
+              className={`relative flex items-center justify-center px-6 py-3 font-medium text-white rounded-lg shadow-lg transition-all duration-300 w-full sm:w-auto sm:min-w-[220px] overflow-hidden ${isLoading
                   ? "bg-[#8c7df9] cursor-not-allowed" // Lighter shade for disabled state
                   : "bg-[#4f39f6] hover:bg-[#422de0] active:scale-95" // Your color + a darker hover shade
-              }`}
+                }`}
             >
               {/* The SVG and Text are now absolutely positioned to allow for smooth cross-fading */}
               <div
-                className={`transition-opacity duration-300 ${
-                  isLoading ? "opacity-0" : "opacity-100"
-                }`}
+                className={`transition-opacity duration-300 ${isLoading ? "opacity-0" : "opacity-100"
+                  }`}
               >
                 <div className="flex items-center">
                   {/* Default Icon */}
@@ -416,9 +409,8 @@ const ReviewGenerate = () => {
               </div>
 
               <div
-                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-                  isLoading ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isLoading ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 {/* ✨ New, cleaner spinner SVG */}
                 <svg
@@ -520,11 +512,10 @@ const ReviewGenerate = () => {
 
             <Link
               to="/dashboard/timetable/new/review"
-              className={`inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
-                !generatedData
+              className={`inline-flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${!generatedData
                   ? "bg-indigo-300 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
+                }`}
               onClick={(e) => !generatedData && e.preventDefault()}
             >
               <span className="hidden sm:inline">Next</span>
