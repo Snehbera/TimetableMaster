@@ -234,23 +234,31 @@ const ReviewGenerate = () => {
   };
   const cleanStoreData = cleanStoreDataDeep(store);
 
-  const handleGenerateClick = async () => {
+const handleGenerateClick = async () => {
     setIsLoading(true);
     setError(null);
 
-    // 1️⃣ Retrieve the token - consistent with your screenshot
     const token = localStorage.getItem("authToken");
 
     if (!token) {
+      console.error("❌ FRONTEND ERROR: No authToken found in localStorage.");
       setError("Authentication error: No token found. Please log in again.");
       setIsLoading(false);
       return;
     }
 
     try {
-      // 2️⃣ Prepare the payload
-      // Ensure cleanStoreData contains the fields your Django API expects
       const payload = cleanStoreDataDeep(store);
+
+      // --- VERIFICATION LOGS ---
+      console.log("🚀 SENDING DATA TO SERVER...");
+      console.log("URL: http://127.0.0.1:8000/timetable/generate-semester/5/");
+      console.log("Headers:", {
+        "Content-Type": "application/json",
+        "Authorization": `Token ${token.substring(0, 5)}...` // Log partial token for safety
+      });
+      console.log("Payload:", payload);
+      // -------------------------
 
       const response = await fetch(
         "http://127.0.0.1:8000/timetable/generate-semester/5/",
@@ -258,28 +266,39 @@ const ReviewGenerate = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Use 'Token' or 'Bearer' depending on your Django Auth configuration
             "Authorization": `Token ${token}`,
           },
           body: JSON.stringify(payload),
         }
       );
 
+      // --- SERVER RESPONSE LOGS ---
+      console.log(`📡 SERVER RESPONSE STATUS: ${response.status} ${response.statusText}`);
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error("❌ SERVER REJECTED REQUEST:", errorData);
+
         if (response.status === 401) {
           throw new Error("Session expired. Please log in again.");
+        }
+        if (response.status === 403) {
+          throw new Error("Forbidden: Check CORS or CSRF settings on Django.");
+        }
+        if (response.status === 404) {
+          throw new Error("Not Found: Semester ID 5 does not exist in the database.");
         }
         throw new Error(errorData.detail || "Failed to generate timetable");
       }
 
       const result = await response.json();
+      console.log("✅ SUCCESS! DATA RECEIVED FROM SERVER:", result);
 
-      // 3️⃣ Navigate on success
       navigate("/dashboard/timetable/Viewtimetable", {
         state: { timetableData: result },
       });
     } catch (err) {
+      console.error("🔴 CATCHED ERROR:", err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
