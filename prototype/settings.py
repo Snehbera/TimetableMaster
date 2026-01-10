@@ -25,15 +25,6 @@ SECRET_KEY = 'django-insecure-4%0lps9uh7p#y(+0s71q2!mkiiqilts4ry&&b_dgy@2iwh)fo7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    '192.168.59.66', # Your IP address
-    '127.0.0.1',
-    '10.9.44.197',
-    '10.9.44.196',
-    "*"
-]
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -155,8 +146,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# settings.py
+# Hosts That can access the backend
+ALLOWED_HOSTS = [
+    "*"  #  all host allowed ( only for developent )
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

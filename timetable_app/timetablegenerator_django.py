@@ -16,7 +16,6 @@ class TimetableSolver:
     enhanced constraints for speed and quality. Includes COMPACTION logic.
     """
     def __init__(self, config: Dict):
-        print("initialising data in timetable solver")
         self.config = config
         self.working_days = config['settings']['working_days']
         self.slots = config['settings']['periods_per_day']

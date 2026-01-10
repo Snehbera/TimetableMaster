@@ -45,7 +45,6 @@ class LoginView(generics.GenericAPIView):
         # 1. Validate incoming data (email and password format)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(request.data)
 
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
@@ -71,7 +70,6 @@ class LoginView(generics.GenericAPIView):
             # 3. Success: Log the user in (sets session)
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
-            print("token key:",token.key)
             
             # You can also return a token if you switch to TokenAuthentication/JWT
             return Response({
@@ -87,5 +85,3 @@ class LoginView(generics.GenericAPIView):
                  },
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-# 3. Placeholder for AuthStatusVie
