@@ -37,7 +37,7 @@ def generate_single_semester_view(request, semester_id):
     start_time = timezone.now()
     print("stated generating timetable in single semester")
 
-    config = generate_config_from_models(semester)
+    config = generate_config_from_models(request.user, semester)
 
     print("calling timetablesolver")
     solver = TimetableSolver(config) 
@@ -182,7 +182,7 @@ def generate_department_timetable_view(request):
     return render(request, 'timetable_app/department_result.html', context)
 
 # ==============================================================================
-# 4. *** NEW VIEWS FOR LISTING AND VIEWING SAVED TIMETABLES ***
+#  VIEWS FOR LISTING AND VIEWING SAVED TIMETABLES 
 # ==============================================================================
 
 def list_timetables(request):
@@ -236,7 +236,10 @@ def view_timetable_detail(request, pk):
     # We re-use the result template for simplicity
     return render(request, 'timetable_app/timetable_result.html', context)
 
-####################################################################################33
+# ==============================================================================
+#  VIEW FOR Sending data
+# ==============================================================================
+
 def generate_single_semester_view_api_send(request, semester_id):
     """
     Generates a timetable and returns a clean, efficient JSON response for React.
@@ -248,7 +251,7 @@ def generate_single_semester_view_api_send(request, semester_id):
         return JsonResponse({'success': False, 'error': f'Semester with number {semester_id} not found.'}, status=404)
 
     start_time = timezone.now()
-    config = generate_config_from_models(semester)
+    config = generate_config_from_models(request.user, semester)
     
     if not config.get('divisions') or not config.get('subjects'):
         return JsonResponse({'success': False, 'error': f"Configuration for {semester.name} is incomplete."}, status=400)
@@ -289,10 +292,13 @@ def generate_single_semester_view_api_send(request, semester_id):
     }
     return JsonResponse(json_response_data)
 
+# ==============================================================================
+#  VIEW FOR RECIEVING AND SENDING DATA
+# ==============================================================================
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication]) 
 @permission_classes([IsAuthenticated])
-@csrf_exempt 
 def generate_single_semester_view_api_recieve_send(request): 
     source_json_from_react = request.data
     

@@ -83,16 +83,6 @@ EXTERNAL_MIDDLEWARE = [
 
 MIDDLEWARE = EXTERNAL_MIDDLEWARE + MIDDLEWARE
 
-# Allow all origins (not safe for production)
-CORS_ALLOW_ALL_ORIGINS = True         
-
-# restrict to specific domains
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
-
-
 ROOT_URLCONF = 'prototype.urls'
 
 TEMPLATES = [
@@ -170,10 +160,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication', # Keep for admin
-        'rest_framework.authentication.TokenAuthentication',   # ⭐ ADD THIS
+        'rest_framework.authentication.TokenAuthentication',   # ⭐ For Token Authentication
+        'rest_framework.authentication.SessionAuthentication', # ⭐ For  admin Authentication
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+# Allow all origins (not safe for production)
+CORS_ALLOW_ALL_ORIGINS = True         
+
+# Allow these CORS 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# restrict to specific domains
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
