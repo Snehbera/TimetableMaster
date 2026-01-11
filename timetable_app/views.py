@@ -1,5 +1,3 @@
-# timetable_app/views.py
-
 import json
 from collections import defaultdict
 from django.db import transaction
@@ -89,8 +87,7 @@ def generate_single_semester_view_api_recieve_send(request):
     5. Returns JSON response with Timetable (Names, not IDs).
     """
     user = request.user
-    source_json = request.data
-
+    source_json = request.data    
     start_time = timezone.now()
 
     # Step 1: Database Import (Atomic to prevent partial saves)
@@ -120,7 +117,6 @@ def generate_single_semester_view_api_recieve_send(request):
         )
 
     # Step 3: Run the Solver
-    print(f"--- Starting Solver for {user.username} : {semester_obj.name} ---")
     solver = TimetableSolver(config)
     success, timetable_result = solver.solve(timeout=30)
 
@@ -155,21 +151,24 @@ def generate_single_semester_view_api_recieve_send(request):
             'time': slot_time, 
             'type': 'period'
         })
+        # Add Break if exists after this period
+        # Note: breaks_raw keys are 1-based strings ('1', '2'...)
         if str(i + 1) in breaks_raw:
             final_slots_list.append({
                 'index': None, 
                 'time': breaks_raw[str(i + 1)], 
                 'type': 'break'
             })
-
-    print(f"--- Returned Generated Timetable to {user.username} : {semester_obj.name} ---")
     
+    # 🔥 FIX: Include 'subjects' and 'faculty' in config for the Legend Table
     return Response({
         'success': True,
         'semester': {'number': semester_obj.number, 'name': semester_obj.name},
         'config': {
             'working_days': config.get('settings', {}).get('working_days', []),
             'slots_and_breaks': final_slots_list,
+            'subjects': config['subjects'], 
+            'faculty': config['faculty'], 
         },
         'timetable': processed_timetable,
     }, status=status.HTTP_200_OK)
@@ -182,7 +181,7 @@ def generate_single_semester_view_api_recieve_send(request):
 def transform_frontend_json(source_data):
     """
     Transforms React Payload -> Master JSON format for DB Import.
-    Includes fixes for Case Sensitivity and validation.
+    Includes fixes for reading explicit Divisions and Partitions.
     """
     target_json = {}
 
@@ -206,10 +205,12 @@ def transform_frontend_json(source_data):
     settings['breaks_after_period'] = breaks
     target_json['settings'] = settings
 
-    # 2. Faculty
+    # 2. Faculty (Map Code to Name)
     faculty = {}
     for fac in source_data.get('faculty', []):
-        faculty[fac['shortName']] = {'name': fac['name']}
+        # Use shortName or name as the key
+        code = fac.get('shortName') or fac.get('name')
+        faculty[code] = {'name': fac['name']}
     target_json['faculty'] = faculty
 
     # 3. Semester Data
@@ -220,40 +221,30 @@ def transform_frontend_json(source_data):
         semester_key = "1" 
 
     semester_data = {}
-    divisions = {}
-    division_map = {}
-
-    # Case Insensitive Room Type Check
-    for room in source_data.get('rooms', []):
-        room_type = room.get('type', '').lower()
-        
-        # Check for 'classroom'
-        if room_type == 'classroom' and 'timetableName' in room.get('homeRoomFor', {}):
-            full_name = room['homeRoomFor']['timetableName']
-            code = full_name.split(' - ')[-1].strip()
-            division_map[full_name] = code
-            if code not in divisions:
-                divisions[code] = {'off_day': "None", 'partitions': []}
     
-    # Check for 'lab'
-    for room in source_data.get('rooms', []):
-        room_type = room.get('type', '').lower()
+    # 4. Divisions & Partitions (🔥 READ FROM 'divisions' ARRAY)
+    divisions = {}
+    # Use the new explicit divisions list from frontend
+    for div_data in source_data.get('divisions', []):
+        div_name = div_data.get('name', 'Unknown')
         
-        if room_type == 'lab' and 'timetableName' in room.get('homeRoomFor', {}):
-            full_name = room['homeRoomFor']['timetableName']
-            if full_name in division_map:
-                code = division_map[full_name]
-                sub_index = room['homeRoomFor'].get('subIndex', 0)
-                partition_name = f"{code}{sub_index + 1}"
-                if partition_name not in divisions[code]['partitions']:
-                    divisions[code]['partitions'].append(partition_name)
+        # Get custom partition names (e.g., ["Batch A", "Batch B"])
+        # If frontend sends nothing, default to empty list
+        partitions = div_data.get('subdivisions', [])
+        
+        divisions[div_name] = {
+            'off_day': "None", 
+            'partitions': partitions
+        }
     
     semester_data['divisions'] = divisions
 
-    # 3b. Subjects
+    # 5. Subjects
     subjects = {}
     for sub in source_data.get('subjects', []):
-        subjects[sub['shortName']] = {
+        # Use ShortName provided by user, else Name.
+        code = sub.get('shortName') or sub.get('name')
+        subjects[code] = {
             'name': sub['name'],
             'lectures': sub.get('lecturesPerWeek', 0),
             'labs': sub.get('labsPerWeek', 0),
@@ -261,17 +252,19 @@ def transform_frontend_json(source_data):
         }
     semester_data['subjects'] = subjects
 
-    # 3c. Faculty Assignments
+    # 6. Faculty Assignments
     faculty_assignments = defaultdict(dict)
     assigned_pairs = set()
     
     for fac in source_data.get('faculty', []):
-        faculty_code = fac['shortName']
-        for sub_code in fac.get('assignedSubjects', []):
+        fac_code = fac.get('shortName') or fac.get('name')
+        
+        for sub_name in fac.get('assignedSubjects', []):
+            # sub_name is now "Cloud Computing" (or shortname), NOT an ID
             for div_code in divisions.keys():
-                if (sub_code, div_code) not in assigned_pairs:
-                    faculty_assignments[sub_code][div_code] = faculty_code
-                    assigned_pairs.add((sub_code, div_code))
+                if (sub_name, div_code) not in assigned_pairs:
+                    faculty_assignments[sub_name][div_code] = fac_code
+                    assigned_pairs.add((sub_name, div_code))
     
     semester_data['faculty_assignments'] = dict(faculty_assignments)
     target_json[semester_key] = semester_data
@@ -283,7 +276,7 @@ def import_data(master_json, user):
     """
     Saves transformed JSON to Django Models (Scoped to User).
     """
-    # Clear existing data for this user
+    # Clear existing data for this user to avoid conflicts/stale data
     Setting.objects.filter(user=user).delete()
     FacultyAssignment.objects.filter(user=user).delete()
     Division.objects.filter(user=user).delete()
@@ -486,11 +479,11 @@ def _process_solver_output(solver, config, raw_timetable_data):
                     
                     # 🔥 SWAP ID FOR NAME
                     raw_sub_id = entry['subject']
-                    entry['subject'] = subject_map.get(raw_sub_id, "Unknown Subject") 
+                    entry['subject'] = subject_map.get(raw_sub_id, raw_sub_id) 
 
                     # 🔥 SWAP ID FOR NAME
                     raw_fac_id = solver._get_faculty(div_code, raw_sub_id, 'lecture')
-                    entry['faculty'] = faculty_map.get(raw_fac_id, "Unknown Faculty")
+                    entry['faculty'] = faculty_map.get(raw_fac_id, raw_fac_id)
 
                     final_slots.append(entry)
                     final_slots.append({'type': 'Placeholder'})
@@ -504,13 +497,13 @@ def _process_solver_output(solver, config, raw_timetable_data):
                         
                         # 🔥 SWAP SUBJECT ID FOR NAME (In solver, 'lab' key holds Subject ID)
                         raw_sub_id = lab_item['lab'] 
-                        clean_item['subject'] = subject_map.get(raw_sub_id, "Unknown Lab")
+                        clean_item['subject'] = subject_map.get(raw_sub_id, raw_sub_id)
                         
                         # 🔥 SWAP FACULTY ID FOR NAME
                         raw_fac_id = lab_item['faculty']
-                        clean_item['faculty'] = faculty_map.get(raw_fac_id, "Unknown Faculty")
+                        clean_item['faculty'] = faculty_map.get(raw_fac_id, raw_fac_id)
                         
-                        # Keep partition info
+                        # Keep partition info (e.g., "A1")
                         clean_item['partition'] = lab_item.get('partition', '')
                         
                         clean_lab_details.append(clean_item)
@@ -525,11 +518,11 @@ def _process_solver_output(solver, config, raw_timetable_data):
                     
                     # 🔥 SWAP ID FOR NAME
                     raw_sub_id = entry['subject']
-                    entry['subject'] = subject_map.get(raw_sub_id, "Unknown Subject")
+                    entry['subject'] = subject_map.get(raw_sub_id, raw_sub_id)
                     
                     # 🔥 SWAP ID FOR NAME
                     raw_fac_id = solver._get_faculty(div_code, raw_sub_id, 'lecture')
-                    entry['faculty'] = faculty_map.get(raw_fac_id, "Unknown Faculty")
+                    entry['faculty'] = faculty_map.get(raw_fac_id, raw_fac_id)
 
                     final_slots.append(entry)
                     i += 1
